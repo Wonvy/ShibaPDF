@@ -633,6 +633,29 @@ svg.lucide {
   cursor: not-allowed;
 }
 
+.secondary-action-btn {
+  width: 100%;
+  height: 32px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background-color 0.14s, color 0.14s, border-color 0.14s;
+}
+
+.secondary-action-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text-1);
+  border-color: var(--border-strong);
+}
+
 /* Right Column: Open Whitespace Stage */
 .right-col {
   position: relative;
@@ -1320,6 +1343,11 @@ svg.lucide {
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-download" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /> </svg>
           <span id="exportBtnText" data-i18n="exportBtn">导出单页 PDF</span>
         </button>
+
+        <button id="downloadOfflineBtn" class="secondary-action-btn" type="button" title="Save standalone ShibaPDF.html to use offline on your computer">
+          <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:14px;height:14px;" class="lucide lucide-hard-drive-download" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 2v8" /> <path d="m16 6-4 4-4-4" /> <rect width="20" height="8" x="2" y="14" rx="2" /> <path d="M6 18h.01" /> <path d="M10 18h.01" /> </svg>
+          <span data-i18n="downloadOfflineBtn">下载单文件离线版 (.html)</span>
+        </button>
       </div>
     </aside>
 
@@ -1492,6 +1520,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
 
   const MM_TO_PT = 72.0 / 25.4;
   const ICONS = window.LUCIDE_SVGS || {};
+  const BOOT_CLEAN_HTML = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
 
   // Offline inline Blob Worker for PDF.js
   (function initPdfJsWorker() {
@@ -1543,6 +1572,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       exportKeepBtn: "导出印前 PDF (K100)",
       exportBatchBtn: "批量导出 {n} 个文件",
       exportingBtn: "正在处理...",
+      downloadOfflineBtn: "下载单文件离线版 (.html)",
       tabSpread: "裁切线视图",
       tabSequence: "页面总览",
       preflightReportTitle: "印前规范检测报告",
@@ -1636,6 +1666,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       exportKeepBtn: "Export K100 Print PDF",
       exportBatchBtn: "Export {n} PDFs",
       exportingBtn: "Processing...",
+      downloadOfflineBtn: "Download Offline App (.html)",
       tabSpread: "Cut Guides",
       tabSequence: "All Pages",
       preflightReportTitle: "Prepress Preflight Report",
@@ -1768,6 +1799,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     dimSummaryText: document.getElementById("dimSummaryText"),
     exportBtn: document.getElementById("exportBtn"),
     exportBtnText: document.getElementById("exportBtnText"),
+    downloadOfflineBtn: document.getElementById("downloadOfflineBtn"),
     stageTopbar: document.getElementById("stageTopbar"),
     previewSubTabs: document.getElementById("previewSubTabs"),
     tabSpreadBtn: document.getElementById("tabSpreadBtn"),
@@ -3416,6 +3448,31 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
   });
 
   el.exportBtn.addEventListener("click", handleExportClick);
+
+  el.downloadOfflineBtn.addEventListener("click", async () => {
+    let htmlContent = BOOT_CLEAN_HTML;
+    if (window.location.protocol === "http:" || window.location.protocol === "https:") {
+      try {
+        const cleanUrl = window.location.href.split("#")[0].split("?")[0];
+        const resp = await fetch(cleanUrl, { cache: "no-cache" });
+        if (resp.ok) {
+          const txt = await resp.text();
+          if (txt.includes("ShibaPDF") && txt.length > 100000) {
+            htmlContent = txt;
+          }
+        }
+      } catch (_) {}
+    }
+    const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ShibaPDF.html";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  });
 
   let resizeTimer = null;
   window.addEventListener("resize", () => {

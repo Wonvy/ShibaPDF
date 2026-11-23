@@ -49,8 +49,9 @@
 
 ## Quick Start
 
-### Option 1: Standalone Single-File Usage (Zero Install)
-Simply open **[`index.html`](./index.html)** directly in any modern browser (Chrome, Edge, Safari, Firefox) on Windows, macOS, or Linux — works 100% offline.
+### Option 1: Use Online or Download Standalone Offline HTML (Zero Install)
+- **Online**: Visit **[wonvy.github.io/ShibaPDF](https://wonvy.github.io/ShibaPDF/)** directly in your browser.
+- **Offline Single-File**: Click **"Download Offline App (.html)"** at the bottom-left of the app (or download **[`index.html`](https://raw.githubusercontent.com/Wonvy/ShibaPDF/main/index.html)**) to save `ShibaPDF.html` to your computer — works 100% offline on Windows, macOS, and Linux with a simple double-click.
 
 ### Option 2: Build from Source
 If you modify files under `src/`, rebuild the standalone single-file `index.html`:

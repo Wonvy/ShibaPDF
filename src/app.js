@@ -3,6 +3,7 @@
 
   const MM_TO_PT = 72.0 / 25.4;
   const ICONS = window.LUCIDE_SVGS || {};
+  const BOOT_CLEAN_HTML = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
 
   // Offline inline Blob Worker for PDF.js
   (function initPdfJsWorker() {
@@ -54,6 +55,7 @@
       exportKeepBtn: "导出印前 PDF (K100)",
       exportBatchBtn: "批量导出 {n} 个文件",
       exportingBtn: "正在处理...",
+      downloadOfflineBtn: "下载单文件离线版 (.html)",
       tabSpread: "裁切线视图",
       tabSequence: "页面总览",
       preflightReportTitle: "印前规范检测报告",
@@ -147,6 +149,7 @@
       exportKeepBtn: "Export K100 Print PDF",
       exportBatchBtn: "Export {n} PDFs",
       exportingBtn: "Processing...",
+      downloadOfflineBtn: "Download Offline App (.html)",
       tabSpread: "Cut Guides",
       tabSequence: "All Pages",
       preflightReportTitle: "Prepress Preflight Report",
@@ -279,6 +282,7 @@
     dimSummaryText: document.getElementById("dimSummaryText"),
     exportBtn: document.getElementById("exportBtn"),
     exportBtnText: document.getElementById("exportBtnText"),
+    downloadOfflineBtn: document.getElementById("downloadOfflineBtn"),
     stageTopbar: document.getElementById("stageTopbar"),
     previewSubTabs: document.getElementById("previewSubTabs"),
     tabSpreadBtn: document.getElementById("tabSpreadBtn"),
@@ -1927,6 +1931,31 @@
   });
 
   el.exportBtn.addEventListener("click", handleExportClick);
+
+  el.downloadOfflineBtn.addEventListener("click", async () => {
+    let htmlContent = BOOT_CLEAN_HTML;
+    if (window.location.protocol === "http:" || window.location.protocol === "https:") {
+      try {
+        const cleanUrl = window.location.href.split("#")[0].split("?")[0];
+        const resp = await fetch(cleanUrl, { cache: "no-cache" });
+        if (resp.ok) {
+          const txt = await resp.text();
+          if (txt.includes("ShibaPDF") && txt.length > 100000) {
+            htmlContent = txt;
+          }
+        }
+      } catch (_) {}
+    }
+    const blob = new Blob([htmlContent], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ShibaPDF.html";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 10000);
+  });
 
   let resizeTimer = null;
   window.addEventListener("resize", () => {

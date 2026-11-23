@@ -49,8 +49,9 @@
 
 ## 快速开始
 
-### 方式一：双击即用（免安装离线单文件）
-直接用任意现代浏览器（Chrome / Edge / Safari / Firefox）打开仓库根目录下的 **[`index.html`](./index.html)** 即可离线运行（Windows / macOS 通用）；也可直接开启 GitHub Pages 在线访问。
+### 方式一：在线访问或一键下载单文件离线版（免安装）
+- **在线使用**：直接访问 **[wonvy.github.io/ShibaPDF](https://wonvy.github.io/ShibaPDF/)**。
+- **离线单文件**：点击界面左下角的 **「下载单文件离线版 (.html)」** 按钮（或直接下载仓库根目录 **[`index.html`](https://raw.githubusercontent.com/Wonvy/ShibaPDF/main/index.html)**），即可将 `ShibaPDF.html` 保存到自己电脑，断网双击即可在 Windows / macOS 上永久使用。
 
 ### 方式二：修改源码并重新打包
 若修改了 `src/` 目录下的前端源码，运行以下命令即可重新编译单文件 `index.html`：
