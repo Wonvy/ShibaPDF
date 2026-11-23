@@ -2,12 +2,45 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
-const tpl = fs.readFileSync(path.join(root, "src/template.html"), "utf8");
+let tpl = fs.readFileSync(path.join(root, "src/template.html"), "utf8");
 const css = fs.readFileSync(path.join(root, "src/styles.css"), "utf8");
 const appJs = fs.readFileSync(path.join(root, "src/app.js"), "utf8");
 const pdfLibJs = fs.readFileSync(path.join(root, "node_modules/pdf-lib/dist/pdf-lib.min.js"), "utf8");
 const pdfJs = fs.readFileSync(path.join(root, "node_modules/pdfjs-dist/build/pdf.min.js"), "utf8");
 const pdfWorkerJs = fs.readFileSync(path.join(root, "node_modules/pdfjs-dist/build/pdf.worker.min.js"), "utf8");
+const lucideDir = path.join(root, "node_modules/lucide-static/icons");
+
+function loadLucideSvg(name) {
+  const svgPath = path.join(lucideDir, `${name}.svg`);
+  return fs.readFileSync(svgPath, "utf8").replace(/\s+/g, " ").trim();
+}
+
+// 1. Replace static <i data-lucide="name" ...></i> tags in template.html with official Lucide SVGs
+tpl = tpl.replace(/<i\s+data-lucide="([a-z0-9-]+)"([^>]*)><\/i>/gi, (_, iconName, extraAttrs) => {
+  let svg = loadLucideSvg(iconName);
+  if (extraAttrs && extraAttrs.trim()) {
+    svg = svg.replace("<svg ", `<svg ${extraAttrs.trim()} `);
+  }
+  return svg;
+});
+
+// 2. Export dynamic Lucide icons needed by JS (Preflight report, file list, status badges)
+const dynamicIconNames = [
+  "file-text",
+  "trash-2",
+  "check-circle-2",
+  "alert-triangle",
+  "x-circle",
+  "info",
+  "shield-check",
+  "shield-alert",
+  "wrench"
+];
+const iconMap = {};
+for (const name of dynamicIconNames) {
+  iconMap[name] = loadLucideSvg(name);
+}
+const lucideMapJs = `window.LUCIDE_SVGS = ${JSON.stringify(iconMap)};`;
 
 function escapeScriptClose(code) {
   return code.replace(/<\/script/gi, "<\\/script");
@@ -15,6 +48,7 @@ function escapeScriptClose(code) {
 
 let html = tpl;
 html = html.replace("/*__INLINE_CSS__*/", () => css);
+html = html.replace("/*__INLINE_LUCIDE_MAP__*/", () => escapeScriptClose(lucideMapJs));
 html = html.replace("/*__INLINE_PDF_WORKER__*/", () => escapeScriptClose(pdfWorkerJs));
 html = html.replace("/*__INLINE_PDF_LIB__*/", () => escapeScriptClose(pdfLibJs));
 html = html.replace("/*__INLINE_PDF_JS__*/", () => escapeScriptClose(pdfJs));
