@@ -3,71 +3,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ShibaPDF — PDF Spread Splitter & Prepress Preflight</title>
+  <title>ShibaPDF — PDF Prepress & Spread Toolbox</title>
   <style>
 :root,
 [data-theme="light"] {
   --bg-sidebar: #ffffff;
   --bg-canvas: #f7f7f5;
   --bg-elevated: #ffffff;
-  --bg-subtle: #f1f1ef;
-  --bg-hover: #ebebea;
-  --border: #e8e8e5;
-  --border-strong: #d3d3cf;
+  --bg-subtle: #f2f2ef;
+  --bg-hover: #eaeae6;
+  --border: #e6e6e2;
+  --border-strong: #cfcfc9;
 
   --text-1: #191919;
   --text-2: #5f5e5b;
-  --text-3: #9b9a97;
+  --text-3: #969590;
 
   --btn-bg: #191919;
   --btn-fg: #ffffff;
-  --btn-hover: #2f2f2f;
+  --btn-hover: #303030;
+
+  --card-active-bg: #f8f8f6;
+  --card-active-border: #191919;
 
   --ok: #0f7b6c;
-  --ok-bg: rgba(15, 123, 108, 0.09);
+  --ok-bg: rgba(15, 123, 108, 0.10);
   --warn: #cb7b19;
-  --warn-bg: rgba(203, 123, 25, 0.10);
+  --warn-bg: rgba(203, 123, 25, 0.11);
   --err: #e03e3e;
-  --err-bg: rgba(224, 62, 62, 0.10);
+  --err-bg: rgba(224, 62, 62, 0.11);
 
   --bleed-mask: rgba(224, 62, 62, 0.14);
   --bleed-stroke: #e03e3e;
   --split-stroke: #2383e2;
 
-  --shadow-paper: 0 8px 30px rgba(15, 15, 15, 0.07), 0 1px 3px rgba(15, 15, 15, 0.05);
-  --shadow-float: 0 4px 16px rgba(15, 15, 15, 0.07), 0 0 0 1px rgba(15, 15, 15, 0.06);
+  --shadow-paper: 0 10px 32px rgba(15, 15, 15, 0.08), 0 1px 3px rgba(15, 15, 15, 0.05);
+  --shadow-float: 0 6px 20px rgba(15, 15, 15, 0.08), 0 0 0 1px rgba(15, 15, 15, 0.06);
+  --shadow-popover: 0 14px 36px rgba(15, 15, 15, 0.10), 0 0 0 1px rgba(15, 15, 15, 0.07);
 }
 
 [data-theme="dark"] {
-  --bg-sidebar: #191919;
-  --bg-canvas: #121212;
-  --bg-elevated: #202020;
-  --bg-subtle: #262626;
-  --bg-hover: #2f2f2f;
-  --border: #2a2a2a;
-  --border-strong: #3d3d3d;
+  --bg-sidebar: #181818;
+  --bg-canvas: #111111;
+  --bg-elevated: #222222;
+  --bg-subtle: #252525;
+  --bg-hover: #2e2e2e;
+  --border: #2b2b2b;
+  --border-strong: #404040;
 
   --text-1: #ededec;
-  --text-2: #9b9b9b;
-  --text-3: #6e6e6e;
+  --text-2: #9e9e9b;
+  --text-3: #6e6e6b;
 
   --btn-bg: #ededec;
-  --btn-fg: #191919;
+  --btn-fg: #181818;
   --btn-hover: #ffffff;
 
+  --card-active-bg: #222222;
+  --card-active-border: #ededec;
+
   --ok: #2eab99;
-  --ok-bg: rgba(46, 171, 153, 0.14);
+  --ok-bg: rgba(46, 171, 153, 0.15);
   --warn: #e99b3b;
-  --warn-bg: rgba(233, 155, 59, 0.14);
+  --warn-bg: rgba(233, 155, 59, 0.15);
   --err: #eb5757;
-  --err-bg: rgba(235, 87, 87, 0.15);
+  --err-bg: rgba(235, 87, 87, 0.16);
 
   --bleed-mask: rgba(235, 87, 87, 0.24);
   --bleed-stroke: #eb5757;
   --split-stroke: #529cca;
 
-  --shadow-paper: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
-  --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-paper: 0 16px 48px rgba(0, 0, 0, 0.62), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  --shadow-float: 0 8px 24px rgba(0, 0, 0, 0.52), 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-popover: 0 18px 42px rgba(0, 0, 0, 0.62), 0 0 0 1px rgba(255, 255, 255, 0.09);
 }
 
 * {
@@ -94,26 +102,26 @@ svg.lucide {
   flex-shrink: 0;
 }
 
-/* Two-Column Root Layout */
-.layout-two-col {
+/* Two-Column Workbench Layout */
+.workbench {
   display: grid;
-  grid-template-columns: 316px 1fr;
+  grid-template-columns: 292px 1fr;
   height: 100vh;
   width: 100vw;
 }
 
-/* Left Column: Flat Minimalist Function Sidebar (No Nested Boxes!) */
-.left-panel {
+/* Left Column: Big Feature Buttons Launcher */
+.left-rail {
   background: var(--bg-sidebar);
   border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   min-height: 0;
-  z-index: 20;
+  z-index: 30;
 }
 
-.panel-top {
-  height: 52px;
+.rail-header {
+  height: 56px;
   padding: 0 18px;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -122,28 +130,33 @@ svg.lucide {
   flex-shrink: 0;
 }
 
-.brand-row {
+.brand-mark {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14.5px;
-  font-weight: 650;
-  letter-spacing: -0.015em;
+  gap: 9px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--text-1);
 }
 
-.top-icon-actions {
+.brand-mark svg.lucide {
+  width: 18px;
+  height: 18px;
+}
+
+.header-mini-btns {
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-.icon-action-btn {
+.icon-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
-  height: 28px;
+  height: 30px;
   padding: 0 8px;
   border: none;
   border-radius: 6px;
@@ -155,203 +168,215 @@ svg.lucide {
   transition: background-color 0.14s, color 0.14s;
 }
 
-.icon-action-btn:hover {
+.icon-btn:hover {
   background: var(--bg-subtle);
   color: var(--text-1);
 }
 
-/* Primary Mode Navigation in Left Panel */
-.mode-nav {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--border);
+/* Big Tool Buttons List */
+.rail-tools-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 14px;
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  flex-shrink: 0;
+  gap: 10px;
 }
 
-.mode-nav-item {
+.rail-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0 4px 2px;
+}
+
+.big-tool-btn {
   width: 100%;
-  height: 34px;
-  padding: 0 10px;
-  border: none;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-2);
-  font-size: 13px;
-  font-weight: 500;
+  padding: 13px 13px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-sidebar);
+  color: var(--text-1);
   cursor: pointer;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  transition: background-color 0.12s, color 0.12s;
+  gap: 12px;
   text-align: left;
+  transition: all 0.16s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.mode-nav-left {
-  display: inline-flex;
+.big-tool-btn:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-strong);
+  transform: translateY(-1px);
+}
+
+.big-tool-btn.active {
+  background: var(--card-active-bg);
+  border-color: var(--card-active-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.tool-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--bg-subtle);
+  color: var(--text-1);
+  display: flex;
   align-items: center;
-  gap: 9px;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background-color 0.16s, color 0.16s;
 }
 
-.mode-nav-item:hover {
-  background: var(--bg-subtle);
+.tool-icon-box svg.lucide {
+  width: 19px;
+  height: 19px;
+}
+
+.big-tool-btn.active .tool-icon-box {
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+}
+
+.tool-btn-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.tool-btn-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.tool-btn-title {
+  font-size: 13.5px;
+  font-weight: 650;
   color: var(--text-1);
+  line-height: 1.25;
 }
 
-.mode-nav-item.active {
-  background: var(--bg-subtle);
-  color: var(--text-1);
-  font-weight: 600;
+.tool-btn-desc {
+  display: block;
+  font-size: 11.5px;
+  color: var(--text-3);
+  margin-top: 3px;
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.nav-count-pill {
-  font-size: 11px;
-  font-weight: 600;
+.status-pill {
+  font-size: 10.5px;
+  font-weight: 650;
   padding: 1px 7px;
   border-radius: 999px;
   font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
 }
 
-.nav-count-pill.ok {
+.status-pill.neutral {
+  background: var(--bg-subtle);
+  color: var(--text-3);
+}
+
+.status-pill.ok {
   background: var(--ok-bg);
   color: var(--ok);
 }
 
-.nav-count-pill.warn {
+.status-pill.warn {
   background: var(--warn-bg);
   color: var(--warn);
 }
 
-.nav-count-pill.err {
+.status-pill.err {
   background: var(--err-bg);
   color: var(--err);
 }
 
-/* Scrollable Flat Controls */
-.panel-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding: 4px 0;
+/* Left Rail Bottom: Active File Queue + Offline Download */
+.rail-footer {
+  padding: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
 }
 
-.panel-scroll::-webkit-scrollbar,
-.right-stage::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.rail-files-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.panel-scroll::-webkit-scrollbar-thumb,
-.right-stage::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
-  border-radius: 999px;
-}
-
-.flat-section {
-  padding: 14px 18px;
-  border-bottom: 1px solid var(--border);
-}
-
-.flat-section:last-child {
-  border-bottom: none;
-}
-
-.sec-heading {
+.rail-files-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  margin-bottom: 10px;
+  padding: 0 2px;
 }
 
-.text-link-btn {
+.mini-link {
   border: none;
   background: transparent;
   color: var(--text-2);
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 500;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   padding: 2px 5px;
   border-radius: 4px;
 }
 
-.text-link-btn:hover {
+.mini-link:hover {
   background: var(--bg-subtle);
   color: var(--text-1);
 }
 
-/* Compact Sidebar Upload Button & File List */
-.upload-trigger-row {
-  width: 100%;
-  height: 34px;
-  padding: 0 12px;
-  border-radius: 6px;
-  border: 1px dashed var(--border-strong);
-  background: transparent;
-  color: var(--text-1);
-  font-size: 12.5px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 7px;
-  transition: background-color 0.14s, border-color 0.14s;
-}
-
-.upload-trigger-row:hover {
-  background: var(--bg-subtle);
-  border-color: var(--text-1);
-}
-
-.sidebar-file-list {
-  margin-top: 8px;
+.rail-file-list {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  max-height: 128px;
+  max-height: 108px;
   overflow-y: auto;
-}
-
-.sidebar-file-list:empty {
-  display: none;
 }
 
 .file-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  gap: 6px;
   padding: 6px 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 12.5px;
-  color: var(--text-2);
-  transition: background-color 0.12s;
-}
-
-.file-row:hover {
+  border-radius: 7px;
   background: var(--bg-subtle);
-  color: var(--text-1);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-2);
 }
 
 .file-row.active {
-  background: var(--bg-subtle);
   color: var(--text-1);
   font-weight: 600;
+  outline: 1px solid var(--border-strong);
 }
 
 .file-row-left {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 6px;
   min-width: 0;
   flex: 1;
 }
@@ -363,8 +388,8 @@ svg.lucide {
 }
 
 .del-icon-btn {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border: none;
   border-radius: 4px;
   background: transparent;
@@ -373,7 +398,6 @@ svg.lucide {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
 
 .del-icon-btn:hover {
@@ -381,23 +405,74 @@ svg.lucide {
   color: var(--err);
 }
 
-/* Flat Controls: Pills, Inputs, Switches */
-.seg-pills {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+.rail-outline-btn {
+  width: 100%;
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.14s;
+}
+
+.rail-outline-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--text-1);
+  border-color: var(--border-strong);
+}
+
+/* Right Column: Contextual Workspace */
+.right-workspace {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  background: var(--bg-canvas);
+}
+
+/* Contextual Top Action Bar (Adapts to active Left Big Button) */
+.context-bar {
+  min-height: 56px;
+  padding: 8px 22px;
+  background: var(--bg-sidebar);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+  z-index: 25;
+}
+
+.ctx-left,
+.ctx-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.seg-group {
+  display: inline-flex;
+  align-items: center;
   background: var(--bg-subtle);
   padding: 2px;
-  border-radius: 6px;
+  border-radius: 7px;
   gap: 2px;
-  margin-bottom: 10px;
 }
 
-.seg-pills.two {
-  grid-template-columns: 1fr 1fr;
-}
-
-.seg-pill {
+.seg-btn {
   height: 26px;
+  padding: 0 10px;
   border: none;
   border-radius: 5px;
   background: transparent;
@@ -406,51 +481,40 @@ svg.lucide {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.12s;
+  white-space: nowrap;
 }
 
-.seg-pill:hover {
+.seg-btn:hover {
   color: var(--text-1);
 }
 
-.seg-pill.active {
+.seg-btn.active {
   background: var(--bg-elevated);
   color: var(--text-1);
   font-weight: 600;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
-.control-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  min-height: 30px;
+.v-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--border);
 }
 
-.control-line + .control-line {
-  margin-top: 8px;
-}
-
-.ctrl-title {
-  font-size: 12.5px;
-  color: var(--text-1);
-}
-
-.ctrl-desc {
-  font-size: 11.5px;
-  color: var(--text-3);
-  line-height: 1.5;
-  margin-top: 4px;
+.ctx-label {
+  font-size: 12px;
+  color: var(--text-2);
+  white-space: nowrap;
 }
 
 .num-box {
   display: inline-flex;
   align-items: center;
   height: 28px;
-  padding: 0 8px;
+  padding: 0 7px;
   border-radius: 6px;
   border: 1px solid var(--border);
-  background: transparent;
+  background: var(--bg-sidebar);
 }
 
 .num-box:focus-within {
@@ -458,7 +522,7 @@ svg.lucide {
 }
 
 .num-box input {
-  width: 42px;
+  width: 38px;
   border: none;
   outline: none;
   background: transparent;
@@ -482,58 +546,23 @@ svg.lucide {
   margin-left: 3px;
 }
 
-.quad-inline-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 7px;
-  margin-top: 8px;
-}
-
-.quad-cell {
-  display: flex;
+/* Inline Switch */
+.ctx-toggle {
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 12px;
-  color: var(--text-2);
-}
-
-/* Minimal Toggle Switch */
-.toggle-row {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
+  gap: 7px;
   cursor: pointer;
   user-select: none;
-  padding: 4px 0;
-}
-
-.toggle-row + .toggle-row {
-  margin-top: 8px;
-}
-
-.toggle-label-group strong {
-  display: block;
   font-size: 12.5px;
-  font-weight: 500;
   color: var(--text-1);
-  line-height: 1.35;
-}
-
-.toggle-label-group small {
-  display: block;
-  font-size: 11px;
-  color: var(--text-3);
-  margin-top: 2px;
-  line-height: 1.4;
+  white-space: nowrap;
 }
 
 .switch-ctrl {
   position: relative;
-  width: 32px;
-  height: 18px;
+  width: 30px;
+  height: 17px;
   flex-shrink: 0;
-  margin-top: 1px;
 }
 
 .switch-ctrl input {
@@ -556,8 +585,8 @@ svg.lucide {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   border-radius: 50%;
   background: var(--bg-sidebar);
   transition: transform 0.18s cubic-bezier(0.22, 1, 0.36, 1);
@@ -568,184 +597,141 @@ svg.lucide {
 }
 
 .switch-ctrl input:checked + .switch-track::after {
-  transform: translateX(14px);
+  transform: translateX(13px);
 }
 
-.inline-note {
-  margin-top: 9px;
-  font-size: 11.5px;
-  line-height: 1.45;
-  color: var(--text-2);
+/* Popover Menus in Contextual Bar */
+.popover-anchor {
+  position: relative;
 }
 
-.inline-note.warn {
-  color: var(--err);
-}
-
-/* Sidebar Pinned Footer */
-.panel-footer {
-  padding: 14px 18px;
-  border-top: 1px solid var(--border);
-  background: var(--bg-sidebar);
+.popover-card {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 244px;
+  padding: 12px;
+  border-radius: 10px;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-popover);
+  z-index: 80;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  flex-shrink: 0;
+  gap: 9px;
 }
 
-.dim-readout-row {
+.popover-caption {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+}
+
+.quad-grid-pop {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.quad-cell {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11.5px;
+  font-size: 12px;
   color: var(--text-2);
-  font-variant-numeric: tabular-nums;
 }
 
-.dim-readout-row strong {
+.pop-opt-btn {
+  width: 100%;
+  padding: 6px 8px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
   color: var(--text-1);
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pop-opt-btn:hover {
+  background: var(--bg-subtle);
+}
+
+.pop-opt-btn.selected {
   font-weight: 600;
 }
 
-.primary-action-btn {
-  width: 100%;
-  height: 38px;
+.pop-hr {
+  height: 1px;
+  background: var(--border);
+}
+
+.dim-inline-pill {
+  font-size: 12px;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.primary-export-btn {
+  height: 34px;
+  padding: 0 15px;
   border: none;
   border-radius: 7px;
   background: var(--btn-bg);
   color: var(--btn-fg);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 7px;
-  transition: background-color 0.15s, opacity 0.15s;
+  gap: 6px;
+  white-space: nowrap;
+  transition: background-color 0.14s, opacity 0.14s;
 }
 
-.primary-action-btn:hover:not(:disabled) {
+.primary-export-btn:hover:not(:disabled) {
   background: var(--btn-hover);
 }
 
-.primary-action-btn:disabled {
+.primary-export-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }
 
-.secondary-action-btn {
-  width: 100%;
-  height: 32px;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: transparent;
-  color: var(--text-2);
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: background-color 0.14s, color 0.14s, border-color 0.14s;
-}
-
-.secondary-action-btn:hover {
-  background: var(--bg-subtle);
-  color: var(--text-1);
-  border-color: var(--border-strong);
-}
-
-/* Right Column: Open Whitespace Stage */
-.right-col {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  background: var(--bg-canvas);
-}
-
-.stage-topbar {
-  height: 52px;
-  padding: 0 24px;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg-sidebar);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-shrink: 0;
-}
-
-.stage-topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.preflight-quick-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  height: 28px;
-  padding: 0 10px;
-  border-radius: 6px;
-  border: none;
-  font-size: 12px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.15s;
-}
-
-.preflight-quick-chip:hover {
-  opacity: 0.85;
-}
-
-.preflight-quick-chip.ok {
-  background: var(--ok-bg);
-  color: var(--ok);
-}
-
-.preflight-quick-chip.warn {
-  background: var(--warn-bg);
-  color: var(--warn);
-}
-
-.preflight-quick-chip.err {
-  background: var(--err-bg);
-  color: var(--err);
-}
-
-.right-stage {
+/* Main Stage Viewport */
+.stage-viewport {
   flex: 1;
   overflow: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 36px 40px 76px;
+  padding: 34px 40px 76px;
   position: relative;
 }
 
-.right-stage.align-top {
+.stage-viewport.align-top {
   align-items: flex-start;
 }
 
-/* Empty Centered Drop State */
-.empty-drop-card {
+/* Empty & Coming-Soon States */
+.center-placeholder {
   width: 100%;
-  max-width: 480px;
+  max-width: 490px;
   text-align: center;
 }
 
-.empty-drop-card h2 {
+.center-placeholder h2 {
   font-size: 22px;
   font-weight: 650;
   letter-spacing: -0.02em;
   margin-bottom: 8px;
 }
 
-.empty-drop-card p {
+.center-placeholder p {
   font-size: 13px;
   color: var(--text-2);
   line-height: 1.6;
@@ -754,8 +740,8 @@ svg.lucide {
 
 .drop-surface {
   border: 1px dashed var(--border-strong);
-  border-radius: 12px;
-  padding: 40px 28px;
+  border-radius: 14px;
+  padding: 42px 28px;
   background: var(--bg-sidebar);
   cursor: pointer;
   transition: border-color 0.16s, background-color 0.16s;
@@ -771,9 +757,9 @@ svg.lucide {
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  height: 36px;
+  height: 38px;
   padding: 0 18px;
-  border-radius: 7px;
+  border-radius: 8px;
   background: var(--btn-bg);
   color: var(--btn-fg);
   font-size: 13px;
@@ -793,7 +779,24 @@ svg.lucide {
   color: var(--text-3);
 }
 
-/* Paper Spread Preview */
+.soon-icon-circle {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 16px;
+  border-radius: 14px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.soon-icon-circle svg.lucide {
+  width: 24px;
+  height: 24px;
+}
+
+/* Spread Paper Preview */
 .paper-frame {
   position: relative;
   display: inline-block;
@@ -849,7 +852,7 @@ svg.lucide {
   white-space: nowrap;
 }
 
-/* Frameless Sequence Grid */
+/* Sequence Gallery */
 .clean-grid {
   width: 100%;
   max-width: 1140px;
@@ -909,13 +912,13 @@ svg.lucide {
   font-weight: 500;
 }
 
-/* Prepress Preflight Report View */
+/* Prepress Preflight Report */
 .preflight-container {
   width: 100%;
   max-width: 820px;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   padding-bottom: 32px;
 }
 
@@ -933,7 +936,6 @@ svg.lucide {
 .pf-title-group h3 {
   font-size: 16px;
   font-weight: 650;
-  letter-spacing: -0.01em;
 }
 
 .pf-title-group p {
@@ -950,9 +952,6 @@ svg.lucide {
 }
 
 .pf-stat-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
   padding: 4px 10px;
   border-radius: 6px;
   font-size: 12px;
@@ -1064,7 +1063,6 @@ svg.lucide {
   align-items: center;
   gap: 5px;
   flex-shrink: 0;
-  transition: background-color 0.14s;
 }
 
 .pf-fix-btn:hover {
@@ -1118,32 +1116,25 @@ svg.lucide {
   color: var(--text-2);
 }
 
-.v-sep {
-  width: 1px;
-  height: 15px;
-  background: var(--border);
-  margin: 0 3px;
-}
-
 .hidden {
   display: none !important;
 }
 
-@media (max-width: 880px) {
+@media (max-width: 900px) {
   html,
   body {
     overflow: auto;
     height: auto;
   }
-  .layout-two-col {
+  .workbench {
     grid-template-columns: 1fr;
     height: auto;
   }
-  .left-panel {
+  .left-rail {
     border-right: none;
     border-bottom: 1px solid var(--border);
   }
-  .right-stage {
+  .stage-viewport {
     min-height: 540px;
   }
 }
@@ -1151,232 +1142,232 @@ svg.lucide {
   </style>
 </head>
 <body>
-  <div class="layout-two-col">
-    <!-- Left Column: Flat Minimalist Function Sidebar -->
-    <aside class="left-panel">
-      <!-- Top Brand & Theme/Lang -->
-      <div class="panel-top">
-        <div class="brand-row">
+  <div class="workbench">
+    <!-- Left Column: Big Feature Buttons Launcher -->
+    <aside class="left-rail">
+      <header class="rail-header">
+        <div class="brand-mark">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /> </svg>
           <span>ShibaPDF</span>
         </div>
-        <div class="top-icon-actions">
-          <button id="langBtn" class="icon-action-btn" type="button" title="Switch Language">
+        <div class="header-mini-btns">
+          <button id="langBtn" class="icon-btn" type="button" title="Switch Language">
             <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-languages" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m5 8 6 6" /> <path d="m4 14 6-6 2-3" /> <path d="M2 5h12" /> <path d="M7 2h1" /> <path d="m22 22-5-10-5 10" /> <path d="M14 18h6" /> </svg>
-            <span id="langLabel">EN</span>
+            <span id="langLabel">中文</span>
           </button>
-          <button id="themeBtn" class="icon-action-btn" type="button" title="Toggle Theme">
+          <button id="themeBtn" class="icon-btn" type="button" title="Toggle Theme">
             <span id="iconMoon"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /> </svg></span>
             <span id="iconSun" class="hidden"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /> </svg></span>
           </button>
         </div>
+      </header>
+
+      <!-- Large Tool Buttons -->
+      <div class="rail-tools-scroll">
+        <div class="rail-section-label" data-i18n="toolboxLabel">功能工具箱</div>
+
+        <button id="navSplitBtn" class="big-tool-btn active" type="button">
+          <span class="tool-icon-box">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-columns-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M12 3v18" /> </svg>
+          </span>
+          <span class="tool-btn-copy">
+            <span class="tool-btn-title-row">
+              <span class="tool-btn-title" data-i18n="modeSplit">跨页拆单页</span>
+            </span>
+            <span class="tool-btn-desc" data-i18n="modeSplitSub">双页切单页 · 裁出血与封底归位</span>
+          </span>
+        </button>
+
+        <button id="navKeepBtn" class="big-tool-btn" type="button">
+          <span class="tool-icon-box">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-printer" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /> <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" /> <rect x="6" y="14" width="12" height="8" rx="1" /> </svg>
+          </span>
+          <span class="tool-btn-copy">
+            <span class="tool-btn-title-row">
+              <span class="tool-btn-title" data-i18n="modeKeepK100">印前转单黑</span>
+            </span>
+            <span class="tool-btn-desc" data-i18n="modeKeepSub">保持原跨页尺寸 · 修复四色黑</span>
+          </span>
+        </button>
+
+        <button id="navPreflightBtn" class="big-tool-btn" type="button">
+          <span class="tool-icon-box">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-shield-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /> <path d="m9 12 2 2 4-4" /> </svg>
+          </span>
+          <span class="tool-btn-copy">
+            <span class="tool-btn-title-row">
+              <span class="tool-btn-title" data-i18n="modePreflight">印刷规范检查</span>
+              <span id="navPreflightBadge" class="status-pill hidden"></span>
+            </span>
+            <span class="tool-btn-desc" data-i18n="modePreflightSub">8 项 DPI / 字体 / 出血开机体检</span>
+          </span>
+        </button>
+
+        <button id="navEditTextBtn" class="big-tool-btn" type="button">
+          <span class="tool-icon-box">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-type" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 4v16" /> <path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2" /> <path d="M9 20h6" /> </svg>
+          </span>
+          <span class="tool-btn-copy">
+            <span class="tool-btn-title-row">
+              <span class="tool-btn-title" data-i18n="modeEditText">编辑页面文字</span>
+              <span class="status-pill neutral" data-i18n="soonBadge">规划中</span>
+            </span>
+            <span class="tool-btn-desc" data-i18n="modeEditTextSub">直接在画布修改或添加 PDF 文字</span>
+          </span>
+        </button>
       </div>
 
-      <!-- 3 Core Functional Modes -->
-      <nav class="mode-nav" aria-label="Workflow Modes">
-        <button id="navSplitBtn" class="mode-nav-item active" type="button">
-          <span class="mode-nav-left">
-            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-columns-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M12 3v18" /> </svg>
-            <span data-i18n="modeSplit">拆分为单页</span>
-          </span>
-        </button>
+      <!-- Bottom Pinned: Active Files + Offline App Download -->
+      <div class="rail-footer">
+        <input id="fileInput" type="file" accept=".pdf,application/pdf" multiple class="hidden" />
 
-        <button id="navKeepBtn" class="mode-nav-item" type="button">
-          <span class="mode-nav-left">
-            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-printer" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" /> <path d="M6 9V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v6" /> <rect x="6" y="14" width="12" height="8" rx="1" /> </svg>
-            <span data-i18n="modeKeepK100">不拆页 · 印前单黑</span>
-          </span>
-        </button>
-
-        <button id="navPreflightBtn" class="mode-nav-item" type="button">
-          <span class="mode-nav-left">
-            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-shield-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z" /> <path d="m9 12 2 2 4-4" /> </svg>
-            <span data-i18n="modePreflight">印刷规范检查</span>
-          </span>
-          <span id="navPreflightBadge" class="nav-count-pill hidden"></span>
-        </button>
-      </nav>
-
-      <!-- Scrollable Function Sections -->
-      <div class="panel-scroll">
-        <!-- Section: Files -->
-        <section class="flat-section">
-          <div class="sec-heading">
-            <span data-i18n="secFiles">文档列表</span>
-            <button id="clearAllBtn" class="text-link-btn hidden" type="button">
-              <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:12px;height:12px;" class="lucide lucide-trash-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /> </svg>
-              <span data-i18n="clearAll">清空</span>
-            </button>
-          </div>
-
-          <button id="sidebarUploadBtn" class="upload-trigger-row" type="button">
-            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-upload" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> </svg>
-            <span data-i18n="addPdfBtn">导入或拖入 PDF 文件</span>
-          </button>
-          <input id="fileInput" type="file" accept=".pdf,application/pdf" multiple class="hidden" />
-
-          <div id="fileList" class="sidebar-file-list"></div>
-        </section>
-
-        <!-- Section: Bleed Controls (Only in Split Mode) -->
-        <section id="secBleed" class="flat-section">
-          <div class="sec-heading">
-            <span data-i18n="secBleed">出血裁切</span>
-            <button id="toggleQuadBtn" class="text-link-btn" type="button">
-              <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:12px;height:12px;" class="lucide lucide-sliders-horizontal" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10 5H3" /> <path d="M12 19H3" /> <path d="M14 3v4" /> <path d="M16 17v4" /> <path d="M21 12h-9" /> <path d="M21 19h-5" /> <path d="M21 5h-7" /> <path d="M8 10v4" /> <path d="M8 12H3" /> </svg>
-              <span data-i18n="customSidesBtn">四边独立</span>
-            </button>
-          </div>
-
-          <div class="seg-pills">
-            <button class="seg-pill preset-chip" data-bleed="0" type="button" data-i18n="preset0">无 0mm</button>
-            <button class="seg-pill preset-chip active" data-bleed="3" type="button">3mm</button>
-            <button class="seg-pill preset-chip" data-bleed="5" type="button">5mm</button>
-          </div>
-
-          <div id="uniformRow" class="control-line">
-            <span class="ctrl-title" data-i18n="bleedMarginLabel">四周出血宽度</span>
-            <div class="num-box">
-              <input id="bleedUniformInput" type="number" min="0" max="50" step="0.5" value="3" />
-              <span class="unit-txt">mm</span>
+        <div id="railFilesBox" class="rail-files-box hidden">
+          <div class="rail-files-head">
+            <span data-i18n="secFiles">当前文档</span>
+            <div style="display:flex;gap:4px;">
+              <button id="addMoreBtn" class="mini-link" type="button">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:11px;height:11px;" class="lucide lucide-plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M5 12h14" /> <path d="M12 5v14" /> </svg>
+                <span data-i18n="addBtn">添加</span>
+              </button>
+              <button id="clearAllBtn" class="mini-link" type="button">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:11px;height:11px;" class="lucide lucide-trash-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /> </svg>
+                <span data-i18n="clearAll">清空</span>
+              </button>
             </div>
           </div>
-
-          <div id="quadGrid" class="quad-inline-grid hidden">
-            <label class="quad-cell">
-              <span data-i18n="sideTop">上</span>
-              <span class="num-box"><input id="bleedTopInput" type="number" min="0" max="50" step="0.5" value="3" /><span class="unit-txt">mm</span></span>
-            </label>
-            <label class="quad-cell">
-              <span data-i18n="sideBottom">下</span>
-              <span class="num-box"><input id="bleedBottomInput" type="number" min="0" max="50" step="0.5" value="3" /><span class="unit-txt">mm</span></span>
-            </label>
-            <label class="quad-cell">
-              <span data-i18n="sideLeft">左</span>
-              <span class="num-box"><input id="bleedLeftInput" type="number" min="0" max="50" step="0.5" value="3" /><span class="unit-txt">mm</span></span>
-            </label>
-            <label class="quad-cell">
-              <span data-i18n="sideRight">右</span>
-              <span class="num-box"><input id="bleedRightInput" type="number" min="0" max="50" step="0.5" value="3" /><span class="unit-txt">mm</span></span>
-            </label>
-          </div>
-
-          <div class="seg-pills two" style="margin-top:10px;margin-bottom:0;">
-            <button id="bleedTrimBtn" class="seg-pill active" type="button" data-i18n="actionTrimShort">裁除出血</button>
-            <button id="bleedKeepBtn" class="seg-pill" type="button" data-i18n="actionKeepShort">保留外出血</button>
-          </div>
-
-          <div id="smartHint" class="inline-note hidden"></div>
-        </section>
-
-        <!-- Section: Split Rules (Only in Split Mode) -->
-        <section id="secSplitRules" class="flat-section">
-          <div class="sec-heading">
-            <span data-i18n="secPageRules">页序与跨页规则</span>
-          </div>
-
-          <label class="toggle-row">
-            <span class="toggle-label-group">
-              <strong data-i18n="moveFirstShort">首张左页（封底）移至末页</strong>
-              <small data-i18n="moveFirstDesc">首张跨页为“左封底+右封面”时自动归位</small>
-            </span>
-            <span class="switch-ctrl">
-              <input id="moveFirstCheck" type="checkbox" checked />
-              <span class="switch-track"></span>
-            </span>
-          </label>
-
-          <label class="toggle-row">
-            <span class="toggle-label-group">
-              <strong data-i18n="onlyLandscapeShort">仅对半拆分横向跨页</strong>
-              <small data-i18n="onlyLandscapeDesc">自动跳过文档内已有的竖版单页</small>
-            </span>
-            <span class="switch-ctrl">
-              <input id="onlyLandscapeCheck" type="checkbox" checked />
-              <span class="switch-track"></span>
-            </span>
-          </label>
-
-          <div class="seg-pills two" style="margin-top:10px;margin-bottom:0;">
-            <button id="dirLtrBtn" class="seg-pill active" type="button" data-i18n="dirLtrShort">左 → 右顺序</button>
-            <button id="dirRtlBtn" class="seg-pill" type="button" data-i18n="dirRtlShort">右 → 左顺序</button>
-          </div>
-        </section>
-
-        <!-- Section: Prepress Color Optimization (Shown in Split & Keep Modes) -->
-        <section id="secPrepressColor" class="flat-section">
-          <div class="sec-heading">
-            <span data-i18n="secPrepress">印前色彩优化</span>
-          </div>
-
-          <label class="toggle-row">
-            <span class="toggle-label-group">
-              <strong data-i18n="pureBlackShort">印刷单色黑 K100</strong>
-              <small data-i18n="pureBlackDesc">将黑/灰文字与线条转为 C0M0Y0K100，透明混合空间改为 CMYK，防四色黑且保留透明阴影</small>
-            </span>
-            <span class="switch-ctrl">
-              <input id="pureBlackCheck" type="checkbox" checked />
-              <span class="switch-track"></span>
-            </span>
-          </label>
-        </section>
-
-        <!-- Section: Preflight Mode Sidebar Info (Only in Preflight Mode) -->
-        <section id="secPreflightInfo" class="flat-section hidden">
-          <div class="sec-heading">
-            <span data-i18n="secPreflightGuide">印前体检说明</span>
-          </div>
-          <p class="ctrl-desc" data-i18n="preflightSidebarDesc">
-            自动扫描当前 PDF 的四色黑隐患、出血尺寸、字体嵌入、图片实际印刷分辨率 (DPI)、色彩空间、透明度与骑马钉页数模数。
-          </p>
-        </section>
-      </div>
-
-      <!-- Bottom Pinned Summary & Primary Export Button -->
-      <div class="panel-footer">
-        <div class="dim-readout-row">
-          <span data-i18n="outputSpecLabel">输出规格</span>
-          <strong id="dimSummaryText">-- × -- mm</strong>
+          <div id="fileList" class="rail-file-list"></div>
         </div>
 
-        <button id="exportBtn" class="primary-action-btn" type="button" disabled>
-          <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-download" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /> </svg>
-          <span id="exportBtnText" data-i18n="exportBtn">导出单页 PDF</span>
+        <button id="sidebarUploadBtn" class="rail-outline-btn" type="button">
+          <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-upload" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> </svg>
+          <span data-i18n="addPdfBtn">导入 PDF 文件</span>
         </button>
 
-        <button id="downloadOfflineBtn" class="secondary-action-btn" type="button" title="Save standalone ShibaPDF.html to use offline on your computer">
-          <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:14px;height:14px;" class="lucide lucide-hard-drive-download" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 2v8" /> <path d="m16 6-4 4-4-4" /> <rect width="20" height="8" x="2" y="14" rx="2" /> <path d="M6 18h.01" /> <path d="M10 18h.01" /> </svg>
+        <button id="downloadOfflineBtn" class="rail-outline-btn" type="button" title="Save standalone ShibaPDF.html to use offline on your computer">
+          <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-hard-drive-download" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 2v8" /> <path d="m16 6-4 4-4-4" /> <rect width="20" height="8" x="2" y="14" rx="2" /> <path d="M6 18h.01" /> <path d="M10 18h.01" /> </svg>
           <span data-i18n="downloadOfflineBtn">下载单文件离线版 (.html)</span>
         </button>
       </div>
     </aside>
 
-    <!-- Right Column: Preview & Preflight Stage -->
-    <main class="right-col">
-      <!-- Subtle Stage Topbar (Shown when file loaded) -->
-      <header id="stageTopbar" class="stage-topbar hidden">
-        <div class="stage-topbar-left">
-          <div id="previewSubTabs" class="seg-pills two" style="width:196px;margin-bottom:0;">
-            <button id="tabSpreadBtn" class="seg-pill active" type="button" data-i18n="tabSpread">裁切线视图</button>
-            <button id="tabSeqBtn" class="seg-pill" type="button" data-i18n="tabSequence">页面总览</button>
+    <!-- Right Column: Contextual Tool Workspace -->
+    <main class="right-workspace">
+      <!-- Contextual Top Action Bar (Shown when a PDF is loaded and mode != editText) -->
+      <header id="contextBar" class="context-bar hidden">
+        <div class="ctx-left">
+          <!-- View Sub-tabs (Spread / Pages) -->
+          <div id="previewSubTabs" class="seg-group">
+            <button id="tabSpreadBtn" class="seg-btn active" type="button" data-i18n="tabSpread">裁切线</button>
+            <button id="tabSeqBtn" class="seg-btn" type="button" data-i18n="tabSequence">页面总览</button>
           </div>
-          <span id="preflightStageTitle" class="ctrl-title hidden" style="font-weight:600;" data-i18n="preflightReportTitle">印前规范检测报告</span>
+
+          <!-- Split Mode Controls -->
+          <div id="ctxSplitControls" class="ctx-left">
+            <span class="v-divider"></span>
+            <span class="ctx-label" data-i18n="bleedShort">出血</span>
+            <div class="seg-group">
+              <button class="seg-btn preset-chip" data-bleed="0" type="button" data-i18n="preset0">无 0</button>
+              <button class="seg-btn preset-chip active" data-bleed="3" type="button">3mm</button>
+              <button class="seg-btn preset-chip" data-bleed="5" type="button">5mm</button>
+            </div>
+            <div class="num-box">
+              <input id="bleedUniformInput" type="number" min="0" max="50" step="0.5" value="3" />
+              <span class="unit-txt">mm</span>
+            </div>
+
+            <!-- 4-Side Popover -->
+            <div class="popover-anchor">
+              <button id="quadPopBtn" class="icon-btn" type="button">
+                <span data-i18n="customSidesBtn">四边独立</span>
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-chevron-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m6 9 6 6 6-6" /> </svg>
+              </button>
+              <div id="quadPopover" class="popover-card hidden">
+                <div class="popover-caption" data-i18n="secBleed">四边独立出血 (mm)</div>
+                <div class="quad-grid-pop">
+                  <label class="quad-cell"><span data-i18n="sideTop">上</span><span class="num-box"><input id="bleedTopInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                  <label class="quad-cell"><span data-i18n="sideBottom">下</span><span class="num-box"><input id="bleedBottomInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                  <label class="quad-cell"><span data-i18n="sideLeft">左</span><span class="num-box"><input id="bleedLeftInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                  <label class="quad-cell"><span data-i18n="sideRight">右</span><span class="num-box"><input id="bleedRightInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                </div>
+              </div>
+            </div>
+
+            <span class="v-divider"></span>
+
+            <label class="ctx-toggle">
+              <span class="switch-ctrl">
+                <input id="moveFirstCheck" type="checkbox" checked />
+                <span class="switch-track"></span>
+              </span>
+              <span data-i18n="moveFirstShort">封底移至末页</span>
+            </label>
+
+            <!-- More Split Rules Popover -->
+            <div class="popover-anchor">
+              <button id="morePopBtn" class="icon-btn" type="button">
+                <span data-i18n="moreRulesBtn">更多</span>
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-chevron-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m6 9 6 6 6-6" /> </svg>
+              </button>
+              <div id="morePopover" class="popover-card hidden" style="min-width:260px;">
+                <label class="ctx-toggle" style="justify-content:space-between;">
+                  <span data-i18n="onlyLandscapeShort">仅对半拆分横向跨页</span>
+                  <span class="switch-ctrl">
+                    <input id="onlyLandscapeCheck" type="checkbox" checked />
+                    <span class="switch-track"></span>
+                  </span>
+                </label>
+                <div class="pop-hr"></div>
+                <div class="popover-caption" data-i18n="bleedModeTitle">出血处理</div>
+                <button class="pop-opt-btn bleed-opt selected" type="button" data-value="trim">
+                  <span data-i18n="actionTrimShort">裁除四周出血（净尺寸）</span><span>✓</span>
+                </button>
+                <button class="pop-opt-btn bleed-opt" type="button" data-value="keep">
+                  <span data-i18n="actionKeepShort">保留原外侧出血</span><span></span>
+                </button>
+                <div class="pop-hr"></div>
+                <div class="popover-caption" data-i18n="dirTitle">阅读顺序</div>
+                <button class="pop-opt-btn dir-opt selected" type="button" data-value="ltr">
+                  <span data-i18n="dirLtrShort">左 → 右（常规画册）</span><span>✓</span>
+                </button>
+                <button class="pop-opt-btn dir-opt" type="button" data-value="rtl">
+                  <span data-i18n="dirRtlShort">右 → 左（古籍/日漫）</span><span></span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pure K100 Switch (Shown in Split & Keep Modes) -->
+          <div id="ctxK100Wrap" class="ctx-left">
+            <span class="v-divider"></span>
+            <label class="ctx-toggle" title="Convert black/gray text & lines to pure C0M0Y0K100 and set CMYK blending space">
+              <span class="switch-ctrl">
+                <input id="pureBlackCheck" type="checkbox" checked />
+                <span class="switch-track"></span>
+              </span>
+              <span data-i18n="pureBlackShort">单色黑 K100</span>
+            </label>
+          </div>
+
+          <!-- Preflight Title (Shown in Preflight Mode) -->
+          <span id="preflightStageTitle" class="tool-btn-title hidden" data-i18n="preflightReportTitle">印前规范检测报告</span>
         </div>
 
-        <div>
-          <button id="quickPreflightChip" class="preflight-quick-chip hidden" type="button">
-            <span id="quickPreflightIcon"></span>
-            <span id="quickPreflightText"></span>
+        <div class="ctx-right">
+          <span id="smartHint" class="ctx-label hidden"></span>
+          <span id="dimSummaryText" class="dim-inline-pill"></span>
+          <button id="exportBtn" class="primary-export-btn" type="button" disabled>
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-download" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /> </svg>
+            <span id="exportBtnText" data-i18n="exportBtn">导出单页 PDF</span>
           </button>
         </div>
       </header>
 
-      <!-- Scrollable Stage Viewport -->
-      <div id="stageViewport" class="right-stage">
+      <!-- Main Stage Viewport -->
+      <div id="stageViewport" class="stage-viewport">
         <!-- Empty State -->
-        <div id="emptyStage" class="empty-drop-card">
-          <h2 data-i18n="emptyHeading">PDF 跨页拆分与印前规范检测</h2>
-          <p data-i18n="emptySub">支持跨页拆单页、自定义出血裁切、四色黑无损转单黑 K100，以及 8 项印刷厂开机规范自动体检</p>
+        <div id="emptyStage" class="center-placeholder">
+          <h2 data-i18n="emptyHeading">PDF 跨页拆分与印前工具箱</h2>
+          <p data-i18n="emptySub">左侧选择所需工具，拖入 PDF 即可完成跨页拆单页、四色黑转单黑 K100 或开机规范预检</p>
 
           <div id="dropzone" class="drop-surface" role="button" tabindex="0">
             <div class="drop-cta">
@@ -1387,6 +1378,15 @@ svg.lucide {
           </div>
 
           <div class="empty-foot" data-i18n="localFootnote">100% 本地浏览器运行 · 不上传服务器 · 无损保留矢量、渐变与半透明阴影</div>
+        </div>
+
+        <!-- Upcoming Feature Placeholder: Edit Text -->
+        <div id="editTextPlaceholder" class="center-placeholder hidden">
+          <div class="soon-icon-circle">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-type" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 4v16" /> <path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2" /> <path d="M9 20h6" /> </svg>
+          </div>
+          <h2 data-i18n="editTextHeading">编辑页面文字（模块预留）</h2>
+          <p data-i18n="editTextDesc">该入口已为你预留就绪，后续可在此直接点选画布文字进行内容修改、字号调整与单黑上色。</p>
         </div>
 
         <!-- View 1: Spread Preview -->
@@ -1429,7 +1429,7 @@ svg.lucide {
         <button id="nextSpreadBtn" class="pager-btn" type="button" aria-label="Next">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-chevron-right" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m9 18 6-6-6-6" /> </svg>
         </button>
-        <span class="v-sep"></span>
+        <span class="v-divider" style="margin:0 3px;"></span>
         <button id="zoomOutBtn" class="pager-btn" type="button" title="Zoom Out">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-minus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M5 12h14" /> </svg>
         </button>
@@ -1522,7 +1522,6 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
   const ICONS = window.LUCIDE_SVGS || {};
   const BOOT_CLEAN_HTML = "<!DOCTYPE html>\n" + document.documentElement.outerHTML;
 
-  // Offline inline Blob Worker for PDF.js
   (function initPdfJsWorker() {
     if (typeof pdfjsLib === "undefined") return;
     try {
@@ -1539,63 +1538,65 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
 
   const I18N = {
     zh: {
-      modeSplit: "拆分为单页",
-      modeKeepK100: "不拆页 · 印前单黑",
+      toolboxLabel: "功能工具箱",
+      modeSplit: "跨页拆单页",
+      modeSplitSub: "双页切单页 · 裁出血与封底归位",
+      modeKeepK100: "印前转单黑",
+      modeKeepSub: "保持原跨页尺寸 · 修复四色黑",
       modePreflight: "印刷规范检查",
-      secFiles: "文档列表",
+      modePreflightSub: "8 项 DPI / 字体 / 出血开机体检",
+      modeEditText: "编辑页面文字",
+      modeEditTextSub: "直接在画布修改或添加 PDF 文字",
+      soonBadge: "规划中",
+      secFiles: "当前文档",
+      addBtn: "添加",
       clearAll: "清空",
-      addPdfBtn: "导入或拖入 PDF 文件",
-      secBleed: "出血裁切",
+      addPdfBtn: "导入 PDF 文件",
+      downloadOfflineBtn: "下载单文件离线版 (.html)",
+      bleedShort: "出血",
+      preset0: "无 0",
       customSidesBtn: "四边独立",
-      preset0: "无 0mm",
-      bleedMarginLabel: "四周出血宽度",
+      secBleed: "四边独立出血 (mm)",
       sideTop: "上",
       sideBottom: "下",
       sideLeft: "左",
       sideRight: "右",
-      actionTrimShort: "裁除出血",
-      actionKeepShort: "保留外出血",
-      secPageRules: "页序与跨页规则",
-      moveFirstShort: "首张左页（封底）移至末页",
-      moveFirstDesc: "首张跨页为“左封底+右封面”时自动归位",
+      moveFirstShort: "封底移至末页",
+      moreRulesBtn: "更多",
       onlyLandscapeShort: "仅对半拆分横向跨页",
-      onlyLandscapeDesc: "自动跳过文档内已有的竖版单页",
-      dirLtrShort: "左 → 右顺序",
-      dirRtlShort: "右 → 左顺序",
-      secPrepress: "印前色彩优化",
-      pureBlackShort: "印刷单色黑 K100",
-      pureBlackDesc: "将黑/灰文字与线条转为 C0M0Y0K100，透明混合空间改为 CMYK，防四色黑且保留透明阴影",
-      secPreflightGuide: "印前体检说明",
-      preflightSidebarDesc: "自动扫描当前 PDF 的四色黑隐患、出血尺寸、字体嵌入、图片实际印刷分辨率 (DPI)、色彩空间、透明度与骑马钉页数模数。",
-      outputSpecLabel: "输出规格",
+      bleedModeTitle: "出血处理",
+      actionTrimShort: "裁除四周出血（净尺寸）",
+      actionKeepShort: "保留原外侧出血",
+      dirTitle: "阅读顺序",
+      dirLtrShort: "左 → 右（常规画册）",
+      dirRtlShort: "右 → 左（古籍/日漫）",
+      pureBlackShort: "单色黑 K100",
       exportBtn: "导出单页 PDF",
       exportKeepBtn: "导出印前 PDF (K100)",
-      exportBatchBtn: "批量导出 {n} 个文件",
-      exportingBtn: "正在处理...",
-      downloadOfflineBtn: "下载单文件离线版 (.html)",
-      tabSpread: "裁切线视图",
+      exportBatchBtn: "导出 {n} 个文件",
+      exportingBtn: "处理中...",
+      tabSpread: "裁切线",
       tabSequence: "页面总览",
       preflightReportTitle: "印前规范检测报告",
-      emptyHeading: "PDF 跨页拆分与印前规范检测",
-      emptySub: "支持跨页拆单页、自定义出血裁切、四色黑无损转单黑 K100，以及 8 项印刷厂开机规范自动体检",
+      emptyHeading: "PDF 跨页拆分与印前工具箱",
+      emptySub: "左侧选择所需工具，拖入 PDF 即可完成跨页拆单页、四色黑转单黑 K100 或开机规范预检",
       chooseBtn: "选择 PDF 文件",
       dropHint: "或直接将单个、多个 PDF 拖入窗口任意位置",
       localFootnote: "100% 本地浏览器运行 · 不上传服务器 · 无损保留矢量、渐变与半透明阴影",
+      editTextHeading: "编辑页面文字（模块预留）",
+      editTextDesc: "该大按钮入口已为你预留就绪，后续可在此直接点选画布文字进行内容修改、字号调整与单黑上色。",
       frontCover: "封面",
       backCover: "封底",
       singleKept: "保持单页",
       pagesUnit: "页",
       fitZoom: "适应",
-      hintHasBleed: "已识别 {w}×{h}mm（含四周 {b}mm 出血）",
-      hintNoBleed: "原稿 {w}×{h}mm 疑似无出血净尺寸，若无需裁边请选择「无 0mm」",
+      hintHasBleed: "含 {b}mm 出血",
+      hintNoBleed: "疑似无出血原稿",
       keepBadge: "P{p} · 原尺寸 {w}×{h}mm · 单色黑 K100",
       outSuffix: "(单页)",
       outKeepSuffix: "_K100",
       errLoadPdf: "读取 PDF 失败：",
       errExportPdf: "导出 PDF 失败：",
-      // Preflight strings
-      pfChipOk: "印前检测全部通过",
-      pfChipIssues: "发现 {n} 项印前提示 · 查看报告",
       pfPassCount: "{n} 通过",
       pfWarnCount: "{n} 留意",
       pfErrCount: "{n} 风险",
@@ -1603,12 +1604,12 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       pfFixK100Btn: "一键导出 K100 修复版",
       pfBlackTitle: "黑色文字与四色黑检测",
       pfBlackOk: "透明混合空间为 CMYK，黑/灰文字与线条均为纯单黑通道，无四色黑套印重影风险。",
-      pfBlackWarn: "检测到透明混合空间为 DeviceRGB 或含非单黑文字指令（共 {n} 页受影响），直接上机印刷易产生四色黑重影。开启左侧「印刷单色黑 K100」导出即可无损修复。",
+      pfBlackWarn: "检测到透明混合空间为 DeviceRGB 或含非单黑文字指令（共 {n} 页受影响），直接上机印刷易产生四色黑重影。开启「单色黑 K100」导出即可无损修复。",
       pfBleedTitle: "页面尺寸一致性与出血位检测",
       pfBleedMixed: "文档内存在多种不同页面尺寸混排，送印前请确认拼版规格一致。",
       pfBleedHas: "全书尺寸统一（{w}×{h} mm），吻合标准净尺寸 + 四周 {b}mm 出血位。",
       pfBleedNone: "全书尺寸统一（{w}×{h} mm），疑似未预留 3mm 出血的净尺寸稿件，裁切边缘可能有露白风险。",
-      pfBleedCustom: "全书尺寸统一（{w}×{h} mm），非常规非标幅面，请结合裁切线确认四周已预留 3mm 出血。",
+      pfBleedCustom: "全书尺寸统一（{w}×{h} mm），非常规幅面，请结合裁切线确认四周已预留 3mm 出血。",
       pfFontTitle: "字体嵌入完整性检测",
       pfFontOk: "共检测到 {n} 款字体，已 100% 嵌入文件内部（或已转曲），印刷厂打开无缺字乱码风险。",
       pfFontNoFonts: "未检测到外部活动字体（文字已全部转曲或纯图版面），无缺字风险。",
@@ -1620,76 +1621,78 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       pfDpiErr: "发现低分辨率图片！最低仅 {min} DPI（位于第 {pages} 页），实印可能出现模糊或锯齿马赛克。",
       pfColorTitle: "色彩空间审计 (CMYK / RGB)",
       pfColorOk: "图像与矢量元素均采用 CMYK 或灰阶印刷色彩空间。",
-      pfColorWarn: "检测到 {rgbImg} 张 RGB 图片与 {rgbVec} 个页面含 RGB 矢量色（PPT/Office 导出常见）。数码快印可直接印，传统四色胶印注意屏幕与实印色差。",
+      pfColorWarn: "检测到 {rgbImg} 张 RGB 图片与 {rgbVec} 个页面含 RGB 矢量色（PPT/Office 导出常见）。数码快印可直接印，传统胶印注意色差。",
       pfTransTitle: "半透明、软蒙版与矢量渐变检测",
       pfTransOk: "包含 {smask} 处透明软蒙版与 {grad} 处矢量渐变，均保持原生高清未压平状态。",
-      pfTransNone: "未检测到复杂透明软蒙版叠加，印前RIP解释极速安全。",
+      pfTransNone: "未检测到复杂透明软蒙版叠加，印前 RIP 解释极速安全。",
       pfBookletTitle: "装订页数模数检验 (骑马钉 4P 倍数)",
-      pfBookletOk: "折算单页总数为 {p} 页（4 的整数倍），完全符合骑马钉与锁线画册装订模数。",
-      pfBookletLeaflet: "折算单页数为 {p} 页（单张或折页规格），无需凑 4P 骑马钉。",
-      pfBookletWarn: "折算单页总数为 {p} 页（非 4 的倍数）。若采用骑马钉装订，需增减至 {prev} 页或 {next} 页，否则会产生空白页；胶装则不受影响。",
+      pfBookletOk: "折算单页总数为 {p} 页（4 的整数倍），符合骑马钉画册装订模数。",
+      pfBookletLeaflet: "折算单页数为 {p} 页（单张或折页规格）。",
+      pfBookletWarn: "折算单页总数为 {p} 页（非 4 的倍数）。骑马钉需增减至 {prev} 页或 {next} 页；胶装则不受影响。",
       pfSecTitle: "文档加密与 RIP 印刷权限",
       pfSecOk: "文件未设权限密码锁，印前拼版与 RIP 分色系统可正常读取。",
-      pfSecWarn: "文件带有加密标记，部分老旧印前拼版软件可能拒绝导入，建议导出无密码副本。"
+      pfSecWarn: "文件带有加密标记，部分老旧印前拼版软件可能拒绝导入。"
     },
     en: {
+      toolboxLabel: "PDF Toolbox",
       modeSplit: "Split Spreads",
-      modeKeepK100: "Keep Pages · Fix K100",
-      modePreflight: "Prepress Preflight",
-      secFiles: "Documents",
+      modeSplitSub: "Slice spreads · Trim bleed & covers",
+      modeKeepK100: "Pure K100 Fix",
+      modeKeepSub: "Keep spread size · Fix 4-color black",
+      modePreflight: "Preflight Check",
+      modePreflightSub: "8-point DPI, font & bleed audit",
+      modeEditText: "Edit PDF Text",
+      modeEditTextSub: "Modify or add text directly on page",
+      soonBadge: "Soon",
+      secFiles: "Active Files",
+      addBtn: "Add",
       clearAll: "Clear",
-      addPdfBtn: "Import or drop PDF files",
-      secBleed: "Bleed Trimming",
+      addPdfBtn: "Import PDF Files",
+      downloadOfflineBtn: "Download Offline App (.html)",
+      bleedShort: "Bleed",
+      preset0: "None 0",
       customSidesBtn: "4 Sides",
-      preset0: "None 0mm",
-      bleedMarginLabel: "Bleed Margin",
+      secBleed: "Custom 4-Side Bleed (mm)",
       sideTop: "Top",
       sideBottom: "Bottom",
       sideLeft: "Left",
       sideRight: "Right",
-      actionTrimShort: "Trim Bleed",
-      actionKeepShort: "Keep Outer",
-      secPageRules: "Order & Spread Rules",
-      moveFirstShort: "Move 1st left half to end",
-      moveFirstDesc: "Auto-places [Back Cover | Front Cover] spreads in reading order",
+      moveFirstShort: "Move Back Cover to end",
+      moreRulesBtn: "More",
       onlyLandscapeShort: "Split landscape spreads only",
-      onlyLandscapeDesc: "Keep portrait single pages intact automatically",
-      dirLtrShort: "Left → Right",
-      dirRtlShort: "Right → Left",
-      secPrepress: "Prepress Color Fix",
-      pureBlackShort: "Pure K100 Black",
-      pureBlackDesc: "Convert black/gray text & lines to C0M0Y0K100 and set CMYK blending space without flattening transparency",
-      secPreflightGuide: "About Preflight",
-      preflightSidebarDesc: "Automatically inspects 4-color rich black, bleed margins, font embedding, effective image DPI, color spaces, transparency, and 4P booklet multiples.",
-      outputSpecLabel: "Output Spec",
-      exportBtn: "Export Single-Page PDF",
-      exportKeepBtn: "Export K100 Print PDF",
+      bleedModeTitle: "Bleed Handling",
+      actionTrimShort: "Trim bleed to net size",
+      actionKeepShort: "Keep outer bleed",
+      dirTitle: "Reading Order",
+      dirLtrShort: "Left → Right (Standard)",
+      dirRtlShort: "Right → Left (RTL / Manga)",
+      pureBlackShort: "Pure K100",
+      exportBtn: "Export Single PDF",
+      exportKeepBtn: "Export K100 PDF",
       exportBatchBtn: "Export {n} PDFs",
       exportingBtn: "Processing...",
-      downloadOfflineBtn: "Download Offline App (.html)",
       tabSpread: "Cut Guides",
       tabSequence: "All Pages",
       preflightReportTitle: "Prepress Preflight Report",
-      emptyHeading: "PDF Spread Splitter & Prepress Preflight",
-      emptySub: "Lossless spread splitting, custom bleed trimming, Pure K100 black conversion, and 8-point print-ready inspection",
+      emptyHeading: "PDF Spread & Prepress Toolbox",
+      emptySub: "Pick a tool on the left and drop your PDF for lossless spread splitting, Pure K100 fix, or print preflight",
       chooseBtn: "Choose PDF Files",
       dropHint: "or drag & drop one or multiple PDFs anywhere in this window",
       localFootnote: "100% Client-Side in Browser · Zero Uploads · Preserves Vectors, Gradients & Transparency",
+      editTextHeading: "Edit PDF Text (Reserved Module)",
+      editTextDesc: "This large tool slot is ready for upcoming interactive on-canvas text editing, font sizing, and K100 styling.",
       frontCover: "Front Cover",
       backCover: "Back Cover",
       singleKept: "Single",
       pagesUnit: "p",
       fitZoom: "Fit",
-      hintHasBleed: "Detected {w}×{h}mm ({b}mm bleed on all sides)",
-      hintNoBleed: "{w}×{h}mm matches net size (no bleed) — select \"None 0mm\" to avoid trimming",
+      hintHasBleed: "{b}mm bleed detected",
+      hintNoBleed: "Net size (no bleed)",
       keepBadge: "P{p} · Original {w}×{h}mm · Pure K100",
       outSuffix: "_single",
       outKeepSuffix: "_K100",
       errLoadPdf: "Failed to read PDF: ",
       errExportPdf: "Failed to export PDF: ",
-      // Preflight strings
-      pfChipOk: "Preflight Passed",
-      pfChipIssues: "{n} Prepress Notices · View Report",
       pfPassCount: "{n} Passed",
       pfWarnCount: "{n} Warnings",
       pfErrCount: "{n} Errors",
@@ -1697,12 +1700,12 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       pfFixK100Btn: "Export K100 Fixed PDF",
       pfBlackTitle: "Black Text & 4-Color Rich Black",
       pfBlackOk: "Transparency blending uses CMYK and black/gray text uses pure single-channel K.",
-      pfBlackWarn: "Detected DeviceRGB transparency blending or non-K100 black text ({n} pages affected), which causes 4-color rich black registration blur on press. Export with \"Pure K100 Black\" enabled to fix losslessly.",
+      pfBlackWarn: "Detected DeviceRGB transparency blending or non-K100 black text ({n} pages affected), causing 4-color rich black blur on press. Export with \"Pure K100\" enabled to fix losslessly.",
       pfBleedTitle: "Page Size Uniformity & Bleed Margin",
       pfBleedMixed: "Mixed page dimensions detected across the document. Verify imposition specs before printing.",
       pfBleedHas: "Uniform page size ({w}×{h} mm) matching standard trim size + {b}mm bleed on all sides.",
-      pfBleedNone: "Uniform page size ({w}×{h} mm) matching exact net trim size WITHOUT 3mm bleed — edge clipping may expose white borders.",
-      pfBleedCustom: "Uniform custom size ({w}×{h} mm). Verify 3mm bleed margin using the Cut Guides view.",
+      pfBleedNone: "Uniform page size ({w}×{h} mm) matching net trim size WITHOUT 3mm bleed — edge clipping may expose white borders.",
+      pfBleedCustom: "Uniform custom size ({w}×{h} mm). Verify 3mm bleed margin using Cut Guides.",
       pfFontTitle: "Font Embedding Integrity",
       pfFontOk: "All {n} font(s) are 100% embedded (or outlined) — zero missing glyph risk on press.",
       pfFontNoFonts: "No live external fonts detected (all text outlined or vector/raster) — safe for press.",
@@ -1714,7 +1717,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       pfDpiErr: "Low-resolution image(s) detected! Lowest is {min} DPI (Page {pages}) — may print blurry or pixelated.",
       pfColorTitle: "Color Space Audit (CMYK / RGB)",
       pfColorOk: "All images and vector elements use CMYK or Grayscale print color spaces.",
-      pfColorWarn: "Contains {rgbImg} RGB image(s) and {rgbVec} page(s) with RGB vectors (common in PPT exports). Digital presses convert automatically; offset presses may shift saturated hues.",
+      pfColorWarn: "Contains {rgbImg} RGB image(s) and {rgbVec} page(s) with RGB vectors. Digital presses convert automatically; offset presses may shift hues.",
       pfTransTitle: "Live Transparency, Soft Masks & Gradients",
       pfTransOk: "Detected {smask} soft-mask transparency group(s) and {grad} vector shading gradient(s), all preserved unflattened.",
       pfTransNone: "No complex soft-mask transparency stacks detected — fast RIP rendering.",
@@ -1740,19 +1743,17 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     { w: 148.5, h: 210 }
   ];
 
-  // Default language: English prioritized per user preference if not explicitly saved, or switchable anytime
   const state = {
-    lang: localStorage.getItem("shibapdf_lang") || "en",
+    lang: localStorage.getItem("shibapdf_lang") || "zh",
     theme: localStorage.getItem("shibapdf_theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
-    workMode: "split", // 'split' | 'keep' | 'preflight'
-    showQuadBleed: false,
+    workMode: "split", // 'split' | 'keep' | 'preflight' | 'editText'
     bleed: { top: 3, bottom: 3, left: 3, right: 3 },
     bleedAction: "trim",
     moveFirstToLast: true,
     pureBlackK100: true,
     onlyLandscape: true,
     readingDir: "ltr",
-    viewTab: "spread", // 'spread' | 'sequence'
+    viewTab: "spread",
     zoomFactor: 1.0,
     files: [],
     activeFileIndex: -1,
@@ -1770,46 +1771,44 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     navSplitBtn: document.getElementById("navSplitBtn"),
     navKeepBtn: document.getElementById("navKeepBtn"),
     navPreflightBtn: document.getElementById("navPreflightBtn"),
+    navEditTextBtn: document.getElementById("navEditTextBtn"),
     navPreflightBadge: document.getElementById("navPreflightBadge"),
-    clearAllBtn: document.getElementById("clearAllBtn"),
-    sidebarUploadBtn: document.getElementById("sidebarUploadBtn"),
     fileInput: document.getElementById("fileInput"),
+    railFilesBox: document.getElementById("railFilesBox"),
+    addMoreBtn: document.getElementById("addMoreBtn"),
+    clearAllBtn: document.getElementById("clearAllBtn"),
     fileList: document.getElementById("fileList"),
-    secBleed: document.getElementById("secBleed"),
-    toggleQuadBtn: document.getElementById("toggleQuadBtn"),
+    sidebarUploadBtn: document.getElementById("sidebarUploadBtn"),
+    downloadOfflineBtn: document.getElementById("downloadOfflineBtn"),
+    contextBar: document.getElementById("contextBar"),
+    previewSubTabs: document.getElementById("previewSubTabs"),
+    tabSpreadBtn: document.getElementById("tabSpreadBtn"),
+    tabSeqBtn: document.getElementById("tabSeqBtn"),
+    ctxSplitControls: document.getElementById("ctxSplitControls"),
     presetChips: Array.from(document.querySelectorAll(".preset-chip")),
-    uniformRow: document.getElementById("uniformRow"),
-    quadGrid: document.getElementById("quadGrid"),
     bleedUniformInput: document.getElementById("bleedUniformInput"),
+    quadPopBtn: document.getElementById("quadPopBtn"),
+    quadPopover: document.getElementById("quadPopover"),
     bleedTopInput: document.getElementById("bleedTopInput"),
     bleedBottomInput: document.getElementById("bleedBottomInput"),
     bleedLeftInput: document.getElementById("bleedLeftInput"),
     bleedRightInput: document.getElementById("bleedRightInput"),
-    bleedTrimBtn: document.getElementById("bleedTrimBtn"),
-    bleedKeepBtn: document.getElementById("bleedKeepBtn"),
-    smartHint: document.getElementById("smartHint"),
-    secSplitRules: document.getElementById("secSplitRules"),
     moveFirstCheck: document.getElementById("moveFirstCheck"),
+    morePopBtn: document.getElementById("morePopBtn"),
+    morePopover: document.getElementById("morePopover"),
     onlyLandscapeCheck: document.getElementById("onlyLandscapeCheck"),
-    dirLtrBtn: document.getElementById("dirLtrBtn"),
-    dirRtlBtn: document.getElementById("dirRtlBtn"),
-    secPrepressColor: document.getElementById("secPrepressColor"),
+    bleedOpts: Array.from(document.querySelectorAll(".bleed-opt")),
+    dirOpts: Array.from(document.querySelectorAll(".dir-opt")),
+    ctxK100Wrap: document.getElementById("ctxK100Wrap"),
     pureBlackCheck: document.getElementById("pureBlackCheck"),
-    secPreflightInfo: document.getElementById("secPreflightInfo"),
+    preflightStageTitle: document.getElementById("preflightStageTitle"),
+    smartHint: document.getElementById("smartHint"),
     dimSummaryText: document.getElementById("dimSummaryText"),
     exportBtn: document.getElementById("exportBtn"),
     exportBtnText: document.getElementById("exportBtnText"),
-    downloadOfflineBtn: document.getElementById("downloadOfflineBtn"),
-    stageTopbar: document.getElementById("stageTopbar"),
-    previewSubTabs: document.getElementById("previewSubTabs"),
-    tabSpreadBtn: document.getElementById("tabSpreadBtn"),
-    tabSeqBtn: document.getElementById("tabSeqBtn"),
-    preflightStageTitle: document.getElementById("preflightStageTitle"),
-    quickPreflightChip: document.getElementById("quickPreflightChip"),
-    quickPreflightIcon: document.getElementById("quickPreflightIcon"),
-    quickPreflightText: document.getElementById("quickPreflightText"),
     stageViewport: document.getElementById("stageViewport"),
     emptyStage: document.getElementById("emptyStage"),
+    editTextPlaceholder: document.getElementById("editTextPlaceholder"),
     dropzone: document.getElementById("dropzone"),
     spreadViewContainer: document.getElementById("spreadViewContainer"),
     spreadCanvas: document.getElementById("spreadCanvas"),
@@ -1838,7 +1837,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
   };
 
   function t(key, vars) {
-    const dict = I18N[state.lang] || I18N.en;
+    const dict = I18N[state.lang] || I18N.zh;
     let str = dict[key] || key;
     if (vars) {
       Object.keys(vars).forEach((k) => {
@@ -1866,12 +1865,28 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     localStorage.setItem("shibapdf_lang", state.lang);
     renderFileList();
     updateUIState();
-    if (state.workMode === "preflight") {
-      renderPreflightReport();
-    } else if (state.viewTab === "sequence") {
-      renderSequenceView();
-    }
+    if (state.workMode === "preflight") renderPreflightReport();
+    else if (state.viewTab === "sequence" && state.workMode !== "editText") renderSequenceView();
   }
+
+  function closePopovers() {
+    el.quadPopover.classList.add("hidden");
+    el.morePopover.classList.add("hidden");
+  }
+
+  function bindPopover(btn, panel) {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const willOpen = panel.classList.contains("hidden");
+      closePopovers();
+      if (willOpen) panel.classList.remove("hidden");
+    });
+    panel.addEventListener("click", (e) => e.stopPropagation());
+  }
+
+  bindPopover(el.quadPopBtn, el.quadPopover);
+  bindPopover(el.morePopBtn, el.morePopover);
+  document.addEventListener("click", closePopovers);
 
   function parseNonNeg(val) {
     const n = parseFloat(val);
@@ -1897,7 +1912,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     el.bleedRightInput.value = String(v);
     syncPresetHighlight();
     updateUIState();
-    if (state.viewTab === "sequence" && state.workMode !== "preflight") renderSequenceView();
+    if (state.viewTab === "sequence" && (state.workMode === "split" || state.workMode === "keep")) renderSequenceView();
   }
 
   function getActiveFile() {
@@ -1943,13 +1958,10 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       const wsStart = pos;
       while (pos < len) {
         const c = latin1.charCodeAt(pos);
-        if (isPdfWsCode(c)) {
-          pos++;
-        } else if (c === 37) {
+        if (isPdfWsCode(c)) pos++;
+        else if (c === 37) {
           while (pos < len && latin1.charCodeAt(pos) !== 10 && latin1.charCodeAt(pos) !== 13) pos++;
-        } else {
-          break;
-        }
+        } else break;
       }
       const wsBefore = latin1.slice(wsStart, pos);
       if (pos >= len) {
@@ -2063,8 +2075,8 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     let smaskCount = 0;
     let gradientCount = 0;
 
-    const allFonts = new Map(); // fontName -> isEmbedded
-    const placedDpis = []; // { pageNum, dpi }
+    const allFonts = new Map();
+    const placedDpis = [];
     const seenImgRefs = new Set();
 
     pages.forEach((page, pIdx) => {
@@ -2077,7 +2089,6 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
         if (cs && cs.toString() === "/DeviceRGB") hasRgbGroup = true;
       }
 
-      // 1. Inspect Fonts
       const fontDict = res && res instanceof PDFLib.PDFDict ? res.lookup(PDFLib.PDFName.of("Font")) : null;
       if (fontDict && fontDict instanceof PDFLib.PDFDict) {
         for (const [, fRef] of fontDict.entries()) {
@@ -2092,47 +2103,33 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
             const descArr = fObj.lookup(PDFLib.PDFName.of("DescendantFonts"));
             if (descArr && descArr instanceof PDFLib.PDFArray && descArr.size() > 0) {
               const cidFont = doc.context.lookup(descArr.get(0));
-              if (cidFont && cidFont instanceof PDFLib.PDFDict) {
-                desc = cidFont.lookup(PDFLib.PDFName.of("FontDescriptor"));
-              }
+              if (cidFont && cidFont instanceof PDFLib.PDFDict) desc = cidFont.lookup(PDFLib.PDFName.of("FontDescriptor"));
             }
           }
           if (desc && desc instanceof PDFLib.PDFDict) {
-            if (
-              desc.get(PDFLib.PDFName.of("FontFile")) ||
-              desc.get(PDFLib.PDFName.of("FontFile2")) ||
-              desc.get(PDFLib.PDFName.of("FontFile3"))
-            ) {
+            if (desc.get(PDFLib.PDFName.of("FontFile")) || desc.get(PDFLib.PDFName.of("FontFile2")) || desc.get(PDFLib.PDFName.of("FontFile3"))) {
               embedded = true;
             }
           }
-          if (!allFonts.has(rawName) || !embedded) {
-            allFonts.set(rawName, embedded);
-          }
+          if (!allFonts.has(rawName) || !embedded) allFonts.set(rawName, embedded);
         }
       }
 
-      // 2. Inspect ExtGState & Patterns
       const extDict = res && res instanceof PDFLib.PDFDict ? res.lookup(PDFLib.PDFName.of("ExtGState")) : null;
       if (extDict && extDict instanceof PDFLib.PDFDict) {
         for (const [, gsRef] of extDict.entries()) {
           const gs = doc.context.lookup(gsRef);
-          if (gs && gs instanceof PDFLib.PDFDict && gs.get(PDFLib.PDFName.of("SMask"))) {
-            smaskCount++;
-          }
+          if (gs && gs instanceof PDFLib.PDFDict && gs.get(PDFLib.PDFName.of("SMask"))) smaskCount++;
         }
       }
       const patDict = res && res instanceof PDFLib.PDFDict ? res.lookup(PDFLib.PDFName.of("Pattern")) : null;
       if (patDict && patDict instanceof PDFLib.PDFDict) {
         for (const [, pRef] of patDict.entries()) {
           const pat = doc.context.lookup(pRef);
-          if (pat && pat instanceof PDFLib.PDFDict && pat.get(PDFLib.PDFName.of("Shading"))) {
-            gradientCount++;
-          }
+          if (pat && pat instanceof PDFLib.PDFDict && pat.get(PDFLib.PDFName.of("Shading"))) gradientCount++;
         }
       }
 
-      // 3. Map Image XObjects on this page
       const pageImages = new Map();
       const xObjDict = res && res instanceof PDFLib.PDFDict ? res.lookup(PDFLib.PDFName.of("XObject")) : null;
       if (xObjDict && xObjDict instanceof PDFLib.PDFDict) {
@@ -2152,17 +2149,13 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
               seenImgRefs.add(refKey);
               const csEntry = xObj.dict.lookup(PDFLib.PDFName.of("ColorSpace"));
               const csStr = csEntry ? csEntry.toString() : "";
-              if (csStr.includes("DeviceRGB") || csStr.includes("/N 3")) {
-                rgbImageCount++;
-              } else if (csStr.includes("DeviceCMYK") || csStr.includes("/N 4")) {
-                cmykImageCount++;
-              }
+              if (csStr.includes("DeviceRGB") || csStr.includes("/N 3")) rgbImageCount++;
+              else if (csStr.includes("DeviceCMYK") || csStr.includes("/N 4")) cmykImageCount++;
             }
           }
         }
       }
 
-      // 4. Scan page content stream for color operators & image DPI via CTM
       let combinedStr = "";
       const cEntry = page.node.get(PDFLib.PDFName.of("Contents"));
       const refs = [];
@@ -2176,9 +2169,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       refs.forEach((r) => {
         const st = doc.context.lookup(r);
         if (st && st instanceof PDFLib.PDFRawStream) {
-          try {
-            combinedStr += uint8ToLatin1(PDFLib.decodePDFRawStream(st).decode()) + "\n";
-          } catch (_) {}
+          try { combinedStr += uint8ToLatin1(PDFLib.decodePDFRawStream(st).decode()) + "\n"; } catch (_) {}
         }
       });
 
@@ -2194,16 +2185,11 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
           if (tok.type !== "op") continue;
           const op = tok.raw;
 
-          if (op === "q") {
-            ctmStack.push(ctm.slice());
-          } else if (op === "Q") {
-            if (ctmStack.length) ctm = ctmStack.pop();
-          } else if (op === "cm" && i >= 6) {
+          if (op === "q") ctmStack.push(ctm.slice());
+          else if (op === "Q") { if (ctmStack.length) ctm = ctmStack.pop(); }
+          else if (op === "cm" && i >= 6) {
             const nums = tokens.slice(i - 6, i);
-            if (nums.every((x) => x.type === "num")) {
-              const m = nums.map((x) => parseFloat(x.raw));
-              ctm = multiplyCtm(m, ctm);
-            }
+            if (nums.every((x) => x.type === "num")) ctm = multiplyCtm(nums.map((x) => parseFloat(x.raw)), ctm);
           } else if (op === "Do" && i >= 1 && tokens[i - 1].type === "name") {
             const imInfo = pageImages.get(tokens[i - 1].raw);
             if (imInfo && imInfo.pxW > 8 && imInfo.pxH > 8) {
@@ -2211,50 +2197,37 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
               const hIn = Math.hypot(ctm[2], ctm[3]) / 72.0;
               if (wIn > 0.05 && hIn > 0.05) {
                 const effDpi = Math.round(Math.min(imInfo.pxW / wIn, imInfo.pxH / hIn));
-                if (effDpi > 10 && effDpi < 20000) {
-                  placedDpis.push({ pageNum, dpi: effDpi });
-                }
+                if (effDpi > 10 && effDpi < 20000) placedDpis.push({ pageNum, dpi: effDpi });
               }
             }
           } else if ((op === "g" || op === "G") && i >= 1 && tokens[i - 1].type === "num") {
-            const v = parseFloat(tokens[i - 1].raw);
-            if (hasRgbGroup && v < 0.95) pageHasNonK100 = true;
+            if (hasRgbGroup && parseFloat(tokens[i - 1].raw) < 0.95) pageHasNonK100 = true;
           } else if ((op === "rg" || op === "RG") && i >= 3) {
             const n3 = tokens.slice(i - 3, i);
             if (n3.every((x) => x.type === "num")) {
               const [r, g, b] = n3.map((x) => parseFloat(x.raw));
-              if (Math.max(r, g, b) - Math.min(r, g, b) <= 0.02 && r < 0.95) {
-                pageHasNonK100 = true;
-              } else {
-                pageHasRgbVec = true;
-              }
+              if (Math.max(r, g, b) - Math.min(r, g, b) <= 0.02 && r < 0.95) pageHasNonK100 = true;
+              else pageHasRgbVec = true;
             }
           } else if ((op === "k" || op === "K") && i >= 4) {
             const n4 = tokens.slice(i - 4, i);
             if (n4.every((x) => x.type === "num")) {
               const [c, m, y, k] = n4.map((x) => parseFloat(x.raw));
-              if (c >= 0.45 && m >= 0.40 && y >= 0.40 && k >= 0.80) {
-                pageHasNonK100 = true;
-              }
+              if (c >= 0.45 && m >= 0.40 && y >= 0.40 && k >= 0.80) pageHasNonK100 = true;
             }
           }
         }
-
         if (pageHasNonK100) nonK100Pages++;
         if (pageHasRgbVec) rgbVectorPages++;
       }
     });
 
-    // Uniform size & bleed check
     const p0 = pageInfos[0];
     const uniformSize = pageInfos.every((p) => Math.abs(p.wMm - p0.wMm) <= 1.0 && Math.abs(p.hMm - p0.hMm) <= 1.0);
-    let matchedBleed = null; // 0 | 3 | 5
+    let matchedBleed = null;
     if (uniformSize && p0) {
       for (const spec of KNOWN_NET_SIZES) {
-        if (Math.abs(p0.wMm - spec.w) <= 0.9 && Math.abs(p0.hMm - spec.h) <= 0.9) {
-          matchedBleed = 0;
-          break;
-        }
+        if (Math.abs(p0.wMm - spec.w) <= 0.9 && Math.abs(p0.hMm - spec.h) <= 0.9) { matchedBleed = 0; break; }
         for (const bCand of [3, 5]) {
           if (Math.abs(p0.wMm - (spec.w + 2 * bCand)) <= 0.9 && Math.abs(p0.hMm - (spec.h + 2 * bCand)) <= 0.9) {
             matchedBleed = bCand;
@@ -2265,11 +2238,8 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       }
     }
 
-    // Effective single page count for saddle-stitch check
     let singleEquivPages = 0;
-    pageInfos.forEach((p) => {
-      singleEquivPages += p.wMm > p.hMm ? 2 : 1;
-    });
+    pageInfos.forEach((p) => { singleEquivPages += p.wMm > p.hMm ? 2 : 1; });
 
     return {
       isEncrypted: doc.isEncrypted,
@@ -2278,7 +2248,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       firstWMm: p0 ? p0.wMm : 0,
       firstHMm: p0 ? p0.hMm : 0,
       matchedBleed,
-      fonts: Array.from(allFonts.entries()), // [ [name, embedded], ... ]
+      fonts: Array.from(allFonts.entries()),
       placedDpis,
       rgbImageCount,
       cmykImageCount,
@@ -2292,67 +2262,23 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
   function buildPreflightReportItems(pf) {
     const items = [];
 
-    // 1. 4-Color Black Check
     if (pf.nonK100Pages > 0) {
-      items.push({
-        status: "warn",
-        title: t("pfBlackTitle"),
-        desc: t("pfBlackWarn", { n: pf.nonK100Pages }),
-        fixAction: "exportK100"
-      });
+      items.push({ status: "warn", title: t("pfBlackTitle"), desc: t("pfBlackWarn", { n: pf.nonK100Pages }), fixAction: "exportK100" });
     } else {
-      items.push({
-        status: "ok",
-        title: t("pfBlackTitle"),
-        desc: t("pfBlackOk")
-      });
+      items.push({ status: "ok", title: t("pfBlackTitle"), desc: t("pfBlackOk") });
     }
 
-    // 2. Bleed & Size Uniformity
-    if (!pf.uniformSize) {
-      items.push({ status: "warn", title: t("pfBleedTitle"), desc: t("pfBleedMixed") });
-    } else if (pf.matchedBleed === 0) {
-      items.push({
-        status: "warn",
-        title: t("pfBleedTitle"),
-        desc: t("pfBleedNone", { w: pf.firstWMm.toFixed(1), h: pf.firstHMm.toFixed(1) })
-      });
-    } else if (pf.matchedBleed > 0) {
-      items.push({
-        status: "ok",
-        title: t("pfBleedTitle"),
-        desc: t("pfBleedHas", { w: pf.firstWMm.toFixed(1), h: pf.firstHMm.toFixed(1), b: pf.matchedBleed })
-      });
-    } else {
-      items.push({
-        status: "ok",
-        title: t("pfBleedTitle"),
-        desc: t("pfBleedCustom", { w: pf.firstWMm.toFixed(1), h: pf.firstHMm.toFixed(1) })
-      });
-    }
+    if (!pf.uniformSize) items.push({ status: "warn", title: t("pfBleedTitle"), desc: t("pfBleedMixed") });
+    else if (pf.matchedBleed === 0) items.push({ status: "warn", title: t("pfBleedTitle"), desc: t("pfBleedNone", { w: pf.firstWMm.toFixed(1), h: pf.firstHMm.toFixed(1) }) });
+    else if (pf.matchedBleed > 0) items.push({ status: "ok", title: t("pfBleedTitle"), desc: t("pfBleedHas", { w: pf.firstWMm.toFixed(1), h: pf.firstHMm.toFixed(1), b: pf.matchedBleed }) });
+    else items.push({ status: "ok", title: t("pfBleedTitle"), desc: t("pfBleedCustom", { w: pf.firstWMm.toFixed(1), h: pf.firstHMm.toFixed(1) }) });
 
-    // 3. Font Embedding
     const unembedded = pf.fonts.filter(([, emb]) => !emb).map(([name]) => name);
     const allFontNames = pf.fonts.map(([name]) => name).slice(0, 8);
-    if (unembedded.length > 0) {
-      items.push({
-        status: "err",
-        title: t("pfFontTitle"),
-        desc: t("pfFontErr", { n: unembedded.length }),
-        tags: unembedded
-      });
-    } else if (pf.fonts.length === 0) {
-      items.push({ status: "ok", title: t("pfFontTitle"), desc: t("pfFontNoFonts") });
-    } else {
-      items.push({
-        status: "ok",
-        title: t("pfFontTitle"),
-        desc: t("pfFontOk", { n: pf.fonts.length }),
-        tags: allFontNames
-      });
-    }
+    if (unembedded.length > 0) items.push({ status: "err", title: t("pfFontTitle"), desc: t("pfFontErr", { n: unembedded.length }), tags: unembedded });
+    else if (pf.fonts.length === 0) items.push({ status: "ok", title: t("pfFontTitle"), desc: t("pfFontNoFonts") });
+    else items.push({ status: "ok", title: t("pfFontTitle"), desc: t("pfFontOk", { n: pf.fonts.length }), tags: allFontNames });
 
-    // 4. Image DPI
     if (pf.placedDpis.length === 0) {
       items.push({ status: "ok", title: t("pfDpiTitle"), desc: t("pfDpiNoImg") });
     } else {
@@ -2370,54 +2296,31 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       }
     }
 
-    // 5. Color Space Audit
     if (pf.rgbImageCount > 0 || pf.rgbVectorPages > 0) {
-      items.push({
-        status: "warn",
-        title: t("pfColorTitle"),
-        desc: t("pfColorWarn", { rgbImg: pf.rgbImageCount, rgbVec: pf.rgbVectorPages })
-      });
+      items.push({ status: "warn", title: t("pfColorTitle"), desc: t("pfColorWarn", { rgbImg: pf.rgbImageCount, rgbVec: pf.rgbVectorPages }) });
     } else {
       items.push({ status: "ok", title: t("pfColorTitle"), desc: t("pfColorOk") });
     }
 
-    // 6. Transparency & Gradients
     if (pf.smaskCount > 0 || pf.gradientCount > 0) {
-      items.push({
-        status: "ok",
-        title: t("pfTransTitle"),
-        desc: t("pfTransOk", { smask: pf.smaskCount, grad: pf.gradientCount })
-      });
+      items.push({ status: "ok", title: t("pfTransTitle"), desc: t("pfTransOk", { smask: pf.smaskCount, grad: pf.gradientCount }) });
     } else {
       items.push({ status: "ok", title: t("pfTransTitle"), desc: t("pfTransNone") });
     }
 
-    // 7. Saddle-Stitch 4P Multiple
     const sp = pf.singleEquivPages;
-    if (sp <= 2) {
-      items.push({ status: "ok", title: t("pfBookletTitle"), desc: t("pfBookletLeaflet", { p: sp }) });
-    } else if (sp % 4 === 0) {
-      items.push({ status: "ok", title: t("pfBookletTitle"), desc: t("pfBookletOk", { p: sp }) });
-    } else {
-      const prev4 = Math.floor(sp / 4) * 4;
-      const next4 = Math.ceil(sp / 4) * 4;
-      items.push({ status: "warn", title: t("pfBookletTitle"), desc: t("pfBookletWarn", { p: sp, prev: prev4, next: next4 }) });
-    }
+    if (sp <= 2) items.push({ status: "ok", title: t("pfBookletTitle"), desc: t("pfBookletLeaflet", { p: sp }) });
+    else if (sp % 4 === 0) items.push({ status: "ok", title: t("pfBookletTitle"), desc: t("pfBookletOk", { p: sp }) });
+    else items.push({ status: "warn", title: t("pfBookletTitle"), desc: t("pfBookletWarn", { p: sp, prev: Math.floor(sp / 4) * 4, next: Math.ceil(sp / 4) * 4 }) });
 
-    // 8. Encryption
-    items.push({
-      status: pf.isEncrypted ? "warn" : "ok",
-      title: t("pfSecTitle"),
-      desc: pf.isEncrypted ? t("pfSecWarn") : t("pfSecOk")
-    });
+    items.push({ status: pf.isEncrypted ? "warn" : "ok", title: t("pfSecTitle"), desc: pf.isEncrypted ? t("pfSecWarn") : t("pfSecOk") });
 
     return items;
   }
 
-  function renderPreflightBadges(active) {
+  function renderPreflightBadge(active) {
     if (!active || !active.preflight) {
       el.navPreflightBadge.classList.add("hidden");
-      el.quickPreflightChip.classList.add("hidden");
       return;
     }
     const items = buildPreflightReportItems(active.preflight);
@@ -2432,21 +2335,6 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     } else {
       el.navPreflightBadge.textContent = String(issueTotal);
       el.navPreflightBadge.classList.add(errCount > 0 ? "err" : "warn");
-    }
-
-    if (state.workMode === "preflight") {
-      el.quickPreflightChip.classList.add("hidden");
-    } else {
-      el.quickPreflightChip.classList.remove("hidden", "ok", "warn", "err");
-      if (issueTotal === 0) {
-        el.quickPreflightChip.classList.add("ok");
-        el.quickPreflightIcon.innerHTML = ICONS["shield-check"] || "";
-        el.quickPreflightText.textContent = t("pfChipOk");
-      } else {
-        el.quickPreflightChip.classList.add(errCount > 0 ? "err" : "warn");
-        el.quickPreflightIcon.innerHTML = ICONS["shield-alert"] || "";
-        el.quickPreflightText.textContent = t("pfChipIssues", { n: issueTotal });
-      }
     }
   }
 
@@ -2489,12 +2377,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
 
       const iconWrap = document.createElement("span");
       iconWrap.className = `pf-status-icon ${item.status}`;
-      iconWrap.innerHTML =
-        item.status === "ok"
-          ? (ICONS["check-circle-2"] || "✓")
-          : item.status === "err"
-            ? (ICONS["x-circle"] || "✕")
-            : (ICONS["alert-triangle"] || "!");
+      iconWrap.innerHTML = item.status === "ok" ? (ICONS["check-circle-2"] || "✓") : item.status === "err" ? (ICONS["x-circle"] || "✕") : (ICONS["alert-triangle"] || "!");
 
       const body = document.createElement("div");
       body.className = "pf-item-body";
@@ -2541,7 +2424,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
   }
 
   // =========================================================================
-  // Split Plan & Pure K100 Rewriter
+  // Split Geometry & Export
   // =========================================================================
   function computeSplitPlan(fileEntry) {
     if (!fileEntry || !fileEntry.pageInfos.length) return [];
@@ -2576,21 +2459,12 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       if (!isSpread) {
         const trimNorm = { u: uL, v: vT, uw: Math.max(0.02, 1 - uL - uR), vh: Math.max(0.02, 1 - vT - vB) };
         const mainNorm = trimMode ? trimNorm : { u: 0, v: 0, uw: 1, vh: 1 };
-        items.push({
-          srcIdx,
-          side: "single",
-          mainNorm,
-          trimNorm,
-          outWMm: mainNorm.uw * wMm,
-          outHMm: mainNorm.vh * hMm,
-          role: "single"
-        });
+        items.push({ srcIdx, side: "single", mainNorm, trimNorm, outWMm: mainNorm.uw * wMm, outHMm: mainNorm.vh * hMm, role: "single" });
         return;
       }
 
       const leftTrimNorm = { u: uL, v: vT, uw: Math.max(0.02, 0.5 - uL), vh: Math.max(0.02, 1 - vT - vB) };
       const rightTrimNorm = { u: 0.5, v: vT, uw: Math.max(0.02, 0.5 - uR), vh: Math.max(0.02, 1 - vT - vB) };
-
       const leftMainNorm = trimMode ? leftTrimNorm : { u: 0, v: 0, uw: 0.5, vh: 1 };
       const rightMainNorm = trimMode ? rightTrimNorm : { u: 0.5, v: 0, uw: 0.5, vh: 1 };
 
@@ -2608,10 +2482,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       items.push(firstMoved);
     }
 
-    items.forEach((it, idx) => {
-      it.finalPageNum = idx + 1;
-    });
-
+    items.forEach((it, idx) => { it.finalPageNum = idx + 1; });
     return items;
   }
 
@@ -2621,21 +2492,18 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       return;
     }
     const p0 = fileEntry.pageInfos[0];
-    const w = p0.wMm;
-    const h = p0.hMm;
-    const tol = 0.9;
-
+    const w = p0.wMm, h = p0.hMm, tol = 0.9;
     for (const spec of KNOWN_NET_SIZES) {
       if (Math.abs(w - spec.w) <= tol && Math.abs(h - spec.h) <= tol) {
-        el.smartHint.textContent = t("hintNoBleed", { w: w.toFixed(0), h: h.toFixed(0) });
-        el.smartHint.classList.add("warn");
+        el.smartHint.textContent = t("hintNoBleed");
+        el.smartHint.style.color = "var(--err)";
         el.smartHint.classList.remove("hidden");
         return;
       }
       for (const bCand of [3, 5]) {
         if (Math.abs(w - (spec.w + 2 * bCand)) <= tol && Math.abs(h - (spec.h + 2 * bCand)) <= tol) {
-          el.smartHint.textContent = t("hintHasBleed", { w: w.toFixed(0), h: h.toFixed(0), b: bCand });
-          el.smartHint.classList.remove("warn");
+          el.smartHint.textContent = t("hintHasBleed", { b: bCand });
+          el.smartHint.style.color = "";
           el.smartHint.classList.remove("hidden");
           return;
         }
@@ -2645,37 +2513,40 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
   }
 
   function updateZoomReadout() {
-    el.zoomLabel.textContent = Math.abs(state.zoomFactor - 1.0) < 0.01
-      ? t("fitZoom")
-      : `${Math.round(state.zoomFactor * 100)}%`;
+    el.zoomLabel.textContent = Math.abs(state.zoomFactor - 1.0) < 0.01 ? t("fitZoom") : `${Math.round(state.zoomFactor * 100)}%`;
   }
 
   function updateUIState() {
     const active = getActiveFile();
     const hasFiles = Boolean(active);
 
-    // Nav highlight
+    // Highlight active big button on left rail
     el.navSplitBtn.classList.toggle("active", state.workMode === "split");
     el.navKeepBtn.classList.toggle("active", state.workMode === "keep");
     el.navPreflightBtn.classList.toggle("active", state.workMode === "preflight");
+    el.navEditTextBtn.classList.toggle("active", state.workMode === "editText");
 
-    // Sidebar sections visibility
-    el.secBleed.classList.toggle("hidden", state.workMode !== "split");
-    el.secSplitRules.classList.toggle("hidden", state.workMode !== "split");
-    el.secPrepressColor.classList.toggle("hidden", state.workMode === "preflight");
-    el.secPreflightInfo.classList.toggle("hidden", state.workMode !== "preflight");
+    el.railFilesBox.classList.toggle("hidden", state.files.length === 0);
+    el.sidebarUploadBtn.classList.toggle("hidden", state.files.length > 0);
+    renderPreflightBadge(active);
 
-    el.clearAllBtn.classList.toggle("hidden", state.files.length === 0);
-    el.exportBtn.disabled = !hasFiles;
-    el.exportBtnText.textContent = state.files.length > 1
-      ? t("exportBatchBtn", { n: state.files.length })
-      : (state.workMode === "keep" ? t("exportKeepBtn") : t("exportBtn"));
+    // Edit Text reserved module view
+    if (state.workMode === "editText") {
+      el.contextBar.classList.add("hidden");
+      el.emptyStage.classList.add("hidden");
+      el.spreadViewContainer.classList.add("hidden");
+      el.sequenceGrid.classList.add("hidden");
+      el.preflightReportView.classList.add("hidden");
+      el.bottomPager.classList.add("hidden");
+      el.stageViewport.classList.remove("align-top");
+      el.editTextPlaceholder.classList.remove("hidden");
+      return;
+    }
 
-    renderPreflightBadges(active);
+    el.editTextPlaceholder.classList.add("hidden");
 
     if (!hasFiles) {
-      el.dimSummaryText.textContent = "-- × -- mm";
-      el.stageTopbar.classList.add("hidden");
+      el.contextBar.classList.add("hidden");
       el.emptyStage.classList.remove("hidden");
       el.spreadViewContainer.classList.add("hidden");
       el.sequenceGrid.classList.add("hidden");
@@ -2686,7 +2557,22 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     }
 
     el.emptyStage.classList.add("hidden");
-    el.stageTopbar.classList.remove("hidden");
+    el.contextBar.classList.remove("hidden");
+    el.exportBtn.disabled = false;
+
+    const isSplit = state.workMode === "split";
+    const isKeep = state.workMode === "keep";
+    const isPreflight = state.workMode === "preflight";
+
+    el.previewSubTabs.classList.toggle("hidden", isPreflight);
+    el.ctxSplitControls.classList.toggle("hidden", !isSplit);
+    el.ctxK100Wrap.classList.toggle("hidden", isPreflight);
+    el.preflightStageTitle.classList.toggle("hidden", !isPreflight);
+
+    el.exportBtnText.textContent = state.files.length > 1
+      ? t("exportBatchBtn", { n: state.files.length })
+      : (isKeep || isPreflight ? t("exportKeepBtn") : t("exportBtn"));
+
     detectSmartHint(active);
 
     const plan = computeSplitPlan(active);
@@ -2694,12 +2580,12 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     const sampleOut = plan.find((x) => x.srcIdx === state.activeSpreadIndex) || plan[0];
 
     if (sampleOut) {
-      el.dimSummaryText.textContent = `${curSpread.wMm.toFixed(0)}×${curSpread.hMm.toFixed(0)} (${active.pageInfos.length}${t("pagesUnit")}) → ${sampleOut.outWMm.toFixed(0)}×${sampleOut.outHMm.toFixed(0)}mm (${plan.length}${t("pagesUnit")})`;
+      el.dimSummaryText.textContent = isKeep || isPreflight
+        ? `${curSpread.wMm.toFixed(0)}×${curSpread.hMm.toFixed(0)}mm · ${active.pageInfos.length}${t("pagesUnit")}`
+        : `${curSpread.wMm.toFixed(0)}×${curSpread.hMm.toFixed(0)} → ${sampleOut.outWMm.toFixed(0)}×${sampleOut.outHMm.toFixed(0)}mm (${plan.length}${t("pagesUnit")})`;
     }
 
-    if (state.workMode === "preflight") {
-      el.previewSubTabs.classList.add("hidden");
-      el.preflightStageTitle.classList.remove("hidden");
+    if (isPreflight) {
       el.spreadViewContainer.classList.add("hidden");
       el.sequenceGrid.classList.add("hidden");
       el.bottomPager.classList.add("hidden");
@@ -2709,10 +2595,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       return;
     }
 
-    el.previewSubTabs.classList.remove("hidden");
-    el.preflightStageTitle.classList.add("hidden");
     el.preflightReportView.classList.add("hidden");
-
     el.pageIndicator.textContent = `${state.activeSpreadIndex + 1} / ${active.pageInfos.length}`;
     el.prevSpreadBtn.disabled = state.activeSpreadIndex <= 0;
     el.nextSpreadBtn.disabled = state.activeSpreadIndex >= active.pageInfos.length - 1;
@@ -2743,11 +2626,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       [el.shadeTop, el.shadeBottom, el.shadeLeft, el.shadeRight, el.trimRect, el.centerLine, el.rightBadge].forEach((n) => n.classList.add("hidden"));
       el.leftBadge.classList.remove("hidden");
       el.leftBadge.style.left = `${cssW / 2}px`;
-      el.leftBadge.textContent = t("keepBadge", {
-        p: state.activeSpreadIndex + 1,
-        w: info.wMm.toFixed(0),
-        h: info.hMm.toFixed(0)
-      });
+      el.leftBadge.textContent = t("keepBadge", { p: state.activeSpreadIndex + 1, w: info.wMm.toFixed(0), h: info.hMm.toFixed(0) });
       return;
     }
 
@@ -2759,22 +2638,13 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     const vT = Math.min(0.48, Math.max(0, b.top / info.hMm));
     const vB = Math.min(0.48, Math.max(0, b.bottom / info.hMm));
 
-    const pxL = uL * cssW;
-    const pxR = uR * cssW;
-    const pxT = vT * cssH;
-    const pxB = vB * cssH;
+    const pxL = uL * cssW, pxR = uR * cssW, pxT = vT * cssH, pxB = vB * cssH;
 
     Object.assign(el.shadeTop.style, { left: "0px", top: "0px", width: `${cssW}px`, height: `${pxT}px` });
     Object.assign(el.shadeBottom.style, { left: "0px", bottom: "0px", width: `${cssW}px`, height: `${pxB}px` });
     Object.assign(el.shadeLeft.style, { left: "0px", top: `${pxT}px`, width: `${pxL}px`, height: `${Math.max(0, cssH - pxT - pxB)}px` });
     Object.assign(el.shadeRight.style, { right: "0px", top: `${pxT}px`, width: `${pxR}px`, height: `${Math.max(0, cssH - pxT - pxB)}px` });
-
-    Object.assign(el.trimRect.style, {
-      left: `${pxL}px`,
-      top: `${pxT}px`,
-      width: `${Math.max(0, cssW - pxL - pxR)}px`,
-      height: `${Math.max(0, cssH - pxT - pxB)}px`
-    });
+    Object.assign(el.trimRect.style, { left: `${pxL}px`, top: `${pxT}px`, width: `${Math.max(0, cssW - pxL - pxR)}px`, height: `${Math.max(0, cssH - pxT - pxB)}px` });
 
     const isSpread = !state.onlyLandscape || info.wMm > info.hMm;
     if (isSpread) {
@@ -2810,7 +2680,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
 
   async function renderActiveSpreadCanvas() {
     const active = getActiveFile();
-    if (!active || !active.pdfJsDoc || state.workMode === "preflight") return;
+    if (!active || !active.pdfJsDoc || state.workMode === "preflight" || state.workMode === "editText") return;
 
     const myToken = ++state.renderToken;
     const page = await active.pdfJsDoc.getPage(state.activeSpreadIndex + 1);
@@ -2863,7 +2733,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
 
   async function renderSequenceView() {
     const active = getActiveFile();
-    if (!active || !active.pdfJsDoc || state.workMode === "preflight") return;
+    if (!active || !active.pdfJsDoc || state.workMode === "preflight" || state.workMode === "editText") return;
 
     const myToken = ++state.renderToken;
     const plan = computeSplitPlan(active);
@@ -2938,13 +2808,11 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       delBtn.addEventListener("click", (ev) => {
         ev.stopPropagation();
         state.files.splice(idx, 1);
-        if (state.activeFileIndex >= state.files.length) {
-          state.activeFileIndex = state.files.length - 1;
-        }
+        if (state.activeFileIndex >= state.files.length) state.activeFileIndex = state.files.length - 1;
         state.activeSpreadIndex = 0;
         renderFileList();
         updateUIState();
-        if (getActiveFile() && state.workMode !== "preflight") {
+        if (getActiveFile() && (state.workMode === "split" || state.workMode === "keep")) {
           state.viewTab === "spread" ? renderActiveSpreadCanvas() : renderSequenceView();
         }
       });
@@ -2957,7 +2825,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
         state.activeSpreadIndex = 0;
         renderFileList();
         updateUIState();
-        if (state.workMode !== "preflight") {
+        if (state.workMode === "split" || state.workMode === "keep") {
           state.viewTab === "spread" ? renderActiveSpreadCanvas() : renderSequenceView();
         }
       });
@@ -2970,6 +2838,8 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     const incoming = Array.from(fileListObj).filter((f) => f.name.toLowerCase().endsWith(".pdf") || f.type === "application/pdf");
     if (!incoming.length) return;
 
+    if (state.workMode === "editText") state.workMode = "split";
+
     for (const file of incoming) {
       try {
         const buf = await file.arrayBuffer();
@@ -2979,25 +2849,10 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
         for (let p = 1; p <= pdfJsDoc.numPages; p++) {
           const pg = await pdfJsDoc.getPage(p);
           const vp = pg.getViewport({ scale: 1 });
-          pageInfos.push({
-            wPt: vp.width,
-            hPt: vp.height,
-            wMm: vp.width / MM_TO_PT,
-            hMm: vp.height / MM_TO_PT,
-            rot: pg.rotate || 0
-          });
+          pageInfos.push({ wPt: vp.width, hPt: vp.height, wMm: vp.width / MM_TO_PT, hMm: vp.height / MM_TO_PT, rot: pg.rotate || 0 });
         }
         const preflight = await runPrepressPreflight(rawBytes, pageInfos);
-        state.files.push({
-          id: `${Date.now()}_${Math.random()}`,
-          name: file.name,
-          size: file.size,
-          rawBytes,
-          pdfJsDoc,
-          pageInfos,
-          preflight,
-          spreadCache: new Map()
-        });
+        state.files.push({ id: `${Date.now()}_${Math.random()}`, name: file.name, size: file.size, rawBytes, pdfJsDoc, pageInfos, preflight, spreadCache: new Map() });
       } catch (err) {
         alert(t("errLoadPdf") + (err && err.message ? err.message : String(err)));
       }
@@ -3009,14 +2864,11 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     updateZoomReadout();
     renderFileList();
     updateUIState();
-    if (getActiveFile() && state.workMode !== "preflight") {
+    if (getActiveFile() && (state.workMode === "split" || state.workMode === "keep")) {
       state.viewTab === "spread" ? renderActiveSpreadCanvas() : renderSequenceView();
     }
   }
 
-  // =========================================================================
-  // Pure K100 Export Engine
-  // =========================================================================
   function fmtCmykVal(v) {
     return Number(Math.min(1, Math.max(0, v)).toFixed(4)).toString();
   }
@@ -3037,8 +2889,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
           const v = parseFloat(t1.raw);
           if (v >= 0 && v <= 1) {
             outStack.pop();
-            const kOp = tok.raw === "g" ? "k" : "K";
-            outStack.push({ type: "rewritten", wsBefore: t1.wsBefore, raw: `0 0 0 ${fmtCmykVal(1 - v)} ${kOp}` });
+            outStack.push({ type: "rewritten", wsBefore: t1.wsBefore, raw: `0 0 0 ${fmtCmykVal(1 - v)} ${tok.raw === "g" ? "k" : "K"}` });
             continue;
           }
         }
@@ -3049,14 +2900,11 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
           outStack[outStack.length - 2].type === "num" &&
           outStack[outStack.length - 3].type === "num"
         ) {
-          const tR = outStack[outStack.length - 3];
-          const tG = outStack[outStack.length - 2];
-          const tB = outStack[outStack.length - 1];
+          const tR = outStack[outStack.length - 3], tG = outStack[outStack.length - 2], tB = outStack[outStack.length - 1];
           const r = parseFloat(tR.raw), g = parseFloat(tG.raw), b = parseFloat(tB.raw);
           if (r >= 0 && r <= 1 && g >= 0 && g <= 1 && b >= 0 && b <= 1 && (Math.max(r, g, b) - Math.min(r, g, b) <= 0.02)) {
             outStack.pop(); outStack.pop(); outStack.pop();
-            const kOp = tok.raw === "rg" ? "k" : "K";
-            outStack.push({ type: "rewritten", wsBefore: tR.wsBefore, raw: `0 0 0 ${fmtCmykVal(1 - (r + g + b) / 3)} ${kOp}` });
+            outStack.push({ type: "rewritten", wsBefore: tR.wsBefore, raw: `0 0 0 ${fmtCmykVal(1 - (r + g + b) / 3)} ${tok.raw === "rg" ? "k" : "K"}` });
             continue;
           }
         }
@@ -3068,10 +2916,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
           outStack[outStack.length - 3].type === "num" &&
           outStack[outStack.length - 4].type === "num"
         ) {
-          const tC = outStack[outStack.length - 4];
-          const tM = outStack[outStack.length - 3];
-          const tY = outStack[outStack.length - 2];
-          const tK = outStack[outStack.length - 1];
+          const tC = outStack[outStack.length - 4], tM = outStack[outStack.length - 3], tY = outStack[outStack.length - 2], tK = outStack[outStack.length - 1];
           const c = parseFloat(tC.raw), m = parseFloat(tM.raw), y = parseFloat(tY.raw), k = parseFloat(tK.raw);
           if (c >= 0.45 && m >= 0.40 && y >= 0.40 && k >= 0.80) {
             outStack.pop(); outStack.pop(); outStack.pop(); outStack.pop();
@@ -3107,9 +2952,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
         if (ks !== "/Filter" && ks !== "/DecodeParms" && ks !== "/Length") flated.dict.set(k, v);
       }
       pdfDoc.context.assign(streamRef, flated);
-    } catch (err) {
-      console.warn("Skip stream K100 rewrite:", err);
-    }
+    } catch (_) {}
   }
 
   function fixTransparencyGroupToCmyk(dictObj) {
@@ -3153,14 +2996,11 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     pdfDoc.getPages().forEach((page) => {
       fixTransparencyGroupToCmyk(page.node);
       const contentsEntry = page.node.get(PDFLib.PDFName.of("Contents"));
-      if (contentsEntry instanceof PDFLib.PDFRef) {
-        convertStreamRefToK100(pdfDoc, contentsEntry, visitedStreams, true);
-      } else {
+      if (contentsEntry instanceof PDFLib.PDFRef) convertStreamRefToK100(pdfDoc, contentsEntry, visitedStreams, true);
+      else {
         const arr = page.node.lookup(PDFLib.PDFName.of("Contents"));
         if (arr && arr instanceof PDFLib.PDFArray) {
-          for (let i = 0; i < arr.size(); i++) {
-            convertStreamRefToK100(pdfDoc, arr.get(i), visitedStreams, i === 0);
-          }
+          for (let i = 0; i < arr.size(); i++) convertStreamRefToK100(pdfDoc, arr.get(i), visitedStreams, i === 0);
         }
       }
       processResources(page.node.lookup(PDFLib.PDFName.of("Resources")));
@@ -3176,12 +3016,12 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     return { x: x0 + norm.u * rw, y: y0 + (1 - norm.v - norm.vh) * rh, w: norm.uw * rw, h: norm.vh * rh };
   }
 
-  function buildOutputFilename(origName) {
+  function buildOutputFilename(origName, keepPages) {
     const dot = origName.lastIndexOf(".");
     const stem = dot > 0 ? origName.slice(0, dot) : origName;
     const ext = dot > 0 ? origName.slice(dot) : ".pdf";
 
-    if (state.workMode === "keep") return stem + t("outKeepSuffix") + ext;
+    if (keepPages) return stem + t("outKeepSuffix") + ext;
 
     const rules = [
       [/\(对页\)/, "(单页)"],
@@ -3199,11 +3039,12 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
   }
 
   async function exportSinglePdfEntry(fileEntry) {
+    const keepPages = state.workMode === "keep" || state.workMode === "preflight";
     const srcDoc = await PDFLib.PDFDocument.load(fileEntry.rawBytes, { ignoreEncryption: true });
-    if (state.pureBlackK100) applyPureBlackK100ToDoc(srcDoc);
+    if (state.pureBlackK100 || keepPages) applyPureBlackK100ToDoc(srcDoc);
 
     let outBytes;
-    if (state.workMode === "keep") {
+    if (keepPages) {
       outBytes = await srcDoc.save();
     } else {
       const plan = computeSplitPlan(fileEntry);
@@ -3233,7 +3074,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = buildOutputFilename(fileEntry.name);
+    a.download = buildOutputFilename(fileEntry.name, keepPages);
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -3257,18 +3098,17 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     }
   }
 
-  // =========================================================================
-  // Event Listeners
-  // =========================================================================
+  // Events
   function switchWorkMode(mode) {
     if (state.workMode === mode) return;
     state.workMode = mode;
+    closePopovers();
     if (mode === "keep") {
       state.pureBlackK100 = true;
       el.pureBlackCheck.checked = true;
     }
     updateUIState();
-    if (getActiveFile() && mode !== "preflight") {
+    if (getActiveFile() && (mode === "split" || mode === "keep")) {
       state.viewTab === "spread" ? renderActiveSpreadCanvas() : renderSequenceView();
     }
   }
@@ -3276,7 +3116,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
   el.navSplitBtn.addEventListener("click", () => switchWorkMode("split"));
   el.navKeepBtn.addEventListener("click", () => switchWorkMode("keep"));
   el.navPreflightBtn.addEventListener("click", () => switchWorkMode("preflight"));
-  el.quickPreflightChip.addEventListener("click", () => switchWorkMode("preflight"));
+  el.navEditTextBtn.addEventListener("click", () => switchWorkMode("editText"));
 
   el.themeBtn.addEventListener("click", () => {
     state.theme = state.theme === "dark" ? "light" : "dark";
@@ -3290,6 +3130,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
 
   el.dropzone.addEventListener("click", () => el.fileInput.click());
   el.sidebarUploadBtn.addEventListener("click", () => el.fileInput.click());
+  el.addMoreBtn.addEventListener("click", () => el.fileInput.click());
   el.fileInput.addEventListener("change", (e) => {
     if (e.target.files && e.target.files.length) {
       loadPdfFiles(e.target.files);
@@ -3323,12 +3164,6 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
     updateUIState();
   });
 
-  el.toggleQuadBtn.addEventListener("click", () => {
-    state.showQuadBleed = !state.showQuadBleed;
-    el.quadGrid.classList.toggle("hidden", !state.showQuadBleed);
-    el.uniformRow.classList.toggle("hidden", state.showQuadBleed);
-  });
-
   el.presetChips.forEach((chip) => {
     chip.addEventListener("click", () => setUniformBleed(chip.getAttribute("data-bleed")));
   });
@@ -3345,52 +3180,48 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       state.bleed[side] = parseNonNeg(inputEl.value);
       syncPresetHighlight();
       updateUIState();
-      if (state.viewTab === "sequence" && state.workMode !== "preflight") renderSequenceView();
+      if (state.viewTab === "sequence" && state.workMode === "split") renderSequenceView();
     });
   });
 
-  el.bleedTrimBtn.addEventListener("click", () => {
-    state.bleedAction = "trim";
-    el.bleedTrimBtn.classList.add("active");
-    el.bleedKeepBtn.classList.remove("active");
-    updateUIState();
-    if (state.viewTab === "sequence" && state.workMode !== "preflight") renderSequenceView();
+  el.bleedOpts.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.bleedAction = btn.getAttribute("data-value");
+      el.bleedOpts.forEach((b) => {
+        const sel = b === btn;
+        b.classList.toggle("selected", sel);
+        b.lastElementChild.textContent = sel ? "✓" : "";
+      });
+      closePopovers();
+      updateUIState();
+      if (state.viewTab === "sequence" && state.workMode === "split") renderSequenceView();
+    });
   });
 
-  el.bleedKeepBtn.addEventListener("click", () => {
-    state.bleedAction = "keep";
-    el.bleedKeepBtn.classList.add("active");
-    el.bleedTrimBtn.classList.remove("active");
-    updateUIState();
-    if (state.viewTab === "sequence" && state.workMode !== "preflight") renderSequenceView();
+  el.dirOpts.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.readingDir = btn.getAttribute("data-value");
+      el.dirOpts.forEach((b) => {
+        const sel = b === btn;
+        b.classList.toggle("selected", sel);
+        b.lastElementChild.textContent = sel ? "✓" : "";
+      });
+      closePopovers();
+      updateUIState();
+      if (state.viewTab === "sequence" && state.workMode === "split") renderSequenceView();
+    });
   });
 
   el.moveFirstCheck.addEventListener("change", () => {
     state.moveFirstToLast = el.moveFirstCheck.checked;
     updateUIState();
-    if (state.viewTab === "sequence" && state.workMode !== "preflight") renderSequenceView();
+    if (state.viewTab === "sequence" && state.workMode === "split") renderSequenceView();
   });
 
   el.onlyLandscapeCheck.addEventListener("change", () => {
     state.onlyLandscape = el.onlyLandscapeCheck.checked;
     updateUIState();
-    if (state.viewTab === "sequence" && state.workMode !== "preflight") renderSequenceView();
-  });
-
-  el.dirLtrBtn.addEventListener("click", () => {
-    state.readingDir = "ltr";
-    el.dirLtrBtn.classList.add("active");
-    el.dirRtlBtn.classList.remove("active");
-    updateUIState();
-    if (state.viewTab === "sequence" && state.workMode !== "preflight") renderSequenceView();
-  });
-
-  el.dirRtlBtn.addEventListener("click", () => {
-    state.readingDir = "rtl";
-    el.dirRtlBtn.classList.add("active");
-    el.dirLtrBtn.classList.remove("active");
-    updateUIState();
-    if (state.viewTab === "sequence" && state.workMode !== "preflight") renderSequenceView();
+    if (state.viewTab === "sequence" && state.workMode === "split") renderSequenceView();
   });
 
   el.pureBlackCheck.addEventListener("change", () => {
@@ -3457,9 +3288,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
         const resp = await fetch(cleanUrl, { cache: "no-cache" });
         if (resp.ok) {
           const txt = await resp.text();
-          if (txt.includes("ShibaPDF") && txt.length > 100000) {
-            htmlContent = txt;
-          }
+          if (txt.includes("ShibaPDF") && txt.length > 100000) htmlContent = txt;
         }
       } catch (_) {}
     }
@@ -3476,7 +3305,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
 
   let resizeTimer = null;
   window.addEventListener("resize", () => {
-    if (state.viewTab !== "spread" || state.workMode === "preflight" || !getActiveFile()) return;
+    if (state.viewTab !== "spread" || (state.workMode !== "split" && state.workMode !== "keep") || !getActiveFile()) return;
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(() => renderActiveSpreadCanvas(), 120);
   });
