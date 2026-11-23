@@ -70,8 +70,16 @@
     <!-- Single Lightweight Horizontal Control Ribbon (Hidden when empty) -->
     <div id="toolbarRibbon" class="toolbar-ribbon hidden">
       <div class="ribbon-left">
-        <!-- Bleed Quick Presets + Input -->
-        <div class="ctrl-group">
+        <!-- Primary Workflow Mode: Split vs Keep Original Pages (K100 Only) -->
+        <div class="mini-pills">
+          <button id="workModeSplitBtn" class="mini-pill active" type="button" data-i18n="modeSplit">拆分为单页</button>
+          <button id="workModeKeepBtn" class="mini-pill" type="button" data-i18n="modeKeepK100">不拆页 · 仅转单黑</button>
+        </div>
+
+        <span class="header-sep"></span>
+
+        <!-- Bleed Quick Presets + Input (Shown in Split mode) -->
+        <div id="bleedCtrlGroup" class="ctrl-group">
           <span class="ctrl-label" data-i18n="bleedShort">出血</span>
           <div class="mini-pills">
             <button class="mini-pill preset-chip" data-bleed="0" type="button" data-i18n="preset0">无 0</button>
@@ -113,10 +121,10 @@
           </div>
         </div>
 
-        <span class="header-sep"></span>
+        <span id="sepAfterBleed" class="header-sep"></span>
 
-        <!-- Cover/Back Cover Switch -->
-        <label class="inline-toggle" title="首张跨页为“左封底+右封面”时，自动把封底移至最后一页">
+        <!-- Cover/Back Cover Switch (Shown in Split mode) -->
+        <label id="moveFirstWrap" class="inline-toggle" title="首张跨页为“左封底+右封面”时，自动把封底移至最后一页">
           <span class="mini-switch">
             <input id="moveFirstCheck" type="checkbox" checked />
             <span class="mini-track"></span>
@@ -124,7 +132,7 @@
           <span data-i18n="moveFirstShort">首张左页（封底）移至末页</span>
         </label>
 
-        <span class="header-sep"></span>
+        <span id="sepAfterMove" class="header-sep"></span>
 
         <!-- Pure K100 Single Black Switch (Anti 4-Color Black + Preserve Transparency) -->
         <label class="inline-toggle" title="将黑/灰文字与线条转为印刷纯单黑 C0M0Y0K100，并将透明混合空间改为 CMYK，解决 PPT 四色黑且不破坏半透明阴影">
@@ -135,7 +143,7 @@
           <span data-i18n="pureBlackShort">印刷单色黑 K100</span>
         </label>
 
-        <span class="header-sep"></span>
+        <span id="sepAfterK100" class="header-sep"></span>
 
         <!-- More Rules Popover -->
         <div class="popover-wrap" id="rulesMenuWrap">
