@@ -6,7 +6,7 @@
 
 *100% 浏览器本地运行 · 零服务器上传 · 无损保留矢量文字、渐变与半透明柔和阴影*
 
-[English](./README.md) | **简体中文**
+🌐 **[在线直接使用：wonvy.github.io/ShibaPDF](https://wonvy.github.io/ShibaPDF/)** · [English](./README.md) | **简体中文**
 
 </div>
 

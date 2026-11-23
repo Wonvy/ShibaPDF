@@ -6,7 +6,7 @@
 
 *100% Client-Side in Your Browser · Zero Server Uploads · Preserves Vectors, Gradients & Live Transparency*
 
-**English** | [简体中文](./README.zh-CN.md)
+🌐 **[Live Online App: wonvy.github.io/ShibaPDF](https://wonvy.github.io/ShibaPDF/)** · **English** | [简体中文](./README.zh-CN.md)
 
 </div>
 
