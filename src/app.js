@@ -139,6 +139,7 @@
   const state = {
     lang: localStorage.getItem("pdf_split_lang") || "zh",
     theme: localStorage.getItem("pdf_split_theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
+    workMode: "split", // 'split' | 'keep'
     bleed: { top: 3, bottom: 3, left: 3, right: 3 },
     bleedAction: "trim",
     moveFirstToLast: true,
@@ -175,6 +176,14 @@
     exportBtn: document.getElementById("exportBtn"),
     exportBtnText: document.getElementById("exportBtnText"),
     toolbarRibbon: document.getElementById("toolbarRibbon"),
+    workModeSplitBtn: document.getElementById("workModeSplitBtn"),
+    workModeKeepBtn: document.getElementById("workModeKeepBtn"),
+    bleedCtrlGroup: document.getElementById("bleedCtrlGroup"),
+    sepAfterBleed: document.getElementById("sepAfterBleed"),
+    moveFirstWrap: document.getElementById("moveFirstWrap"),
+    sepAfterMove: document.getElementById("sepAfterMove"),
+    sepAfterK100: document.getElementById("sepAfterK100"),
+    rulesMenuWrap: document.getElementById("rulesMenuWrap"),
     presetChips: Array.from(document.querySelectorAll(".preset-chip")),
     bleedUniformInput: document.getElementById("bleedUniformInput"),
     quadTriggerBtn: document.getElementById("quadTriggerBtn"),
@@ -308,6 +317,20 @@
 
   function computeSplitPlan(fileEntry) {
     if (!fileEntry || !fileEntry.pageInfos.length) return [];
+
+    if (state.workMode === "keep") {
+      return fileEntry.pageInfos.map((info, srcIdx) => ({
+        srcIdx,
+        side: "keep",
+        mainNorm: { u: 0, v: 0, uw: 1, vh: 1 },
+        trimNorm: { u: 0, v: 0, uw: 1, vh: 1 },
+        outWMm: info.wMm,
+        outHMm: info.hMm,
+        role: "keep",
+        finalPageNum: srcIdx + 1
+      }));
+    }
+
     const b = state.bleed;
     const trimMode = state.bleedAction === "trim";
     const items = [];
@@ -373,6 +396,11 @@
       el.smartHint.classList.remove("warn");
       return;
     }
+    if (state.workMode === "keep") {
+      el.smartHint.textContent = t("hintKeepMode");
+      el.smartHint.classList.remove("warn");
+      return;
+    }
     const p0 = fileEntry.pageInfos[0];
     const w = p0.wMm;
     const h = p0.hMm;
@@ -420,11 +448,22 @@
       return;
     }
 
+    const isKeep = state.workMode === "keep";
+    el.workModeSplitBtn.classList.toggle("active", !isKeep);
+    el.workModeKeepBtn.classList.toggle("active", isKeep);
+    el.bleedCtrlGroup.classList.toggle("hidden", isKeep);
+    el.sepAfterBleed.classList.toggle("hidden", isKeep);
+    el.moveFirstWrap.classList.toggle("hidden", isKeep);
+    el.sepAfterMove.classList.toggle("hidden", isKeep);
+    el.sepAfterK100.classList.toggle("hidden", isKeep);
+    el.rulesMenuWrap.classList.toggle("hidden", isKeep);
+    el.tabSeqBtn.textContent = isKeep ? t("tabSequenceKeep") : t("tabSequence");
+
     const labelSuffix = state.files.length > 1 ? ` (+${state.files.length - 1})` : "";
     el.activeFileName.textContent = active.name + labelSuffix;
     el.exportBtnText.textContent = state.files.length > 1
       ? t("exportBatchBtn", { n: state.files.length })
-      : t("exportBtn");
+      : (isKeep ? t("exportKeepBtn") : t("exportBtn"));
 
     detectSmartHint(active);
 
@@ -459,6 +498,20 @@
     const cssW = parseFloat(el.spreadCanvas.style.width) || el.spreadCanvas.width;
     const cssH = parseFloat(el.spreadCanvas.style.height) || el.spreadCanvas.height;
     if (!cssW || !cssH) return;
+
+    if (state.workMode === "keep") {
+      [el.shadeTop, el.shadeBottom, el.shadeLeft, el.shadeRight, el.trimRect, el.centerLine, el.rightBadge].forEach((n) => n.classList.add("hidden"));
+      el.leftBadge.classList.remove("hidden");
+      el.leftBadge.style.left = `${cssW / 2}px`;
+      el.leftBadge.textContent = t("keepBadge", {
+        p: state.activeSpreadIndex + 1,
+        w: info.wMm.toFixed(0),
+        h: info.hMm.toFixed(0)
+      });
+      return;
+    }
+
+    [el.shadeTop, el.shadeBottom, el.shadeLeft, el.shadeRight, el.trimRect].forEach((n) => n.classList.remove("hidden"));
 
     const b = state.bleed;
     const uL = Math.min(0.48, Math.max(0, b.left / info.wMm));
@@ -733,6 +786,10 @@
     const dot = origName.lastIndexOf(".");
     const stem = dot > 0 ? origName.slice(0, dot) : origName;
     const ext = dot > 0 ? origName.slice(dot) : ".pdf";
+
+    if (state.workMode === "keep") {
+      return stem + t("outKeepSuffix") + ext;
+    }
 
     const rules = [
       [/\(对页\)/, "(单页)"],
@@ -1071,37 +1128,44 @@
   }
 
   async function exportSinglePdfEntry(fileEntry) {
-    const plan = computeSplitPlan(fileEntry);
     const srcDoc = await PDFLib.PDFDocument.load(fileEntry.rawBytes, { ignoreEncryption: true });
 
     if (state.pureBlackK100) {
       applyPureBlackK100ToDoc(srcDoc);
     }
 
-    const outDoc = await PDFLib.PDFDocument.create();
+    let outBytes;
+    if (state.workMode === "keep") {
+      // Keep original spreads, dimensions, bleed, and page order 100% intact!
+      outBytes = await srcDoc.save();
+    } else {
+      const plan = computeSplitPlan(fileEntry);
+      const outDoc = await PDFLib.PDFDocument.create();
 
-    const srcIndices = plan.map((item) => item.srcIdx);
-    const copiedPages = await outDoc.copyPages(srcDoc, srcIndices);
+      const srcIndices = plan.map((item) => item.srcIdx);
+      const copiedPages = await outDoc.copyPages(srcDoc, srcIndices);
 
-    copiedPages.forEach((pdfPage, idx) => {
-      const item = plan[idx];
-      const srcPage = srcDoc.getPage(item.srcIdx);
-      const rawCrop = srcPage.getCropBox();
-      const rotDeg = srcPage.getRotation().angle || 0;
+      copiedPages.forEach((pdfPage, idx) => {
+        const item = plan[idx];
+        const srcPage = srcDoc.getPage(item.srcIdx);
+        const rawCrop = srcPage.getCropBox();
+        const rotDeg = srcPage.getRotation().angle || 0;
 
-      const mainBox = normVisualToPdfRect(rawCrop, rotDeg, item.mainNorm);
-      const trimBox = normVisualToPdfRect(rawCrop, rotDeg, item.trimNorm);
+        const mainBox = normVisualToPdfRect(rawCrop, rotDeg, item.mainNorm);
+        const trimBox = normVisualToPdfRect(rawCrop, rotDeg, item.trimNorm);
 
-      pdfPage.setMediaBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
-      pdfPage.setCropBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
-      pdfPage.setBleedBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
-      pdfPage.setTrimBox(trimBox.x, trimBox.y, trimBox.w, trimBox.h);
-      pdfPage.setArtBox(trimBox.x, trimBox.y, trimBox.w, trimBox.h);
+        pdfPage.setMediaBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
+        pdfPage.setCropBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
+        pdfPage.setBleedBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
+        pdfPage.setTrimBox(trimBox.x, trimBox.y, trimBox.w, trimBox.h);
+        pdfPage.setArtBox(trimBox.x, trimBox.y, trimBox.w, trimBox.h);
 
-      outDoc.addPage(pdfPage);
-    });
+        outDoc.addPage(pdfPage);
+      });
 
-    const outBytes = await outDoc.save();
+      outBytes = await outDoc.save();
+    }
+
     const blob = new Blob([outBytes], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -1185,6 +1249,24 @@
 
   el.presetChips.forEach((chip) => {
     chip.addEventListener("click", () => setUniformBleed(chip.getAttribute("data-bleed")));
+  });
+
+  el.workModeSplitBtn.addEventListener("click", () => {
+    if (state.workMode === "split") return;
+    state.workMode = "split";
+    closeAllPopovers();
+    updateUIState();
+    if (state.viewTab === "sequence") renderSequenceView();
+  });
+
+  el.workModeKeepBtn.addEventListener("click", () => {
+    if (state.workMode === "keep") return;
+    state.workMode = "keep";
+    state.pureBlackK100 = true;
+    el.pureBlackCheck.checked = true;
+    closeAllPopovers();
+    updateUIState();
+    if (state.viewTab === "sequence") renderSequenceView();
   });
 
   el.bleedUniformInput.addEventListener("input", () => setUniformBleed(el.bleedUniformInput.value));

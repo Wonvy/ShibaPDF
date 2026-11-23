@@ -814,8 +814,16 @@ body {
     <!-- Single Lightweight Horizontal Control Ribbon (Hidden when empty) -->
     <div id="toolbarRibbon" class="toolbar-ribbon hidden">
       <div class="ribbon-left">
-        <!-- Bleed Quick Presets + Input -->
-        <div class="ctrl-group">
+        <!-- Primary Workflow Mode: Split vs Keep Original Pages (K100 Only) -->
+        <div class="mini-pills">
+          <button id="workModeSplitBtn" class="mini-pill active" type="button" data-i18n="modeSplit">拆分为单页</button>
+          <button id="workModeKeepBtn" class="mini-pill" type="button" data-i18n="modeKeepK100">不拆页 · 仅转单黑</button>
+        </div>
+
+        <span class="header-sep"></span>
+
+        <!-- Bleed Quick Presets + Input (Shown in Split mode) -->
+        <div id="bleedCtrlGroup" class="ctrl-group">
           <span class="ctrl-label" data-i18n="bleedShort">出血</span>
           <div class="mini-pills">
             <button class="mini-pill preset-chip" data-bleed="0" type="button" data-i18n="preset0">无 0</button>
@@ -857,10 +865,10 @@ body {
           </div>
         </div>
 
-        <span class="header-sep"></span>
+        <span id="sepAfterBleed" class="header-sep"></span>
 
-        <!-- Cover/Back Cover Switch -->
-        <label class="inline-toggle" title="首张跨页为“左封底+右封面”时，自动把封底移至最后一页">
+        <!-- Cover/Back Cover Switch (Shown in Split mode) -->
+        <label id="moveFirstWrap" class="inline-toggle" title="首张跨页为“左封底+右封面”时，自动把封底移至最后一页">
           <span class="mini-switch">
             <input id="moveFirstCheck" type="checkbox" checked />
             <span class="mini-track"></span>
@@ -868,7 +876,7 @@ body {
           <span data-i18n="moveFirstShort">首张左页（封底）移至末页</span>
         </label>
 
-        <span class="header-sep"></span>
+        <span id="sepAfterMove" class="header-sep"></span>
 
         <!-- Pure K100 Single Black Switch (Anti 4-Color Black + Preserve Transparency) -->
         <label class="inline-toggle" title="将黑/灰文字与线条转为印刷纯单黑 C0M0Y0K100，并将透明混合空间改为 CMYK，解决 PPT 四色黑且不破坏半透明阴影">
@@ -879,7 +887,7 @@ body {
           <span data-i18n="pureBlackShort">印刷单色黑 K100</span>
         </label>
 
-        <span class="header-sep"></span>
+        <span id="sepAfterK100" class="header-sep"></span>
 
         <!-- More Rules Popover -->
         <div class="popover-wrap" id="rulesMenuWrap">
@@ -1080,9 +1088,13 @@ body {
       clearAll: "清空全部",
       tabSpread: "裁切线",
       tabSequence: "单页预览",
+      tabSequenceKeep: "全部页面",
+      modeSplit: "拆分为单页",
+      modeKeepK100: "不拆页 · 仅转单黑",
       darkMode: "深色",
       lightMode: "浅色",
       exportBtn: "导出单页 PDF",
+      exportKeepBtn: "导出印前 PDF (K100)",
       exportBatchBtn: "导出 {n} 个文件",
       exportingBtn: "正在导出...",
       bleedShort: "出血",
@@ -1115,7 +1127,10 @@ body {
       fitZoom: "适应",
       hintHasBleed: "已识别 {w}×{h}mm（含四周 {b}mm 出血）",
       hintNoBleed: "原稿 {w}×{h}mm 疑似不含出血，建议左侧出血选「无 0」",
+      hintKeepMode: "原尺寸直出（不拆页、不裁边）· 自动转单色黑 K100 并保留全部透明度",
+      keepBadge: "P{p} · 原尺寸 {w}×{h}mm · 单色黑 K100",
       outSuffix: "(单页)",
+      outKeepSuffix: "_K100",
       errLoadPdf: "读取 PDF 失败：",
       errExportPdf: "导出 PDF 失败："
     },
@@ -1126,9 +1141,13 @@ body {
       clearAll: "Clear All",
       tabSpread: "Cut Guides",
       tabSequence: "Pages",
+      tabSequenceKeep: "All Pages",
+      modeSplit: "Split Spreads",
+      modeKeepK100: "Keep Pages · Fix K100",
       darkMode: "Dark",
       lightMode: "Light",
       exportBtn: "Export PDF",
+      exportKeepBtn: "Export K100 PDF",
       exportBatchBtn: "Export {n} PDFs",
       exportingBtn: "Exporting...",
       bleedShort: "Bleed",
@@ -1161,7 +1180,10 @@ body {
       fitZoom: "Fit",
       hintHasBleed: "Detected {w}×{h}mm ({b}mm bleed)",
       hintNoBleed: "{w}×{h}mm looks like net size (no bleed) — consider selecting \"None 0\"",
+      hintKeepMode: "Keep original page size & count · Convert to Pure K100 Black with live transparency",
+      keepBadge: "P{p} · Original {w}×{h}mm · Pure K100",
       outSuffix: "_single",
+      outKeepSuffix: "_K100",
       errLoadPdf: "Failed to read PDF: ",
       errExportPdf: "Failed to export PDF: "
     }
@@ -1179,6 +1201,7 @@ body {
   const state = {
     lang: localStorage.getItem("pdf_split_lang") || "zh",
     theme: localStorage.getItem("pdf_split_theme") || (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
+    workMode: "split", // 'split' | 'keep'
     bleed: { top: 3, bottom: 3, left: 3, right: 3 },
     bleedAction: "trim",
     moveFirstToLast: true,
@@ -1215,6 +1238,14 @@ body {
     exportBtn: document.getElementById("exportBtn"),
     exportBtnText: document.getElementById("exportBtnText"),
     toolbarRibbon: document.getElementById("toolbarRibbon"),
+    workModeSplitBtn: document.getElementById("workModeSplitBtn"),
+    workModeKeepBtn: document.getElementById("workModeKeepBtn"),
+    bleedCtrlGroup: document.getElementById("bleedCtrlGroup"),
+    sepAfterBleed: document.getElementById("sepAfterBleed"),
+    moveFirstWrap: document.getElementById("moveFirstWrap"),
+    sepAfterMove: document.getElementById("sepAfterMove"),
+    sepAfterK100: document.getElementById("sepAfterK100"),
+    rulesMenuWrap: document.getElementById("rulesMenuWrap"),
     presetChips: Array.from(document.querySelectorAll(".preset-chip")),
     bleedUniformInput: document.getElementById("bleedUniformInput"),
     quadTriggerBtn: document.getElementById("quadTriggerBtn"),
@@ -1348,6 +1379,20 @@ body {
 
   function computeSplitPlan(fileEntry) {
     if (!fileEntry || !fileEntry.pageInfos.length) return [];
+
+    if (state.workMode === "keep") {
+      return fileEntry.pageInfos.map((info, srcIdx) => ({
+        srcIdx,
+        side: "keep",
+        mainNorm: { u: 0, v: 0, uw: 1, vh: 1 },
+        trimNorm: { u: 0, v: 0, uw: 1, vh: 1 },
+        outWMm: info.wMm,
+        outHMm: info.hMm,
+        role: "keep",
+        finalPageNum: srcIdx + 1
+      }));
+    }
+
     const b = state.bleed;
     const trimMode = state.bleedAction === "trim";
     const items = [];
@@ -1413,6 +1458,11 @@ body {
       el.smartHint.classList.remove("warn");
       return;
     }
+    if (state.workMode === "keep") {
+      el.smartHint.textContent = t("hintKeepMode");
+      el.smartHint.classList.remove("warn");
+      return;
+    }
     const p0 = fileEntry.pageInfos[0];
     const w = p0.wMm;
     const h = p0.hMm;
@@ -1460,11 +1510,22 @@ body {
       return;
     }
 
+    const isKeep = state.workMode === "keep";
+    el.workModeSplitBtn.classList.toggle("active", !isKeep);
+    el.workModeKeepBtn.classList.toggle("active", isKeep);
+    el.bleedCtrlGroup.classList.toggle("hidden", isKeep);
+    el.sepAfterBleed.classList.toggle("hidden", isKeep);
+    el.moveFirstWrap.classList.toggle("hidden", isKeep);
+    el.sepAfterMove.classList.toggle("hidden", isKeep);
+    el.sepAfterK100.classList.toggle("hidden", isKeep);
+    el.rulesMenuWrap.classList.toggle("hidden", isKeep);
+    el.tabSeqBtn.textContent = isKeep ? t("tabSequenceKeep") : t("tabSequence");
+
     const labelSuffix = state.files.length > 1 ? ` (+${state.files.length - 1})` : "";
     el.activeFileName.textContent = active.name + labelSuffix;
     el.exportBtnText.textContent = state.files.length > 1
       ? t("exportBatchBtn", { n: state.files.length })
-      : t("exportBtn");
+      : (isKeep ? t("exportKeepBtn") : t("exportBtn"));
 
     detectSmartHint(active);
 
@@ -1499,6 +1560,20 @@ body {
     const cssW = parseFloat(el.spreadCanvas.style.width) || el.spreadCanvas.width;
     const cssH = parseFloat(el.spreadCanvas.style.height) || el.spreadCanvas.height;
     if (!cssW || !cssH) return;
+
+    if (state.workMode === "keep") {
+      [el.shadeTop, el.shadeBottom, el.shadeLeft, el.shadeRight, el.trimRect, el.centerLine, el.rightBadge].forEach((n) => n.classList.add("hidden"));
+      el.leftBadge.classList.remove("hidden");
+      el.leftBadge.style.left = `${cssW / 2}px`;
+      el.leftBadge.textContent = t("keepBadge", {
+        p: state.activeSpreadIndex + 1,
+        w: info.wMm.toFixed(0),
+        h: info.hMm.toFixed(0)
+      });
+      return;
+    }
+
+    [el.shadeTop, el.shadeBottom, el.shadeLeft, el.shadeRight, el.trimRect].forEach((n) => n.classList.remove("hidden"));
 
     const b = state.bleed;
     const uL = Math.min(0.48, Math.max(0, b.left / info.wMm));
@@ -1773,6 +1848,10 @@ body {
     const dot = origName.lastIndexOf(".");
     const stem = dot > 0 ? origName.slice(0, dot) : origName;
     const ext = dot > 0 ? origName.slice(dot) : ".pdf";
+
+    if (state.workMode === "keep") {
+      return stem + t("outKeepSuffix") + ext;
+    }
 
     const rules = [
       [/\(对页\)/, "(单页)"],
@@ -2111,37 +2190,44 @@ body {
   }
 
   async function exportSinglePdfEntry(fileEntry) {
-    const plan = computeSplitPlan(fileEntry);
     const srcDoc = await PDFLib.PDFDocument.load(fileEntry.rawBytes, { ignoreEncryption: true });
 
     if (state.pureBlackK100) {
       applyPureBlackK100ToDoc(srcDoc);
     }
 
-    const outDoc = await PDFLib.PDFDocument.create();
+    let outBytes;
+    if (state.workMode === "keep") {
+      // Keep original spreads, dimensions, bleed, and page order 100% intact!
+      outBytes = await srcDoc.save();
+    } else {
+      const plan = computeSplitPlan(fileEntry);
+      const outDoc = await PDFLib.PDFDocument.create();
 
-    const srcIndices = plan.map((item) => item.srcIdx);
-    const copiedPages = await outDoc.copyPages(srcDoc, srcIndices);
+      const srcIndices = plan.map((item) => item.srcIdx);
+      const copiedPages = await outDoc.copyPages(srcDoc, srcIndices);
 
-    copiedPages.forEach((pdfPage, idx) => {
-      const item = plan[idx];
-      const srcPage = srcDoc.getPage(item.srcIdx);
-      const rawCrop = srcPage.getCropBox();
-      const rotDeg = srcPage.getRotation().angle || 0;
+      copiedPages.forEach((pdfPage, idx) => {
+        const item = plan[idx];
+        const srcPage = srcDoc.getPage(item.srcIdx);
+        const rawCrop = srcPage.getCropBox();
+        const rotDeg = srcPage.getRotation().angle || 0;
 
-      const mainBox = normVisualToPdfRect(rawCrop, rotDeg, item.mainNorm);
-      const trimBox = normVisualToPdfRect(rawCrop, rotDeg, item.trimNorm);
+        const mainBox = normVisualToPdfRect(rawCrop, rotDeg, item.mainNorm);
+        const trimBox = normVisualToPdfRect(rawCrop, rotDeg, item.trimNorm);
 
-      pdfPage.setMediaBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
-      pdfPage.setCropBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
-      pdfPage.setBleedBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
-      pdfPage.setTrimBox(trimBox.x, trimBox.y, trimBox.w, trimBox.h);
-      pdfPage.setArtBox(trimBox.x, trimBox.y, trimBox.w, trimBox.h);
+        pdfPage.setMediaBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
+        pdfPage.setCropBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
+        pdfPage.setBleedBox(mainBox.x, mainBox.y, mainBox.w, mainBox.h);
+        pdfPage.setTrimBox(trimBox.x, trimBox.y, trimBox.w, trimBox.h);
+        pdfPage.setArtBox(trimBox.x, trimBox.y, trimBox.w, trimBox.h);
 
-      outDoc.addPage(pdfPage);
-    });
+        outDoc.addPage(pdfPage);
+      });
 
-    const outBytes = await outDoc.save();
+      outBytes = await outDoc.save();
+    }
+
     const blob = new Blob([outBytes], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -2225,6 +2311,24 @@ body {
 
   el.presetChips.forEach((chip) => {
     chip.addEventListener("click", () => setUniformBleed(chip.getAttribute("data-bleed")));
+  });
+
+  el.workModeSplitBtn.addEventListener("click", () => {
+    if (state.workMode === "split") return;
+    state.workMode = "split";
+    closeAllPopovers();
+    updateUIState();
+    if (state.viewTab === "sequence") renderSequenceView();
+  });
+
+  el.workModeKeepBtn.addEventListener("click", () => {
+    if (state.workMode === "keep") return;
+    state.workMode = "keep";
+    state.pureBlackK100 = true;
+    el.pureBlackCheck.checked = true;
+    closeAllPopovers();
+    updateUIState();
+    if (state.viewTab === "sequence") renderSequenceView();
   });
 
   el.bleedUniformInput.addEventListener("input", () => setUniformBleed(el.bleedUniformInput.value));
