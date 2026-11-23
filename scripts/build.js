@@ -15,7 +15,6 @@ function loadLucideSvg(name) {
   return fs.readFileSync(svgPath, "utf8").replace(/\s+/g, " ").trim();
 }
 
-// 1. Replace static <i data-lucide="name" ...></i> tags in template.html with official Lucide SVGs
 tpl = tpl.replace(/<i\s+data-lucide="([a-z0-9-]+)"([^>]*)><\/i>/gi, (_, iconName, extraAttrs) => {
   let svg = loadLucideSvg(iconName);
   if (extraAttrs && extraAttrs.trim()) {
@@ -24,7 +23,6 @@ tpl = tpl.replace(/<i\s+data-lucide="([a-z0-9-]+)"([^>]*)><\/i>/gi, (_, iconName
   return svg;
 });
 
-// 2. Export dynamic Lucide icons needed by JS (Preflight report, file list, status badges)
 const dynamicIconNames = [
   "file-text",
   "trash-2",
@@ -34,7 +32,8 @@ const dynamicIconNames = [
   "info",
   "shield-check",
   "shield-alert",
-  "wrench"
+  "wrench",
+  "crosshair"
 ];
 const iconMap = {};
 for (const name of dynamicIconNames) {

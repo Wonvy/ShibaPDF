@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="light">
+<html lang="zh-CN" data-theme="light">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ShibaPDF — PDF Prepress & Spread Toolbox</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>ShibaPDF — PDF 编辑与印前工作台</title>
   <style>
 /*__INLINE_CSS__*/
   </style>
 </head>
 <body>
   <div class="workbench">
-    <!-- Left Column: Big Feature Buttons Launcher -->
+    <!-- Left Column: Borderless Large Feature Buttons -->
     <aside class="left-rail">
       <header class="rail-header">
         <div class="brand-mark">
@@ -18,42 +18,27 @@
           <span>ShibaPDF</span>
         </div>
         <div class="header-mini-btns">
-          <button id="langBtn" class="icon-btn" type="button" title="Switch Language">
+          <button id="langBtn" class="ghost-btn" type="button" title="Switch Language">
             <i data-lucide="languages"></i>
-            <span id="langLabel">中文</span>
+            <span id="langLabel">EN</span>
           </button>
-          <button id="themeBtn" class="icon-btn" type="button" title="Toggle Theme">
+          <button id="themeBtn" class="ghost-btn" type="button" title="Toggle Theme">
             <span id="iconMoon"><i data-lucide="moon"></i></span>
             <span id="iconSun" class="hidden"><i data-lucide="sun"></i></span>
           </button>
         </div>
       </header>
 
-      <!-- Large Tool Buttons -->
-      <div class="rail-tools-scroll">
-        <div class="rail-section-label" data-i18n="toolboxLabel">功能工具箱</div>
-
-        <button id="navSplitBtn" class="big-tool-btn active" type="button">
+      <nav class="rail-tools" aria-label="PDF Tools">
+        <button id="navEditBtn" class="big-tool-btn active" type="button">
           <span class="tool-icon-box">
-            <i data-lucide="columns-2"></i>
+            <i data-lucide="square-pen"></i>
           </span>
           <span class="tool-btn-copy">
             <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="modeSplit">跨页拆单页</span>
+              <span class="tool-btn-title" data-i18n="modeEdit">编辑页面</span>
             </span>
-            <span class="tool-btn-desc" data-i18n="modeSplitSub">双页切单页 · 裁出血与封底归位</span>
-          </span>
-        </button>
-
-        <button id="navKeepBtn" class="big-tool-btn" type="button">
-          <span class="tool-icon-box">
-            <i data-lucide="printer"></i>
-          </span>
-          <span class="tool-btn-copy">
-            <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="modeKeepK100">印前转单黑</span>
-            </span>
-            <span class="tool-btn-desc" data-i18n="modeKeepSub">保持原跨页尺寸 · 修复四色黑</span>
+            <span class="tool-btn-desc" data-i18n="modeEditSub">修改或添加文字 · 旋转与删页</span>
           </span>
         </button>
 
@@ -63,28 +48,38 @@
           </span>
           <span class="tool-btn-copy">
             <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="modePreflight">印刷规范检查</span>
+              <span class="tool-btn-title" data-i18n="modePreflight">印前检查</span>
               <span id="navPreflightBadge" class="status-pill hidden"></span>
             </span>
-            <span class="tool-btn-desc" data-i18n="modePreflightSub">8 项 DPI / 字体 / 出血开机体检</span>
+            <span class="tool-btn-desc" data-i18n="modePreflightSub">8 项规范体检 · 点击定位高亮</span>
           </span>
         </button>
 
-        <button id="navEditTextBtn" class="big-tool-btn" type="button">
+        <button id="navKeepBtn" class="big-tool-btn" type="button">
           <span class="tool-icon-box">
-            <i data-lucide="type"></i>
+            <i data-lucide="printer"></i>
           </span>
           <span class="tool-btn-copy">
             <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="modeEditText">编辑页面文字</span>
-              <span class="status-pill neutral" data-i18n="soonBadge">规划中</span>
+              <span class="tool-btn-title" data-i18n="modeKeepK100">印前单黑</span>
             </span>
-            <span class="tool-btn-desc" data-i18n="modeEditTextSub">直接在画布修改或添加 PDF 文字</span>
+            <span class="tool-btn-desc" data-i18n="modeKeepSub">原尺寸直出 · 四色黑转 K100</span>
           </span>
         </button>
-      </div>
 
-      <!-- Bottom Pinned: Active Files + Offline App Download -->
+        <button id="navSplitBtn" class="big-tool-btn" type="button">
+          <span class="tool-icon-box">
+            <i data-lucide="columns-2"></i>
+          </span>
+          <span class="tool-btn-copy">
+            <span class="tool-btn-title-row">
+              <span class="tool-btn-title" data-i18n="modeSplit">跨页拆单页</span>
+            </span>
+            <span class="tool-btn-desc" data-i18n="modeSplitSub">双页切单页 · 出血与封底归位</span>
+          </span>
+        </button>
+      </nav>
+
       <div class="rail-footer">
         <input id="fileInput" type="file" accept=".pdf,application/pdf" multiple class="hidden" />
 
@@ -92,12 +87,11 @@
           <div class="rail-files-head">
             <span data-i18n="secFiles">当前文档</span>
             <div style="display:flex;gap:4px;">
-              <button id="addMoreBtn" class="mini-link" type="button">
+              <button id="addMoreBtn" class="ghost-btn" style="height:22px;padding:0 6px;font-size:11px;" type="button">
                 <i data-lucide="plus" style="width:11px;height:11px;"></i>
                 <span data-i18n="addBtn">添加</span>
               </button>
-              <button id="clearAllBtn" class="mini-link" type="button">
-                <i data-lucide="trash-2" style="width:11px;height:11px;"></i>
+              <button id="clearAllBtn" class="ghost-btn" style="height:22px;padding:0 6px;font-size:11px;" type="button">
                 <span data-i18n="clearAll">清空</span>
               </button>
             </div>
@@ -105,186 +99,199 @@
           <div id="fileList" class="rail-file-list"></div>
         </div>
 
-        <button id="sidebarUploadBtn" class="rail-outline-btn" type="button">
+        <button id="sidebarUploadBtn" class="rail-soft-btn" type="button">
           <i data-lucide="upload"></i>
-          <span data-i18n="addPdfBtn">导入 PDF 文件</span>
+          <span data-i18n="addPdfBtn">打开 PDF 文件</span>
         </button>
 
-        <button id="downloadOfflineBtn" class="rail-outline-btn" type="button" title="Save standalone ShibaPDF.html to use offline on your computer">
+        <button id="downloadOfflineBtn" class="rail-soft-btn" type="button" title="Save standalone ShibaPDF.html to use offline on your computer">
           <i data-lucide="hard-drive-download"></i>
-          <span data-i18n="downloadOfflineBtn">下载单文件离线版 (.html)</span>
+          <span data-i18n="downloadOfflineBtn">下载单文件离线版</span>
         </button>
       </div>
     </aside>
 
-    <!-- Right Column: Contextual Tool Workspace -->
+    <!-- Right Column: Progressive Workspace -->
     <main class="right-workspace">
-      <!-- Contextual Top Action Bar (Shown when a PDF is loaded and mode != editText) -->
-      <header id="contextBar" class="context-bar hidden">
-        <div class="ctx-left">
-          <!-- View Sub-tabs (Spread / Pages) -->
-          <div id="previewSubTabs" class="seg-group">
-            <button id="tabSpreadBtn" class="seg-btn active" type="button" data-i18n="tabSpread">裁切线</button>
-            <button id="tabSeqBtn" class="seg-btn" type="button" data-i18n="tabSequence">页面总览</button>
+      <!-- Quiet Progressive Top Action Strip (Hidden when no PDF is loaded) -->
+      <header id="topStrip" class="top-action-strip hidden">
+        <div class="strip-left">
+          <!-- Mode: Edit Page Controls -->
+          <div id="stripEditTools" class="strip-left">
+            <button id="addTextBtn" class="ghost-btn" type="button">
+              <i data-lucide="type"></i>
+              <span data-i18n="addTextBtn">添加文字</span>
+            </button>
+            <button id="rotatePageBtn" class="ghost-btn" type="button">
+              <i data-lucide="rotate-cw"></i>
+              <span data-i18n="rotatePageBtn">旋转本页</span>
+            </button>
+            <button id="deletePageBtn" class="ghost-btn" type="button">
+              <i data-lucide="trash-2"></i>
+              <span data-i18n="deletePageBtn">删除本页</span>
+            </button>
+            <button id="undoEditBtn" class="ghost-btn hidden" type="button">
+              <i data-lucide="undo-2"></i>
+              <span data-i18n="undoBtn">撤销</span>
+            </button>
+            <span id="editHintLabel" style="font-size:12px;color:var(--text-3);margin-left:4px;" data-i18n="editClickHint">点击页面已有文字可直接修改</span>
           </div>
 
-          <!-- Split Mode Controls -->
-          <div id="ctxSplitControls" class="ctx-left">
-            <span class="v-divider"></span>
-            <span class="ctx-label" data-i18n="bleedShort">出血</span>
-            <div class="seg-group">
-              <button class="seg-btn preset-chip" data-bleed="0" type="button" data-i18n="preset0">无 0</button>
-              <button class="seg-btn preset-chip active" data-bleed="3" type="button">3mm</button>
-              <button class="seg-btn preset-chip" data-bleed="5" type="button">5mm</button>
+          <!-- Mode: Preflight Summary -->
+          <div id="stripPreflightTools" class="strip-left hidden">
+            <span style="font-size:13.5px;font-weight:600;" data-i18n="preflightReportTitle">印前规范检查</span>
+            <div id="pfScorePills" style="display:flex;gap:6px;"></div>
+          </div>
+
+          <!-- Mode: Keep K100 Summary -->
+          <div id="stripKeepTools" class="strip-left hidden">
+            <div class="soft-pills">
+              <button id="keepTabSingle" class="soft-pill active" type="button" data-i18n="viewSingle">单张查看</button>
+              <button id="keepTabAll" class="soft-pill" type="button" data-i18n="tabSequence">全部页面</button>
             </div>
-            <div class="num-box">
-              <input id="bleedUniformInput" type="number" min="0" max="50" step="0.5" value="3" />
-              <span class="unit-txt">mm</span>
+            <span style="font-size:12px;color:var(--text-2);margin-left:6px;" data-i18n="keepDescInline">保持原跨页尺寸与出血 · 自动转单色黑 K100 并保留透明度</span>
+          </div>
+
+          <!-- Mode: Split Spreads Progressive Controls (Parameters tucked inside popover!) -->
+          <div id="stripSplitTools" class="strip-left hidden">
+            <div class="soft-pills">
+              <button id="tabSpreadBtn" class="soft-pill active" type="button" data-i18n="tabSpread">裁切预览</button>
+              <button id="tabSeqBtn" class="soft-pill" type="button" data-i18n="tabSequence">拆后总览</button>
             </div>
 
-            <!-- 4-Side Popover -->
-            <div class="popover-anchor" id="quadPopAnchor">
-              <button id="quadPopBtn" class="icon-btn" type="button">
-                <span data-i18n="customSidesBtn">四边</span>
+            <div class="popover-anchor">
+              <button id="splitParamsBtn" class="ghost-btn active" type="button">
+                <i data-lucide="sliders-horizontal"></i>
+                <span id="splitParamsSummary">出血 3mm · 拆分设置</span>
                 <i data-lucide="chevron-down" style="width:13px;height:13px;"></i>
               </button>
-              <div id="quadPopover" class="popover-card hidden">
-                <div class="popover-caption" data-i18n="secBleed">四边独立出血 (mm)</div>
-                <div class="quad-grid-pop">
-                  <label class="quad-cell"><span data-i18n="sideTop">上</span><span class="num-box"><input id="bleedTopInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
-                  <label class="quad-cell"><span data-i18n="sideBottom">下</span><span class="num-box"><input id="bleedBottomInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
-                  <label class="quad-cell"><span data-i18n="sideLeft">左</span><span class="num-box"><input id="bleedLeftInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
-                  <label class="quad-cell"><span data-i18n="sideRight">右</span><span class="num-box"><input id="bleedRightInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+
+              <!-- Progressive Disclosure Settings Popover -->
+              <div id="splitParamsPopover" class="popover-card hidden">
+                <div class="pop-label" data-i18n="secBleed">四周出血尺寸</div>
+                <div class="soft-pills" style="width:100%;display:grid;grid-template-columns:repeat(3,1fr);">
+                  <button class="soft-pill preset-chip" data-bleed="0" type="button" data-i18n="preset0">无 0</button>
+                  <button class="soft-pill preset-chip active" data-bleed="3" type="button">3mm</button>
+                  <button class="soft-pill preset-chip" data-bleed="5" type="button">5mm</button>
+                </div>
+
+                <div class="pop-row">
+                  <span data-i18n="bleedUniformLabel">统一出血</span>
+                  <span class="num-pill">
+                    <input id="bleedUniformInput" type="number" min="0" max="50" step="0.5" value="3" />
+                    <span class="unit-txt">mm</span>
+                  </span>
+                </div>
+
+                <button id="toggleQuadLink" class="ghost-btn" style="justify-content:flex-start;padding:0 4px;height:24px;font-size:11.5px;" type="button" data-i18n="toggleQuadText">展开上/下/左/右独立微调 ▾</button>
+
+                <div id="quadGridPop" class="quad-grid-pop hidden">
+                  <label class="pop-row"><span data-i18n="sideTop">上</span><span class="num-pill"><input id="bleedTopInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                  <label class="pop-row"><span data-i18n="sideBottom">下</span><span class="num-pill"><input id="bleedBottomInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                  <label class="pop-row"><span data-i18n="sideLeft">左</span><span class="num-pill"><input id="bleedLeftInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                  <label class="pop-row"><span data-i18n="sideRight">右</span><span class="num-pill"><input id="bleedRightInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                </div>
+
+                <label class="pop-row" style="cursor:pointer;">
+                  <span data-i18n="moveFirstShort">首张左页（封底）移至末页</span>
+                  <span class="switch-ctrl"><input id="moveFirstCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+                </label>
+
+                <label class="pop-row" style="cursor:pointer;">
+                  <span data-i18n="pureBlackShort">同步转为印刷单色黑 K100</span>
+                  <span class="switch-ctrl"><input id="pureBlackCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+                </label>
+
+                <label class="pop-row" style="cursor:pointer;">
+                  <span data-i18n="onlyLandscapeShort">仅拆分横向跨页</span>
+                  <span class="switch-ctrl"><input id="onlyLandscapeCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+                </label>
+
+                <div class="soft-pills" style="width:100%;display:grid;grid-template-columns:1fr 1fr;">
+                  <button id="bleedTrimBtn" class="soft-pill active" type="button" data-i18n="actionTrimShort">裁除出血</button>
+                  <button id="bleedKeepBtn" class="soft-pill" type="button" data-i18n="actionKeepShort">保留外出血</button>
+                </div>
+
+                <div class="soft-pills" style="width:100%;display:grid;grid-template-columns:1fr 1fr;">
+                  <button id="dirLtrBtn" class="soft-pill active" type="button" data-i18n="dirLtrShort">左 → 右</button>
+                  <button id="dirRtlBtn" class="soft-pill" type="button" data-i18n="dirRtlShort">右 → 左</button>
                 </div>
               </div>
             </div>
-
-            <span class="v-divider"></span>
-
-            <label class="ctx-toggle">
-              <span class="switch-ctrl">
-                <input id="moveFirstCheck" type="checkbox" checked />
-                <span class="switch-track"></span>
-              </span>
-              <span data-i18n="moveFirstShort">封底移至末页</span>
-            </label>
-
-            <!-- More Split Rules Popover -->
-            <div class="popover-anchor">
-              <button id="morePopBtn" class="icon-btn" type="button">
-                <span data-i18n="moreRulesBtn">更多</span>
-                <i data-lucide="chevron-down" style="width:13px;height:13px;"></i>
-              </button>
-              <div id="morePopover" class="popover-card hidden" style="min-width:260px;">
-                <label class="ctx-toggle" style="justify-content:space-between;">
-                  <span data-i18n="onlyLandscapeShort">仅对半拆分横向跨页</span>
-                  <span class="switch-ctrl">
-                    <input id="onlyLandscapeCheck" type="checkbox" checked />
-                    <span class="switch-track"></span>
-                  </span>
-                </label>
-                <div class="pop-hr"></div>
-                <div class="popover-caption" data-i18n="bleedModeTitle">出血处理</div>
-                <button class="pop-opt-btn bleed-opt selected" type="button" data-value="trim">
-                  <span data-i18n="actionTrimShort">裁除四周出血（净尺寸）</span><span>✓</span>
-                </button>
-                <button class="pop-opt-btn bleed-opt" type="button" data-value="keep">
-                  <span data-i18n="actionKeepShort">保留原外侧出血</span><span></span>
-                </button>
-                <div class="pop-hr"></div>
-                <div class="popover-caption" data-i18n="dirTitle">阅读顺序</div>
-                <button class="pop-opt-btn dir-opt selected" type="button" data-value="ltr">
-                  <span data-i18n="dirLtrShort">左 → 右（常规画册）</span><span>✓</span>
-                </button>
-                <button class="pop-opt-btn dir-opt" type="button" data-value="rtl">
-                  <span data-i18n="dirRtlShort">右 → 左（古籍/日漫）</span><span></span>
-                </button>
-              </div>
-            </div>
           </div>
-
-          <!-- Pure K100 Switch (Shown in Split & Keep Modes) -->
-          <div id="ctxK100Wrap" class="ctx-left">
-            <span class="v-divider"></span>
-            <label class="ctx-toggle" title="Convert black/gray text & lines to pure C0M0Y0K100 and set CMYK blending space">
-              <span class="switch-ctrl">
-                <input id="pureBlackCheck" type="checkbox" checked />
-                <span class="switch-track"></span>
-              </span>
-              <span data-i18n="pureBlackShort">单色黑 K100</span>
-            </label>
-          </div>
-
-          <!-- Preflight Title (Shown in Preflight Mode) -->
-          <span id="preflightStageTitle" class="tool-btn-title hidden" data-i18n="preflightReportTitle">印前规范检测报告</span>
         </div>
 
-        <div class="ctx-right">
-          <span id="smartHint" class="ctx-label hidden"></span>
-          <span id="dimSummaryText" class="dim-inline-pill"></span>
-          <button id="exportBtn" class="primary-export-btn" type="button" disabled>
+        <div class="strip-right">
+          <span id="dimSummaryText" style="font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;"></span>
+          <button id="exportBtn" class="primary-btn" type="button" disabled>
             <i data-lucide="download"></i>
-            <span id="exportBtnText" data-i18n="exportBtn">导出单页 PDF</span>
+            <span id="exportBtnText" data-i18n="exportPdfBtn">导出 PDF</span>
           </button>
         </div>
       </header>
 
-      <!-- Main Stage Viewport -->
-      <div id="stageViewport" class="stage-viewport">
-        <!-- Empty State -->
-        <div id="emptyStage" class="center-placeholder">
-          <h2 data-i18n="emptyHeading">PDF 跨页拆分与印前工具箱</h2>
-          <p data-i18n="emptySub">左侧选择所需工具，拖入 PDF 即可完成跨页拆单页、四色黑转单黑 K100 或开机规范预检</p>
+      <!-- Workspace Main Body (Optional Left Preflight Drawer + Live Canvas Stage) -->
+      <div class="workspace-body">
+        <!-- Interactive Preflight List (Click any issue to jump & highlight on the live canvas!) -->
+        <aside id="preflightDrawer" class="preflight-drawer hidden"></aside>
 
-          <div id="dropzone" class="drop-surface" role="button" tabindex="0">
-            <div class="drop-cta">
-              <i data-lucide="upload"></i>
-              <span data-i18n="chooseBtn">选择 PDF 文件</span>
+        <div id="stageViewport" class="stage-viewport">
+          <!-- Empty State -->
+          <div id="emptyStage" class="center-placeholder">
+            <div id="dropzone" class="drop-surface" role="button" tabindex="0">
+              <h2 data-i18n="emptyHeading">打开或拖入 PDF 文件</h2>
+              <p data-i18n="emptySub">左侧选择工具，即可在本地完成页面文字编辑、印前规范定位体检、四色黑修复或跨页拆分</p>
+              <div class="drop-cta">
+                <i data-lucide="upload"></i>
+                <span data-i18n="chooseBtn">选择 PDF 文件</span>
+              </div>
             </div>
-            <span class="drop-sub" data-i18n="dropHint">或直接将单个、多个 PDF 拖入窗口任意位置</span>
+            <div class="empty-foot" data-i18n="localFootnote">100% 浏览器本地处理 · 支持 Ctrl + 滚轮无级缩放画布</div>
           </div>
 
-          <div class="empty-foot" data-i18n="localFootnote">100% 本地浏览器运行 · 不上传服务器 · 无损保留矢量、渐变与半透明阴影</div>
-        </div>
+          <!-- Paper Canvas + Multi-Mode Interactive Overlays -->
+          <div id="spreadViewContainer" class="paper-frame hidden">
+            <canvas id="spreadCanvas"></canvas>
 
-        <!-- Upcoming Feature Placeholder: Edit Text -->
-        <div id="editTextPlaceholder" class="center-placeholder hidden">
-          <div class="soon-icon-circle">
-            <i data-lucide="type"></i>
-          </div>
-          <h2 data-i18n="editTextHeading">编辑页面文字（模块预留）</h2>
-          <p data-i18n="editTextDesc">该入口已为你预留就绪，后续可在此直接点选画布文字进行内容修改、字号调整与单黑上色。</p>
-        </div>
-
-        <!-- View 1: Spread Preview -->
-        <div id="spreadViewContainer" class="paper-frame hidden">
-          <canvas id="spreadCanvas"></canvas>
-          <div class="guides-overlay">
-            <div id="shadeTop" class="bleed-bar"></div>
-            <div id="shadeBottom" class="bleed-bar"></div>
-            <div id="shadeLeft" class="bleed-bar"></div>
-            <div id="shadeRight" class="bleed-bar"></div>
-            <div id="trimRect" class="trim-box-line"></div>
-            <div id="centerLine" class="center-cut-line"></div>
-            <div id="leftBadge" class="minimal-badge"></div>
-            <div id="rightBadge" class="minimal-badge"></div>
-          </div>
-        </div>
-
-        <!-- View 2: Page Sequence Grid -->
-        <div id="sequenceGrid" class="clean-grid hidden"></div>
-
-        <!-- View 3: Prepress Preflight Report -->
-        <div id="preflightReportView" class="preflight-container hidden">
-          <div class="pf-header-bar">
-            <div class="pf-title-group">
-              <h3 id="pfDocTitle">document.pdf</h3>
-              <p id="pfDocMeta">--</p>
+            <!-- Layer 1: Split Cut Guides -->
+            <div id="guidesOverlay" class="overlay-layer hidden">
+              <div id="shadeTop" class="bleed-bar"></div>
+              <div id="shadeBottom" class="bleed-bar"></div>
+              <div id="shadeLeft" class="bleed-bar"></div>
+              <div id="shadeRight" class="bleed-bar"></div>
+              <div id="trimRect" class="trim-box-line"></div>
+              <div id="centerLine" class="center-cut-line"></div>
+              <div id="leftBadge" class="minimal-badge"></div>
+              <div id="rightBadge" class="minimal-badge"></div>
             </div>
-            <div id="pfScorePills" class="pf-score-pills"></div>
+
+            <!-- Layer 2: Preflight Issue Spotlight Highlights -->
+            <div id="pfHighlightOverlay" class="overlay-layer hidden"></div>
+
+            <!-- Layer 3: Interactive Page Text Editor -->
+            <div id="textEditOverlay" class="overlay-layer interactive hidden"></div>
           </div>
-          <div id="pfItemsList" class="pf-list"></div>
+
+          <!-- All-Pages Grid View -->
+          <div id="sequenceGrid" class="clean-grid hidden"></div>
         </div>
+      </div>
+
+      <!-- Floating Mini Text Formatting Toolbar (Appears only when editing a text node) -->
+      <div id="textFmtBar" class="text-fmt-bar hidden">
+        <button id="fmtSmallerBtn" class="pager-btn" type="button" title="减小字号">A−</button>
+        <span id="fmtSizeLabel" style="font-size:11.5px;font-weight:600;min-width:30px;text-align:center;">14</span>
+        <button id="fmtLargerBtn" class="pager-btn" type="button" title="增大字号">A+</button>
+        <button id="fmtBoldBtn" class="pager-btn" type="button" style="font-weight:700;" title="加粗">B</button>
+        <input id="fmtColorInput" class="fmt-color-input" type="color" value="#181817" title="文字颜色" />
+        <label style="display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--text-2);cursor:pointer;" title="遮盖底部原文字">
+          <input id="fmtMaskCheck" type="checkbox" checked />
+          <span data-i18n="maskBgLabel">遮底</span>
+        </label>
+        <input id="fmtBgInput" class="fmt-color-input" type="color" value="#ffffff" title="背景遮盖色" />
+        <button id="fmtDeleteNodeBtn" class="del-icon-btn" type="button" title="删除此文字框">
+          <i data-lucide="trash-2"></i>
+        </button>
       </div>
 
       <!-- Floating Bottom Pager & Zoom -->
@@ -296,7 +303,6 @@
         <button id="nextSpreadBtn" class="pager-btn" type="button" aria-label="Next">
           <i data-lucide="chevron-right"></i>
         </button>
-        <span class="v-divider" style="margin:0 3px;"></span>
         <button id="zoomOutBtn" class="pager-btn" type="button" title="Zoom Out">
           <i data-lucide="minus"></i>
         </button>

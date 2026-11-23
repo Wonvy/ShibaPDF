@@ -2,9 +2,9 @@
 
 # ShibaPDF
 
-**Lossless PDF Spread Splitter, Pure K100 Prepress Fixer & Print Preflight Inspector**
+**Minimalist Client-Side PDF Studio: Page & Text Editor, Visual Prepress Preflight, Pure K100 Fixer & Spread Splitter**
 
-*100% Client-Side in Your Browser · Zero Server Uploads · Preserves Vectors, Gradients & Live Transparency*
+*100% Local in Your Browser · Zero Server Uploads · Preserves Vectors, Gradients & Live Transparency*
 
 🌐 **[Live Online App: wonvy.github.io/ShibaPDF](https://wonvy.github.io/ShibaPDF/)** · **English** | [简体中文](./README.zh-CN.md)
 
@@ -12,14 +12,16 @@
 
 ---
 
-![ShibaPDF Split Spreads & Cut Guides](./docs/images/split-view-light.png)
+![ShibaPDF Interactive Preflight Locator](./docs/images/preflight-report-light.png)
 
 ## Overview
 
-**ShibaPDF** is a lightweight, zero-dependency single-file web studio designed for graphic designers, print production teams, and brochure creators. It solves two critical workflows without requiring Adobe Acrobat or uploading confidential files to third-party servers:
+**ShibaPDF** is a borderless, progressive single-file PDF workbench built for designers and print production workflows. Everything runs 100% locally in browser memory with smooth **`Ctrl + Scroll Wheel`** canvas zooming:
 
-1. **Reader's Digital Edition (`Split Spreads`)** — Losslessly slices double-page spreads into single pages, trims outer bleed margins (e.g., `426 × 291 mm` ➜ `210 × 285 mm`), and automatically reorders booklet `[Back Cover | Front Cover]` spreads so Front Cover lands on Page 1 and Back Cover moves to the final page.
-2. **Press-Ready Factory Edition (`Keep Pages · Fix K100`)** — Preserves 100% of original spread dimensions, bleed margins, and page order while rewriting black/gray text & strokes to **single-channel Pure CMYK Black (`C0 M0 Y0 K100`)** and switching page transparency blending from `/DeviceRGB` to `/DeviceCMYK` (`PDF/X-4` standard) without flattening live shadows or gradients.
+1. **Edit Page (`Edit Page`)** — Click any existing text on the PDF to edit in-place (with automatic background & ink color sampling), add new CJK/Latin text boxes anywhere, drag to reposition, or rotate & delete pages with multi-step Undo.
+2. **Visual Prepress Preflight (`Preflight Check`)** — Runs an 8-point print-ready inspection (4-color rich black, bleed margins, font embedding, effective printed image DPI, RGB/CMYK color spaces, transparency, 4P saddle-stitch rule, encryption) and **jumps directly to offending text, images, or edges with live spotlight highlights on the canvas**.
+3. **Pure K100 Prepress Fix (`Pure K100 Fix`)** — Keeps original spread dimensions and bleed intact while converting black/gray text & strokes to **single-channel Pure CMYK Black (`C0 M0 Y0 K100`)** and switching blending space to `/DeviceCMYK` (`PDF/X-4` standard) without flattening shadows.
+4. **Spread Splitter (`Split Spreads`)** — Losslessly slices double-page spreads into single pages, trims outer bleed margins, and reorders `[Back Cover | Front Cover]` spreads automatically.
 
 ---
 
@@ -39,10 +41,13 @@
 
 ## Screenshots
 
-### Prepress Preflight Inspection Report
-![Prepress Preflight Report](./docs/images/preflight-report-light.png)
+### In-Place Page & Text Editor
+![Edit Page & Text](./docs/images/edit-page-light.png)
 
-### Dark Theme & Split Single-Page Sequence Gallery
+### Progressive Spread Splitter & Cut Guides
+![Spread Cut Preview](./docs/images/split-view-light.png)
+
+### Dark Theme & All-Pages Overview
 ![Dark Mode Pages Gallery](./docs/images/pages-gallery-dark-zh.png)
 
 ---
