@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShibaPDF · PDF 跨页拆单页印前工具</title>
+  <style>
+/*__INLINE_CSS__*/
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Minimal Top Header -->
+    <header class="header">
+      <div class="header-left">
+        <div class="logo-mark">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+            <line x1="12" y1="4" x2="12" y2="20" stroke-dasharray="2.5 2.5"></line>
+          </svg>
+          <span data-i18n="appTitle">ShibaPDF · 跨页拆单页</span>
+        </div>
+
+        <!-- Shown only when files are loaded -->
+        <div id="headerFileSection" class="file-switcher-wrap hidden">
+          <span class="header-sep"></span>
+          <div class="popover-wrap" id="fileMenuWrap">
+            <button id="fileTriggerBtn" class="file-trigger-btn" type="button">
+              <span id="activeFileName" class="file-trigger-name">document.pdf</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"></path></svg>
+            </button>
+            <div id="filePopover" class="popover-panel hidden" style="min-width:290px;">
+              <div class="popover-title" data-i18n="fileQueueTitle">已导入文件</div>
+              <div id="fileList" style="display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;"></div>
+              <div class="popover-divider"></div>
+              <div style="display:flex;justify-content:space-between;gap:8px;">
+                <button id="addMoreBtn" class="ghost-btn" type="button" data-i18n="addMoreFiles">＋ 添加文件</button>
+                <button id="clearAllBtn" class="ghost-btn" type="button" data-i18n="clearAll">清空全部</button>
+              </div>
+            </div>
+          </div>
+          <span id="dimSummaryInline" class="dim-summary-inline"></span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- View Switcher (shown when loaded) -->
+        <div id="viewSwitcher" class="mini-pills hidden">
+          <button id="tabSpreadBtn" class="mini-pill active" type="button" data-i18n="tabSpread">裁切线</button>
+          <button id="tabSeqBtn" class="mini-pill" type="button" data-i18n="tabSequence">单页预览</button>
+        </div>
+
+        <button id="langBtn" class="ghost-btn" type="button">
+          <span id="langLabel">EN</span>
+        </button>
+
+        <button id="themeBtn" class="ghost-btn" type="button">
+          <svg id="iconMoon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+          <svg id="iconSun" class="hidden" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2m-7.07-14.93 1.41 1.41m11.32 11.32 1.41 1.41M2 12h2m16 0h2m-14.93 7.07 1.41-1.41m11.32-11.32 1.41-1.41"></path></svg>
+          <span id="themeLabel" data-i18n="darkMode">深色</span>
+        </button>
+
+        <button id="exportBtn" class="export-btn hidden" type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          <span id="exportBtnText" data-i18n="exportBtn">导出单页 PDF</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Single Lightweight Horizontal Control Ribbon (Hidden when empty) -->
+    <div id="toolbarRibbon" class="toolbar-ribbon hidden">
+      <div class="ribbon-left">
+        <!-- Bleed Quick Presets + Input -->
+        <div class="ctrl-group">
+          <span class="ctrl-label" data-i18n="bleedShort">出血</span>
+          <div class="mini-pills">
+            <button class="mini-pill preset-chip" data-bleed="0" type="button" data-i18n="preset0">无 0</button>
+            <button class="mini-pill preset-chip active" data-bleed="3" type="button">3mm</button>
+            <button class="mini-pill preset-chip" data-bleed="5" type="button">5mm</button>
+          </div>
+          <div class="inline-num-box">
+            <input id="bleedUniformInput" type="number" min="0" max="50" step="0.5" value="3" />
+            <span class="inline-unit">mm</span>
+          </div>
+
+          <!-- Optional 4-Side Popover -->
+          <div class="popover-wrap" id="quadMenuWrap">
+            <button id="quadTriggerBtn" class="ghost-btn" type="button">
+              <span data-i18n="customSidesBtn">四边独立</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"></path></svg>
+            </button>
+            <div id="quadPopover" class="popover-panel hidden" style="min-width:236px;">
+              <div class="popover-title" data-i18n="customBleedTitle">上下左右独立出血 (mm)</div>
+              <div class="quad-popover-grid">
+                <label class="quad-field">
+                  <span data-i18n="sideTop">上</span>
+                  <span class="inline-num-box"><input id="bleedTopInput" type="number" min="0" max="50" step="0.5" value="3" /></span>
+                </label>
+                <label class="quad-field">
+                  <span data-i18n="sideBottom">下</span>
+                  <span class="inline-num-box"><input id="bleedBottomInput" type="number" min="0" max="50" step="0.5" value="3" /></span>
+                </label>
+                <label class="quad-field">
+                  <span data-i18n="sideLeft">左</span>
+                  <span class="inline-num-box"><input id="bleedLeftInput" type="number" min="0" max="50" step="0.5" value="3" /></span>
+                </label>
+                <label class="quad-field">
+                  <span data-i18n="sideRight">右</span>
+                  <span class="inline-num-box"><input id="bleedRightInput" type="number" min="0" max="50" step="0.5" value="3" /></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <span class="header-sep"></span>
+
+        <!-- Cover/Back Cover Switch -->
+        <label class="inline-toggle" title="首张跨页为“左封底+右封面”时，自动把封底移至最后一页">
+          <span class="mini-switch">
+            <input id="moveFirstCheck" type="checkbox" checked />
+            <span class="mini-track"></span>
+          </span>
+          <span data-i18n="moveFirstShort">首张左页（封底）移至末页</span>
+        </label>
+
+        <span class="header-sep"></span>
+
+        <!-- Pure K100 Single Black Switch (Anti 4-Color Black + Preserve Transparency) -->
+        <label class="inline-toggle" title="将黑/灰文字与线条转为印刷纯单黑 C0M0Y0K100，并将透明混合空间改为 CMYK，解决 PPT 四色黑且不破坏半透明阴影">
+          <span class="mini-switch">
+            <input id="pureBlackCheck" type="checkbox" checked />
+            <span class="mini-track"></span>
+          </span>
+          <span data-i18n="pureBlackShort">印刷单色黑 K100</span>
+        </label>
+
+        <span class="header-sep"></span>
+
+        <!-- More Rules Popover -->
+        <div class="popover-wrap" id="rulesMenuWrap">
+          <button id="rulesTriggerBtn" class="ghost-btn" type="button">
+            <span data-i18n="moreRulesBtn">更多选项</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"></path></svg>
+          </button>
+          <div id="rulesPopover" class="popover-panel hidden" style="min-width:270px;">
+            <label class="inline-toggle" style="justify-content:space-between;padding:4px 2px;">
+              <span data-i18n="onlyLandscapeLabel">仅拆分横向跨页（保留竖版单页）</span>
+              <span class="mini-switch">
+                <input id="onlyLandscapeCheck" type="checkbox" checked />
+                <span class="mini-track"></span>
+              </span>
+            </label>
+
+            <div class="popover-divider"></div>
+            <div class="popover-title" data-i18n="bleedModeTitle">出血处理方式</div>
+            <button class="popover-option bleed-mode-opt selected" type="button" data-value="trim">
+              <span data-i18n="actionTrim">裁除出血，输出净尺寸单页</span>
+              <span>✓</span>
+            </button>
+            <button class="popover-option bleed-mode-opt" type="button" data-value="keep">
+              <span data-i18n="actionKeep">保留原外侧出血，仅对半切开</span>
+              <span></span>
+            </button>
+
+            <div class="popover-divider"></div>
+            <div class="popover-title" data-i18n="dirTitle">阅读拆分顺序</div>
+            <button class="popover-option dir-opt selected" type="button" data-value="ltr">
+              <span data-i18n="dirLTR">先左页、后右页（常规画册）</span>
+              <span>✓</span>
+            </button>
+            <button class="popover-option dir-opt" type="button" data-value="rtl">
+              <span data-i18n="dirRTL">先右页、后左页（古籍 / 日漫）</span>
+              <span></span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ribbon-right">
+        <span id="smartHint" class="smart-note"></span>
+      </div>
+    </div>
+
+    <!-- Main Centered Whitespace Stage -->
+    <main id="stageViewport" class="canvas-stage is-empty">
+      <input id="fileInput" type="file" accept=".pdf,application/pdf" multiple class="hidden" />
+
+      <!-- Empty State: Pure Minimalist Landing -->
+      <div id="emptyStage" class="empty-landing">
+        <h2 data-i18n="emptyHeading">将跨页 PDF 拆分为单页</h2>
+        <p data-i18n="emptySub">支持自定义四周出血裁切、封面封底顺序自动归位，以及实时裁切线预览</p>
+
+        <div id="dropzone" class="minimal-drop-box" role="button" tabindex="0">
+          <div class="choose-file-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span data-i18n="chooseBtn">选择 PDF 文件</span>
+          </div>
+          <span class="drop-hint-line" data-i18n="dropHint">或直接将单个、多个 PDF 拖入页面任意位置</span>
+        </div>
+
+        <div class="privacy-footnote" data-i18n="localFootnote">文件仅在本地浏览器处理，不会上传服务器 · 100% 保留矢量与 CMYK 印刷色彩</div>
+      </div>
+
+      <!-- View 1: Centered Spread Preview -->
+      <div id="spreadViewContainer" class="paper-frame hidden">
+        <canvas id="spreadCanvas"></canvas>
+        <div class="guides-overlay">
+          <div id="shadeTop" class="bleed-bar"></div>
+          <div id="shadeBottom" class="bleed-bar"></div>
+          <div id="shadeLeft" class="bleed-bar"></div>
+          <div id="shadeRight" class="bleed-bar"></div>
+          <div id="trimRect" class="trim-box-line"></div>
+          <div id="centerLine" class="center-cut-line"></div>
+          <div id="leftBadge" class="minimal-badge"></div>
+          <div id="rightBadge" class="minimal-badge"></div>
+        </div>
+      </div>
+
+      <!-- View 2: Frameless Single-Page Sequence Grid -->
+      <div id="sequenceGrid" class="clean-grid hidden"></div>
+
+      <!-- Quiet Floating Bottom Pager & Zoom -->
+      <div id="bottomPager" class="floating-pager hidden">
+        <button id="prevSpreadBtn" class="pager-btn" type="button" aria-label="Previous">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"></path></svg>
+        </button>
+        <span id="pageIndicator" class="pager-text">1 / 1</span>
+        <button id="nextSpreadBtn" class="pager-btn" type="button" aria-label="Next">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"></path></svg>
+        </button>
+        <span class="header-sep" style="margin:0 4px;"></span>
+        <button id="zoomOutBtn" class="pager-btn" type="button" title="缩小">−</button>
+        <button id="zoomFitBtn" class="pager-btn" type="button" style="width:auto;padding:0 7px;font-size:11.5px;font-weight:500;">
+          <span id="zoomLabel">100%</span>
+        </button>
+        <button id="zoomInBtn" class="pager-btn" type="button" title="放大">+</button>
+      </div>
+    </main>
+  </div>
+
+  <!-- Embedded Offline Engines -->
+  <script id="pdf-worker-code" type="text/plain">
+/*__INLINE_PDF_WORKER__*/
+  </script>
+  <script>
+/*__INLINE_PDF_LIB__*/
+  </script>
+  <script>
+/*__INLINE_PDF_JS__*/
+  </script>
+  <script>
+/*__INLINE_APP_JS__*/
+  </script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# Node
+node_modules/
+npm-debug.log*
+
+# Python & PyInstaller
+__pycache__/
+*.py[cod]
+build/
+dist/
+*.spec
+*.exe
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
