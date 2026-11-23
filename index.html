@@ -440,15 +440,15 @@ svg.lucide {
 
 /* Contextual Top Action Bar (Adapts to active Left Big Button) */
 .context-bar {
-  min-height: 56px;
-  padding: 8px 22px;
+  height: 56px;
+  padding: 0 18px;
   background: var(--bg-sidebar);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
+  gap: 10px;
+  flex-wrap: nowrap;
   flex-shrink: 0;
   z-index: 25;
 }
@@ -457,8 +457,9 @@ svg.lucide {
 .ctx-right {
   display: flex;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
+  gap: 8px;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .seg-group {
@@ -1276,9 +1277,9 @@ svg.lucide {
             </div>
 
             <!-- 4-Side Popover -->
-            <div class="popover-anchor">
+            <div class="popover-anchor" id="quadPopAnchor">
               <button id="quadPopBtn" class="icon-btn" type="button">
-                <span data-i18n="customSidesBtn">四边独立</span>
+                <span data-i18n="customSidesBtn">四边</span>
                 <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-chevron-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m6 9 6 6 6-6" /> </svg>
               </button>
               <div id="quadPopover" class="popover-card hidden">
@@ -1555,7 +1556,7 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
       downloadOfflineBtn: "下载单文件离线版 (.html)",
       bleedShort: "出血",
       preset0: "无 0",
-      customSidesBtn: "四边独立",
+      customSidesBtn: "四边",
       secBleed: "四边独立出血 (mm)",
       sideTop: "上",
       sideBottom: "下",
@@ -2581,8 +2582,8 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
 
     if (sampleOut) {
       el.dimSummaryText.textContent = isKeep || isPreflight
-        ? `${curSpread.wMm.toFixed(0)}×${curSpread.hMm.toFixed(0)}mm · ${active.pageInfos.length}${t("pagesUnit")}`
-        : `${curSpread.wMm.toFixed(0)}×${curSpread.hMm.toFixed(0)} → ${sampleOut.outWMm.toFixed(0)}×${sampleOut.outHMm.toFixed(0)}mm (${plan.length}${t("pagesUnit")})`;
+        ? `${curSpread.wMm.toFixed(0)}×${curSpread.hMm.toFixed(0)}mm (${active.pageInfos.length}${t("pagesUnit")})`
+        : `${sampleOut.outWMm.toFixed(0)}×${sampleOut.outHMm.toFixed(0)}mm (${plan.length}${t("pagesUnit")})`;
     }
 
     if (isPreflight) {

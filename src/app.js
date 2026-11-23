@@ -38,7 +38,7 @@
       downloadOfflineBtn: "下载单文件离线版 (.html)",
       bleedShort: "出血",
       preset0: "无 0",
-      customSidesBtn: "四边独立",
+      customSidesBtn: "四边",
       secBleed: "四边独立出血 (mm)",
       sideTop: "上",
       sideBottom: "下",
@@ -1064,8 +1064,8 @@
 
     if (sampleOut) {
       el.dimSummaryText.textContent = isKeep || isPreflight
-        ? `${curSpread.wMm.toFixed(0)}×${curSpread.hMm.toFixed(0)}mm · ${active.pageInfos.length}${t("pagesUnit")}`
-        : `${curSpread.wMm.toFixed(0)}×${curSpread.hMm.toFixed(0)} → ${sampleOut.outWMm.toFixed(0)}×${sampleOut.outHMm.toFixed(0)}mm (${plan.length}${t("pagesUnit")})`;
+        ? `${curSpread.wMm.toFixed(0)}×${curSpread.hMm.toFixed(0)}mm (${active.pageInfos.length}${t("pagesUnit")})`
+        : `${sampleOut.outWMm.toFixed(0)}×${sampleOut.outHMm.toFixed(0)}mm (${plan.length}${t("pagesUnit")})`;
     }
 
     if (isPreflight) {
