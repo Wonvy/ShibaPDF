@@ -1801,6 +1801,9 @@ svg.lucide {
               <button id="undoEditBtn" class="ghost-btn hidden" type="button">
                 <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-undo-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M9 14 4 9l5-5" /> <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" /> </svg><span data-i18n="undoBtn">撤销</span>
               </button>
+              <button id="cancelEditTaskBtn" class="ghost-btn active hidden" type="button">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M18 6 6 18" /> <path d="m6 6 12 12" /> </svg><span data-i18n="cancelTaskBtn">退出当前选择 (Esc)</span>
+              </button>
               <span id="editHintLabel" style="font-size:12px;color:var(--text-3);" data-i18n="editClickHint">点选文字或图片即可修改/拖入替换</span>
             </div>
 
@@ -2142,6 +2145,12 @@ svg.lucide {
         <button id="fmtDeleteNodeBtn" class="del-icon-btn" type="button" title="Delete Text">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-trash-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /> </svg>
         </button>
+        <button id="fmtDiscardBtn" class="ghost-btn" style="height:26px;padding:0 8px;font-size:11.5px;" type="button" title="Esc">
+          <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:12px;height:12px;" class="lucide lucide-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M18 6 6 18" /> <path d="m6 6 12 12" /> </svg><span data-i18n="discardEditBtn">放弃</span>
+        </button>
+        <button id="fmtDoneBtn" class="primary-btn" style="height:26px;padding:0 9px;font-size:11.5px;border-radius:6px;" type="button">
+          <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:12px;height:12px;" class="lucide lucide-check" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M20 6 9 17l-5-5" /> </svg><span data-i18n="doneEditBtn">完成</span>
+        </button>
       </div>
 
       <!-- Floating Mini Image Replacement & Fit Bar -->
@@ -2158,6 +2167,9 @@ svg.lucide {
         <button id="imgRestoreBtn" class="ghost-btn hidden" style="height:26px;padding:0 8px;font-size:11.5px;" type="button" data-i18n="restoreImgBtn">恢复原图</button>
         <button id="imgDeleteNodeBtn" class="del-icon-btn" type="button" title="Erase / Delete Image">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-trash-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10 11v6" /> <path d="M14 11v6" /> <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" /> <path d="M3 6h18" /> <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /> </svg>
+        </button>
+        <button id="imgCancelSelBtn" class="ghost-btn" style="height:26px;padding:0 8px;font-size:11.5px;" type="button" title="Esc">
+          <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:12px;height:12px;" class="lucide lucide-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M18 6 6 18" /> <path d="m6 6 12 12" /> </svg><span data-i18n="deselectBtn">取消选中</span>
         </button>
       </div>
 
@@ -2343,6 +2355,10 @@ window.SHIBA_I18N = {
     exportMergedBtn: "导出完整 PDF ({n}页)",
     addTextBtn: "添加文字",
     addImgBtn: "添加图片",
+    cancelTaskBtn: "退出当前选择 (Esc)",
+    discardEditBtn: "放弃",
+    doneEditBtn: "完成",
+    deselectBtn: "取消选中",
     replaceImgBtn: "替换图片...",
     delOrigImgBtn: "擦除原图",
     restoreImgBtn: "恢复原图",
@@ -2560,6 +2576,10 @@ window.SHIBA_I18N = {
     exportMergedBtn: "Export Full PDF ({n}p)",
     addTextBtn: "Add Text",
     addImgBtn: "Add Image",
+    cancelTaskBtn: "Cancel / Deselect (Esc)",
+    discardEditBtn: "Discard",
+    doneEditBtn: "Done",
+    deselectBtn: "Deselect",
     replaceImgBtn: "Replace Image...",
     delOrigImgBtn: "Erase Image",
     restoreImgBtn: "Restore",
@@ -4834,6 +4854,8 @@ window.ShibaAnnotate = (function () {
     selectedTextId: null,
     selectedOrigImgId: null,
     selectedImgEditId: null,
+    textSessionInitial: null,
+    abortAnnDrawFn: null,
     imgInputMode: "replace",
 
     // Freeform Designer Annotation Board State
@@ -4939,6 +4961,7 @@ window.ShibaAnnotate = (function () {
     rotatePageBtn: document.getElementById("rotatePageBtn"),
     deletePageBtn: document.getElementById("deletePageBtn"),
     undoEditBtn: document.getElementById("undoEditBtn"),
+    cancelEditTaskBtn: document.getElementById("cancelEditTaskBtn"),
     editHintLabel: document.getElementById("editHintLabel"),
 
     annotateControls: document.getElementById("annotateControls"),
@@ -5073,6 +5096,8 @@ window.ShibaAnnotate = (function () {
     fmtMaskCheck: document.getElementById("fmtMaskCheck"),
     fmtBgInput: document.getElementById("fmtBgInput"),
     fmtDeleteNodeBtn: document.getElementById("fmtDeleteNodeBtn"),
+    fmtDiscardBtn: document.getElementById("fmtDiscardBtn"),
+    fmtDoneBtn: document.getElementById("fmtDoneBtn"),
 
     // Floating Image Replacement & Fit Bar
     imgFmtBar: document.getElementById("imgFmtBar"),
@@ -5081,6 +5106,7 @@ window.ShibaAnnotate = (function () {
     imgFitChips: Array.from(document.querySelectorAll(".img-fit-chip")),
     imgRestoreBtn: document.getElementById("imgRestoreBtn"),
     imgDeleteNodeBtn: document.getElementById("imgDeleteNodeBtn"),
+    imgCancelSelBtn: document.getElementById("imgCancelSelBtn"),
 
     // Bottom Pager
     bottomPager: document.getElementById("bottomPager"),
@@ -5280,6 +5306,64 @@ window.ShibaAnnotate = (function () {
   );
 
   window.addEventListener("keydown", (e) => {
+    // Universal Escape Hatch — Cancel active task, discard uncommitted edit, or clear selection anywhere!
+    if (e.key === "Escape") {
+      e.preventDefault();
+      if (state.abortAnnDrawFn) {
+        state.abortAnnDrawFn();
+        return;
+      }
+      if (document.activeElement && typeof document.activeElement.blur === "function") {
+        document.activeElement.blur();
+      }
+      if (!el.imposePopover.classList.contains("hidden") || !el.splitParamsPopover.classList.contains("hidden")) {
+        closeAllPopovers();
+        return;
+      }
+      if (isAnnotateMode()) {
+        if (state.selectedAnnId) {
+          state.selectedAnnId = null;
+          redrawAnnotateLayer(null);
+          updateTopStripControls();
+        } else if (state.annTool !== "select" && state.annTool !== "pan") {
+          state.annTool = "select";
+          syncAnnotateCursor();
+          redrawAnnotateLayer(null);
+          updateTopStripControls();
+        }
+        return;
+      }
+      if (state.placingNewText) {
+        state.placingNewText = false;
+        updateTopStripControls();
+        renderTextEditorOverlay();
+        return;
+      }
+      if (state.selectedTextId) {
+        discardActiveTextSession();
+        return;
+      }
+      if (state.selectedOrigImgId || state.selectedImgEditId) {
+        clearAllContentSelections();
+        updateTopStripControls();
+        renderTextEditorOverlay();
+        return;
+      }
+      if (state.pillar === "pages" && state.pagesSub === "organize" && getSelectedSlots().length > 0) {
+        state.pages.forEach((s) => { s.selected = false; });
+        syncOrganizeSelectionUI();
+        return;
+      }
+      if (state.pillar === "preflight" && state.activePfHighlights.length > 0) {
+        state.activePfHighlights = [];
+        state.selectedPfCardIdx = -1;
+        renderPreflightBadgeAndDrawer();
+        renderPreflightHighlightBoxes();
+        return;
+      }
+      return;
+    }
+
     const activeTag = document.activeElement ? document.activeElement.tagName : "";
     const inEditable =
       activeTag === "INPUT" ||
@@ -5843,6 +5927,48 @@ window.ShibaAnnotate = (function () {
     state.selectedTextId = null;
     state.selectedOrigImgId = null;
     state.selectedImgEditId = null;
+    state.textSessionInitial = null;
+  }
+
+  function discardActiveTextSession() {
+    const slot = getActiveSlot();
+    const sess = state.textSessionInitial;
+    if (slot && sess && state.selectedTextId === sess.edId) {
+      if (sess.isNew) {
+        slot.edits = slot.edits.filter((x) => x.id !== sess.edId);
+        if (sess.pushedUndo && state.undoStack.length) state.undoStack.pop();
+      } else if (sess.snapshot) {
+        const target = slot.edits.find((x) => x.id === sess.edId);
+        if (target) Object.assign(target, JSON.parse(sess.snapshot));
+      }
+    }
+    state.placingNewText = false;
+    clearAllContentSelections();
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+      document.activeElement.blur();
+    }
+    updateTopStripControls();
+    renderTextEditorOverlay();
+  }
+
+  function commitAndDeselectContent() {
+    const slot = getActiveSlot();
+    const sess = state.textSessionInitial;
+    if (slot && sess && sess.isNew && state.selectedTextId === sess.edId) {
+      const ed = slot.edits.find((x) => x.id === sess.edId);
+      if (ed && JSON.stringify(ed) === sess.snapshot) {
+        // User clicked an original text span and didn't change anything -> clean up no-op box!
+        slot.edits = slot.edits.filter((x) => x.id !== sess.edId);
+        if (sess.pushedUndo && state.undoStack.length) state.undoStack.pop();
+      }
+    }
+    state.placingNewText = false;
+    clearAllContentSelections();
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+      document.activeElement.blur();
+    }
+    updateTopStripControls();
+    renderTextEditorOverlay();
   }
 
   function openImageFileDialog(mode) {
@@ -6021,9 +6147,21 @@ window.ShibaAnnotate = (function () {
 
         imgHit.addEventListener("click", (ev) => {
           ev.stopPropagation();
-          state.selectedTextId = null;
-          state.selectedImgEditId = null;
+          // If user was editing text and clicked outside onto a background photo, commit & exit text first!
+          if (state.selectedTextId) {
+            commitAndDeselectContent();
+            return;
+          }
+          // Clicking an already-selected original image toggles selection OFF cleanly!
+          if (isSelOrig) {
+            clearAllContentSelections();
+            updateTopStripControls();
+            renderTextEditorOverlay();
+            return;
+          }
+          clearAllContentSelections();
           state.selectedOrigImgId = sp.id;
+          updateTopStripControls();
           renderTextEditorOverlay();
         });
 
@@ -6255,6 +6393,7 @@ window.ShibaAnnotate = (function () {
         hit.style.height = `${Math.max(10, sp.vh * cssH)}px`;
         hit.addEventListener("click", (ev) => {
           ev.stopPropagation();
+          commitAndDeselectContent();
           const sampled = sampleColorsAroundSpan(sp);
           pushUndo();
           const newEd = {
@@ -6278,6 +6417,13 @@ window.ShibaAnnotate = (function () {
           state.selectedOrigImgId = null;
           state.selectedImgEditId = null;
           state.selectedTextId = newEd.id;
+          state.textSessionInitial = {
+            isNew: true,
+            edId: newEd.id,
+            pushedUndo: true,
+            snapshot: JSON.stringify(newEd)
+          };
+          updateTopStripControls();
           renderTextEditorOverlay();
           focusSelectedEditorNode();
         });
@@ -6380,9 +6526,15 @@ window.ShibaAnnotate = (function () {
           window.removeEventListener("pointerup", onUp);
           document.body.classList.remove("is-dragging-box");
           if (!moved && state.selectedTextId !== ed.id) {
-            state.selectedOrigImgId = null;
-            state.selectedImgEditId = null;
+            commitAndDeselectContent();
             state.selectedTextId = ed.id;
+            state.textSessionInitial = {
+              isNew: false,
+              edId: ed.id,
+              pushedUndo: false,
+              snapshot: JSON.stringify(ed)
+            };
+            updateTopStripControls();
             renderTextEditorOverlay();
             focusSelectedEditorNode();
           } else {
@@ -7380,6 +7532,10 @@ window.ShibaAnnotate = (function () {
 
     el.deletePageBtn.disabled = state.pages.length <= 1;
     el.undoEditBtn.classList.toggle("hidden", state.undoStack.length === 0);
+    const hasActiveEditTask = Boolean(
+      state.placingNewText || state.selectedTextId || state.selectedOrigImgId || state.selectedImgEditId
+    );
+    el.cancelEditTaskBtn.classList.toggle("hidden", !hasActiveEditTask);
     el.addTextBtn.classList.toggle("active", state.placingNewText);
     el.editHintLabel.textContent = state.placingNewText ? t("editPlaceHint") : t("editClickHint");
 
@@ -8099,9 +8255,21 @@ window.ShibaAnnotate = (function () {
       redrawAnnotateLayer(liveShape);
     }
 
-    function onDrawUp() {
+    function cleanupDrawListeners() {
       window.removeEventListener("pointermove", onDrawMove);
       window.removeEventListener("pointerup", onDrawUp);
+      state.abortAnnDrawFn = null;
+    }
+
+    state.abortAnnDrawFn = () => {
+      cleanupDrawListeners();
+      liveShape = null;
+      redrawAnnotateLayer(null);
+      updateTopStripControls();
+    };
+
+    function onDrawUp() {
+      cleanupDrawListeners();
       if (!liveShape) return;
       const valid =
         (liveShape.type === "pen" && liveShape.pts.length >= 2) ||
@@ -8182,10 +8350,51 @@ window.ShibaAnnotate = (function () {
     }
   });
 
-  // Content Edit Controls (Text & Images) & Floating Format Bars
-  el.addTextBtn.addEventListener("click", () => {
-    state.placingNewText = !state.placingNewText;
+  // Content Edit Controls (Text & Images), Cancel/Deselect & Floating Format Bars
+  el.cancelEditTaskBtn.addEventListener("click", () => {
+    if (state.selectedTextId) commitAndDeselectContent();
+    else {
+      state.placingNewText = false;
+      clearAllContentSelections();
+      updateTopStripControls();
+      renderTextEditorOverlay();
+    }
+  });
+
+  el.fmtDiscardBtn.addEventListener("click", () => {
+    discardActiveTextSession();
+  });
+
+  el.fmtDoneBtn.addEventListener("click", () => {
+    commitAndDeselectContent();
+  });
+
+  el.imgCancelSelBtn.addEventListener("click", () => {
     clearAllContentSelections();
+    updateTopStripControls();
+    renderTextEditorOverlay();
+  });
+
+  // Clicking empty workspace background (#stageViewport / #sequenceGrid gap) deselects & exits active tasks!
+  el.stageViewport.addEventListener("click", (ev) => {
+    if (ev.target !== el.stageViewport && ev.target !== el.sequenceGrid) return;
+    if (state.pillar === "pages" && state.pagesSub === "text") {
+      commitAndDeselectContent();
+    } else if (state.pillar === "pages" && state.pagesSub === "organize" && getSelectedSlots().length > 0) {
+      state.pages.forEach((s) => { s.selected = false; });
+      syncOrganizeSelectionUI();
+    } else if (state.pillar === "preflight" && state.activePfHighlights.length > 0) {
+      state.activePfHighlights = [];
+      state.selectedPfCardIdx = -1;
+      renderPreflightBadgeAndDrawer();
+      renderPreflightHighlightBoxes();
+    }
+  });
+
+  el.addTextBtn.addEventListener("click", () => {
+    const nextVal = !state.placingNewText;
+    commitAndDeselectContent();
+    state.placingNewText = nextVal;
     updateTopStripControls();
     renderTextEditorOverlay();
   });
@@ -8313,12 +8522,17 @@ window.ShibaAnnotate = (function () {
       state.placingNewText = false;
       clearAllContentSelections();
       state.selectedTextId = newEd.id;
+      state.textSessionInitial = {
+        isNew: true,
+        edId: newEd.id,
+        pushedUndo: true,
+        snapshot: JSON.stringify(newEd)
+      };
       updateTopStripControls();
       renderTextEditorOverlay();
       focusSelectedEditorNode();
     } else if (state.selectedTextId || state.selectedOrigImgId || state.selectedImgEditId) {
-      clearAllContentSelections();
-      renderTextEditorOverlay();
+      commitAndDeselectContent();
     }
   });
 

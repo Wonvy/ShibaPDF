@@ -49,6 +49,8 @@
     selectedTextId: null,
     selectedOrigImgId: null,
     selectedImgEditId: null,
+    textSessionInitial: null,
+    abortAnnDrawFn: null,
     imgInputMode: "replace",
 
     // Freeform Designer Annotation Board State
@@ -154,6 +156,7 @@
     rotatePageBtn: document.getElementById("rotatePageBtn"),
     deletePageBtn: document.getElementById("deletePageBtn"),
     undoEditBtn: document.getElementById("undoEditBtn"),
+    cancelEditTaskBtn: document.getElementById("cancelEditTaskBtn"),
     editHintLabel: document.getElementById("editHintLabel"),
 
     annotateControls: document.getElementById("annotateControls"),
@@ -288,6 +291,8 @@
     fmtMaskCheck: document.getElementById("fmtMaskCheck"),
     fmtBgInput: document.getElementById("fmtBgInput"),
     fmtDeleteNodeBtn: document.getElementById("fmtDeleteNodeBtn"),
+    fmtDiscardBtn: document.getElementById("fmtDiscardBtn"),
+    fmtDoneBtn: document.getElementById("fmtDoneBtn"),
 
     // Floating Image Replacement & Fit Bar
     imgFmtBar: document.getElementById("imgFmtBar"),
@@ -296,6 +301,7 @@
     imgFitChips: Array.from(document.querySelectorAll(".img-fit-chip")),
     imgRestoreBtn: document.getElementById("imgRestoreBtn"),
     imgDeleteNodeBtn: document.getElementById("imgDeleteNodeBtn"),
+    imgCancelSelBtn: document.getElementById("imgCancelSelBtn"),
 
     // Bottom Pager
     bottomPager: document.getElementById("bottomPager"),
@@ -495,6 +501,64 @@
   );
 
   window.addEventListener("keydown", (e) => {
+    // Universal Escape Hatch — Cancel active task, discard uncommitted edit, or clear selection anywhere!
+    if (e.key === "Escape") {
+      e.preventDefault();
+      if (state.abortAnnDrawFn) {
+        state.abortAnnDrawFn();
+        return;
+      }
+      if (document.activeElement && typeof document.activeElement.blur === "function") {
+        document.activeElement.blur();
+      }
+      if (!el.imposePopover.classList.contains("hidden") || !el.splitParamsPopover.classList.contains("hidden")) {
+        closeAllPopovers();
+        return;
+      }
+      if (isAnnotateMode()) {
+        if (state.selectedAnnId) {
+          state.selectedAnnId = null;
+          redrawAnnotateLayer(null);
+          updateTopStripControls();
+        } else if (state.annTool !== "select" && state.annTool !== "pan") {
+          state.annTool = "select";
+          syncAnnotateCursor();
+          redrawAnnotateLayer(null);
+          updateTopStripControls();
+        }
+        return;
+      }
+      if (state.placingNewText) {
+        state.placingNewText = false;
+        updateTopStripControls();
+        renderTextEditorOverlay();
+        return;
+      }
+      if (state.selectedTextId) {
+        discardActiveTextSession();
+        return;
+      }
+      if (state.selectedOrigImgId || state.selectedImgEditId) {
+        clearAllContentSelections();
+        updateTopStripControls();
+        renderTextEditorOverlay();
+        return;
+      }
+      if (state.pillar === "pages" && state.pagesSub === "organize" && getSelectedSlots().length > 0) {
+        state.pages.forEach((s) => { s.selected = false; });
+        syncOrganizeSelectionUI();
+        return;
+      }
+      if (state.pillar === "preflight" && state.activePfHighlights.length > 0) {
+        state.activePfHighlights = [];
+        state.selectedPfCardIdx = -1;
+        renderPreflightBadgeAndDrawer();
+        renderPreflightHighlightBoxes();
+        return;
+      }
+      return;
+    }
+
     const activeTag = document.activeElement ? document.activeElement.tagName : "";
     const inEditable =
       activeTag === "INPUT" ||
@@ -1058,6 +1122,48 @@
     state.selectedTextId = null;
     state.selectedOrigImgId = null;
     state.selectedImgEditId = null;
+    state.textSessionInitial = null;
+  }
+
+  function discardActiveTextSession() {
+    const slot = getActiveSlot();
+    const sess = state.textSessionInitial;
+    if (slot && sess && state.selectedTextId === sess.edId) {
+      if (sess.isNew) {
+        slot.edits = slot.edits.filter((x) => x.id !== sess.edId);
+        if (sess.pushedUndo && state.undoStack.length) state.undoStack.pop();
+      } else if (sess.snapshot) {
+        const target = slot.edits.find((x) => x.id === sess.edId);
+        if (target) Object.assign(target, JSON.parse(sess.snapshot));
+      }
+    }
+    state.placingNewText = false;
+    clearAllContentSelections();
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+      document.activeElement.blur();
+    }
+    updateTopStripControls();
+    renderTextEditorOverlay();
+  }
+
+  function commitAndDeselectContent() {
+    const slot = getActiveSlot();
+    const sess = state.textSessionInitial;
+    if (slot && sess && sess.isNew && state.selectedTextId === sess.edId) {
+      const ed = slot.edits.find((x) => x.id === sess.edId);
+      if (ed && JSON.stringify(ed) === sess.snapshot) {
+        // User clicked an original text span and didn't change anything -> clean up no-op box!
+        slot.edits = slot.edits.filter((x) => x.id !== sess.edId);
+        if (sess.pushedUndo && state.undoStack.length) state.undoStack.pop();
+      }
+    }
+    state.placingNewText = false;
+    clearAllContentSelections();
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+      document.activeElement.blur();
+    }
+    updateTopStripControls();
+    renderTextEditorOverlay();
   }
 
   function openImageFileDialog(mode) {
@@ -1236,9 +1342,21 @@
 
         imgHit.addEventListener("click", (ev) => {
           ev.stopPropagation();
-          state.selectedTextId = null;
-          state.selectedImgEditId = null;
+          // If user was editing text and clicked outside onto a background photo, commit & exit text first!
+          if (state.selectedTextId) {
+            commitAndDeselectContent();
+            return;
+          }
+          // Clicking an already-selected original image toggles selection OFF cleanly!
+          if (isSelOrig) {
+            clearAllContentSelections();
+            updateTopStripControls();
+            renderTextEditorOverlay();
+            return;
+          }
+          clearAllContentSelections();
           state.selectedOrigImgId = sp.id;
+          updateTopStripControls();
           renderTextEditorOverlay();
         });
 
@@ -1470,6 +1588,7 @@
         hit.style.height = `${Math.max(10, sp.vh * cssH)}px`;
         hit.addEventListener("click", (ev) => {
           ev.stopPropagation();
+          commitAndDeselectContent();
           const sampled = sampleColorsAroundSpan(sp);
           pushUndo();
           const newEd = {
@@ -1493,6 +1612,13 @@
           state.selectedOrigImgId = null;
           state.selectedImgEditId = null;
           state.selectedTextId = newEd.id;
+          state.textSessionInitial = {
+            isNew: true,
+            edId: newEd.id,
+            pushedUndo: true,
+            snapshot: JSON.stringify(newEd)
+          };
+          updateTopStripControls();
           renderTextEditorOverlay();
           focusSelectedEditorNode();
         });
@@ -1595,9 +1721,15 @@
           window.removeEventListener("pointerup", onUp);
           document.body.classList.remove("is-dragging-box");
           if (!moved && state.selectedTextId !== ed.id) {
-            state.selectedOrigImgId = null;
-            state.selectedImgEditId = null;
+            commitAndDeselectContent();
             state.selectedTextId = ed.id;
+            state.textSessionInitial = {
+              isNew: false,
+              edId: ed.id,
+              pushedUndo: false,
+              snapshot: JSON.stringify(ed)
+            };
+            updateTopStripControls();
             renderTextEditorOverlay();
             focusSelectedEditorNode();
           } else {
@@ -2595,6 +2727,10 @@
 
     el.deletePageBtn.disabled = state.pages.length <= 1;
     el.undoEditBtn.classList.toggle("hidden", state.undoStack.length === 0);
+    const hasActiveEditTask = Boolean(
+      state.placingNewText || state.selectedTextId || state.selectedOrigImgId || state.selectedImgEditId
+    );
+    el.cancelEditTaskBtn.classList.toggle("hidden", !hasActiveEditTask);
     el.addTextBtn.classList.toggle("active", state.placingNewText);
     el.editHintLabel.textContent = state.placingNewText ? t("editPlaceHint") : t("editClickHint");
 
@@ -3314,9 +3450,21 @@
       redrawAnnotateLayer(liveShape);
     }
 
-    function onDrawUp() {
+    function cleanupDrawListeners() {
       window.removeEventListener("pointermove", onDrawMove);
       window.removeEventListener("pointerup", onDrawUp);
+      state.abortAnnDrawFn = null;
+    }
+
+    state.abortAnnDrawFn = () => {
+      cleanupDrawListeners();
+      liveShape = null;
+      redrawAnnotateLayer(null);
+      updateTopStripControls();
+    };
+
+    function onDrawUp() {
+      cleanupDrawListeners();
       if (!liveShape) return;
       const valid =
         (liveShape.type === "pen" && liveShape.pts.length >= 2) ||
@@ -3397,10 +3545,51 @@
     }
   });
 
-  // Content Edit Controls (Text & Images) & Floating Format Bars
-  el.addTextBtn.addEventListener("click", () => {
-    state.placingNewText = !state.placingNewText;
+  // Content Edit Controls (Text & Images), Cancel/Deselect & Floating Format Bars
+  el.cancelEditTaskBtn.addEventListener("click", () => {
+    if (state.selectedTextId) commitAndDeselectContent();
+    else {
+      state.placingNewText = false;
+      clearAllContentSelections();
+      updateTopStripControls();
+      renderTextEditorOverlay();
+    }
+  });
+
+  el.fmtDiscardBtn.addEventListener("click", () => {
+    discardActiveTextSession();
+  });
+
+  el.fmtDoneBtn.addEventListener("click", () => {
+    commitAndDeselectContent();
+  });
+
+  el.imgCancelSelBtn.addEventListener("click", () => {
     clearAllContentSelections();
+    updateTopStripControls();
+    renderTextEditorOverlay();
+  });
+
+  // Clicking empty workspace background (#stageViewport / #sequenceGrid gap) deselects & exits active tasks!
+  el.stageViewport.addEventListener("click", (ev) => {
+    if (ev.target !== el.stageViewport && ev.target !== el.sequenceGrid) return;
+    if (state.pillar === "pages" && state.pagesSub === "text") {
+      commitAndDeselectContent();
+    } else if (state.pillar === "pages" && state.pagesSub === "organize" && getSelectedSlots().length > 0) {
+      state.pages.forEach((s) => { s.selected = false; });
+      syncOrganizeSelectionUI();
+    } else if (state.pillar === "preflight" && state.activePfHighlights.length > 0) {
+      state.activePfHighlights = [];
+      state.selectedPfCardIdx = -1;
+      renderPreflightBadgeAndDrawer();
+      renderPreflightHighlightBoxes();
+    }
+  });
+
+  el.addTextBtn.addEventListener("click", () => {
+    const nextVal = !state.placingNewText;
+    commitAndDeselectContent();
+    state.placingNewText = nextVal;
     updateTopStripControls();
     renderTextEditorOverlay();
   });
@@ -3528,12 +3717,17 @@
       state.placingNewText = false;
       clearAllContentSelections();
       state.selectedTextId = newEd.id;
+      state.textSessionInitial = {
+        isNew: true,
+        edId: newEd.id,
+        pushedUndo: true,
+        snapshot: JSON.stringify(newEd)
+      };
       updateTopStripControls();
       renderTextEditorOverlay();
       focusSelectedEditorNode();
     } else if (state.selectedTextId || state.selectedOrigImgId || state.selectedImgEditId) {
-      clearAllContentSelections();
-      renderTextEditorOverlay();
+      commitAndDeselectContent();
     }
   });
 

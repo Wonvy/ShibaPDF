@@ -197,6 +197,9 @@
               <button id="undoEditBtn" class="ghost-btn hidden" type="button">
                 <i data-lucide="undo-2"></i><span data-i18n="undoBtn">撤销</span>
               </button>
+              <button id="cancelEditTaskBtn" class="ghost-btn active hidden" type="button">
+                <i data-lucide="x"></i><span data-i18n="cancelTaskBtn">退出当前选择 (Esc)</span>
+              </button>
               <span id="editHintLabel" style="font-size:12px;color:var(--text-3);" data-i18n="editClickHint">点选文字或图片即可修改/拖入替换</span>
             </div>
 
@@ -538,6 +541,12 @@
         <button id="fmtDeleteNodeBtn" class="del-icon-btn" type="button" title="Delete Text">
           <i data-lucide="trash-2"></i>
         </button>
+        <button id="fmtDiscardBtn" class="ghost-btn" style="height:26px;padding:0 8px;font-size:11.5px;" type="button" title="Esc">
+          <i data-lucide="x" style="width:12px;height:12px;"></i><span data-i18n="discardEditBtn">放弃</span>
+        </button>
+        <button id="fmtDoneBtn" class="primary-btn" style="height:26px;padding:0 9px;font-size:11.5px;border-radius:6px;" type="button">
+          <i data-lucide="check" style="width:12px;height:12px;"></i><span data-i18n="doneEditBtn">完成</span>
+        </button>
       </div>
 
       <!-- Floating Mini Image Replacement & Fit Bar -->
@@ -554,6 +563,9 @@
         <button id="imgRestoreBtn" class="ghost-btn hidden" style="height:26px;padding:0 8px;font-size:11.5px;" type="button" data-i18n="restoreImgBtn">恢复原图</button>
         <button id="imgDeleteNodeBtn" class="del-icon-btn" type="button" title="Erase / Delete Image">
           <i data-lucide="trash-2"></i>
+        </button>
+        <button id="imgCancelSelBtn" class="ghost-btn" style="height:26px;padding:0 8px;font-size:11.5px;" type="button" title="Esc">
+          <i data-lucide="x" style="width:12px;height:12px;"></i><span data-i18n="deselectBtn">取消选中</span>
         </button>
       </div>
 
