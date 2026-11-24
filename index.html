@@ -349,29 +349,29 @@ svg.lucide {
   border-color: var(--btn-bg);
 }
 
-/* High-Density Pro Navigation Pillars */
+/* High-Density Borderless Pro Navigation Pillars */
 .rail-tools {
   flex: 1;
   overflow-y: auto;
-  padding: 0 10px;
+  padding: 2px 12px 8px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 
 .big-tool-btn {
   width: 100%;
-  padding: 8px 9px;
-  border-radius: 9px;
-  border: 1px solid transparent;
+  padding: 6px 4px;
+  border-radius: 6px;
+  border: none;
   background: transparent;
   color: var(--text-1);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   text-align: left;
-  transition: background-color 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
+  transition: background-color 0.14s ease, color 0.14s ease;
 }
 
 .big-tool-btn:hover {
@@ -379,34 +379,34 @@ svg.lucide {
 }
 
 .big-tool-btn.active {
-  background: var(--bg-active-card);
-  border-color: var(--border-subtle);
-  box-shadow: var(--shadow-active);
+  background: transparent;
+  border: none;
+  box-shadow: none;
 }
 
 .tool-icon-box {
-  width: 28px;
-  height: 28px;
-  border-radius: 7px;
-  background: var(--bg-pill);
-  border: 1px solid var(--border-subtle);
+  width: 18px;
+  height: 18px;
+  border-radius: 0;
+  background: transparent;
+  border: none;
   color: var(--text-2);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background-color 0.14s, color 0.14s, border-color 0.14s;
+  transition: color 0.14s;
 }
 
 .tool-icon-box svg.lucide {
-  width: 14.5px;
-  height: 14.5px;
+  width: 15.5px;
+  height: 15.5px;
 }
 
 .big-tool-btn.active .tool-icon-box {
-  background: var(--btn-bg);
-  border-color: var(--btn-bg);
-  color: var(--btn-fg);
+  background: transparent;
+  border: none;
+  color: var(--text-1);
 }
 
 .tool-btn-copy {
@@ -1797,41 +1797,49 @@ svg.lucide {
 
 .rail-sub-list {
   display: none;
-  flex-direction: column;
-  gap: 2px;
-  margin-left: 18px;
-  padding-left: 9px;
-  border-left: 1px solid var(--border-subtle);
-  margin-top: 2px;
-  margin-bottom: 5px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 5px;
+  margin: 2px 0 8px 0;
+  padding: 0;
+  border-left: none;
 }
 
 .rail-group.open .rail-sub-list {
-  display: flex;
+  display: grid;
 }
 
 .rail-sub-btn {
   position: relative;
   height: 32px;
-  padding: 0 10px;
-  border: 1px solid transparent;
+  padding: 0 8px;
+  border: none;
   border-radius: 7px;
-  background: transparent;
+  background: var(--bg-pill);
   color: var(--text-2);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  transition: background-color 0.14s, color 0.14s, border-color 0.14s;
+  gap: 5px;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: background-color 0.14s, color 0.14s;
+}
+
+.rail-sub-btn span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .rail-sub-btn svg.lucide {
-  width: 14px;
-  height: 14px;
+  width: 13.5px;
+  height: 13.5px;
   opacity: 0.72;
+  flex-shrink: 0;
   transition: opacity 0.14s, color 0.14s;
 }
 
@@ -1845,26 +1853,15 @@ svg.lucide {
 }
 
 .rail-sub-btn.active {
-  background: var(--bg-active-card);
-  border-color: var(--border-subtle);
-  color: var(--text-1);
+  background: var(--btn-bg);
+  border: none;
+  color: var(--btn-fg);
   font-weight: 600;
-}
-
-.rail-sub-btn.active::before {
-  content: "";
-  position: absolute;
-  left: -10.5px;
-  top: 7px;
-  bottom: 7px;
-  width: 2px;
-  border-radius: 2px;
-  background: var(--text-1);
 }
 
 .rail-sub-btn.active svg.lucide {
   opacity: 1;
-  color: var(--text-1);
+  color: var(--btn-fg);
 }
 
 /* Freeform Infinite Designer Annotation Board */
@@ -2863,13 +2860,27 @@ svg.lucide {
   width: var(--right-w);
   background: var(--bg-rail);
   border-left: 1px solid var(--border-subtle);
-  padding: 12px 12px 20px;
+  padding: 12px 16px 20px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
   flex-shrink: 0;
   min-height: 0;
+}
+
+.impose-drawer .prop-card {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  gap: 11px;
+}
+
+.impose-drawer #imposeDrawerExportBtn {
+  margin-top: 14px;
 }
 
 @media (min-width: 901px) {
@@ -2883,7 +2894,10 @@ svg.lucide {
 .impose-method-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 7px;
+  gap: 1px;
+  background: var(--border-subtle);
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .impose-method-card {
@@ -2891,25 +2905,23 @@ svg.lucide {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 8px 6px 8px;
-  border-radius: 9px;
-  border: 1px solid var(--border-subtle);
+  padding: 11px 6px 10px;
+  border-radius: 0;
+  border: none;
   background: var(--bg-rail);
   color: var(--text-1);
   cursor: pointer;
-  transition: background-color 0.14s, border-color 0.14s, box-shadow 0.14s;
+  transition: background-color 0.14s, box-shadow 0.14s;
   gap: 3px;
 }
 
 .impose-method-card:hover {
   background: var(--bg-hover);
-  border-color: var(--border-strong);
 }
 
 .impose-method-card.active {
-  background: var(--accent-soft);
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
+  background: var(--bg-surface);
+  box-shadow: inset 0 0 0 1.5px var(--text-1);
 }
 
 .impose-svg-slot {
@@ -3504,7 +3516,7 @@ svg.lucide {
         <div class="brand-mark">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /> </svg>
           <span>ShibaPDF</span>
-          <span class="version-pill">v2.1.2</span>
+          <span class="version-pill">v2.1.3</span>
         </div>
         <div class="header-mini-btns">
           <button id="langBtn" class="ghost-btn" type="button" title="Switch Language">
@@ -3667,7 +3679,7 @@ svg.lucide {
         <button id="mobileMenuBtn" class="ghost-btn" type="button">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /> </svg>
           <span style="font-weight:700;">ShibaPDF</span>
-          <span class="version-pill">v2.1.2</span>
+          <span class="version-pill">v2.1.3</span>
         </button>
         <div style="display:flex;align-items:center;gap:4px;">
           <button id="mobileQuickOpenBtn" class="ghost-btn" type="button">
