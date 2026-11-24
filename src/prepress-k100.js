@@ -336,17 +336,25 @@ window.ShibaPrepress = (function () {
       } catch (_) {}
 
       const tx = pdfjsLib.Util.transform(vp.transform, item.transform);
-      const fontH = Math.max(7, Math.hypot(tx[2], tx[3]));
-      const ascent = (typeof st.ascent === "number" && st.ascent > 0.45 && st.ascent < 1.15) ? st.ascent : 0.84;
-      const descent = (typeof st.descent === "number" && Math.abs(st.descent) < 0.5) ? Math.abs(st.descent) : Math.max(0.14, 1 - ascent);
+      const det = Math.abs(tx[0] * tx[3] - tx[1] * tx[2]);
+      const scaleX = Math.hypot(tx[0], tx[1]) || Math.hypot(tx[2], tx[3]) || 1;
+      const fontH = Math.max(4, det > 0.01 ? det / scaleX : Math.hypot(tx[2], tx[3]));
+      const ascent = (typeof st.ascent === "number" && st.ascent > 0.45 && st.ascent < 1.15) ? st.ascent : 0.86;
+      const descent = (typeof st.descent === "number" && Math.abs(st.descent) < 0.5) ? Math.abs(st.descent) : Math.max(0.16, 1 - ascent);
       const left = tx[4];
       const baselineY = tx[5];
       const top = baselineY - fontH * ascent;
       const boxH = fontH * (ascent + descent);
+      const maskAsc = Math.max(ascent, 0.90);
+      const maskDesc = Math.max(descent, 0.24);
+      const maskTop = Math.max(0, baselineY - fontH * maskAsc);
+      const maskH = fontH * (maskAsc + maskDesc);
       const w = Math.max(fontH * 0.55, item.width || fontH * item.str.length * 0.58);
 
       const u = Math.min(0.985, Math.max(0, left / vp.width));
       const v = Math.min(0.985, Math.max(0, top / vp.height));
+      const maskV = Math.min(0.985, Math.max(0, maskTop / vp.height));
+      const uw = Math.min(1 - u, Math.max(0.01, w / vp.width));
       const fMeta = classifyPdfFontStyle(realPdfFontName || item.fontName, st);
 
       spans.push({
@@ -354,9 +362,16 @@ window.ShibaPrepress = (function () {
         str: item.str,
         u,
         v,
-        uw: Math.min(1 - u, Math.max(0.01, w / vp.width)),
+        baselineV: baselineY / vp.height,
+        uw,
         vh: Math.min(1 - v, Math.max(0.012, boxH / vp.height)),
-        fontPt: Math.round(fontH * 10) / 10,
+        maskRect: {
+          u,
+          v: maskV,
+          uw,
+          vh: Math.min(1 - maskV, Math.max(0.012, maskH / vp.height))
+        },
+        fontPt: Math.round(fontH * 100) / 100,
         ascent: Math.round(ascent * 1000) / 1000,
         bold: Boolean(fontObjBold || fMeta.bold),
         italic: Boolean(fontObjItalic || fMeta.italic),

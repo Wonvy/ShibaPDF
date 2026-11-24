@@ -1639,28 +1639,92 @@
     renderTextEditorOverlay();
   }
 
+  let baselineProbeWrap = null;
+  let baselineProbeTextNode = null;
+  let baselineProbeStrut = null;
+  const cssBaselinePxCache = new Map();
+
+  function measureCssBaselinePx(fontStack, bold, italic, lineHeight, sampleText, fontPx) {
+    const px = Math.max(4, fontPx || 16);
+    const lh = typeof lineHeight === "number" && lineHeight >= 0.8 ? lineHeight : 1.08;
+    const firstLine = String(sampleText || "").split("\n")[0] || "";
+    const hasNonAscii = /[^\x00-\x7F]/.test(firstLine);
+    const isEmbSub = String(fontStack || "").includes("ShibaPdfEmb_");
+    const sampleKey = isEmbSub ? firstLine.slice(0, 6) : hasNonAscii ? "cjk" : "asc";
+    const cacheKey = `${fontStack}|${bold ? 700 : 400}|${italic ? 1 : 0}|${lh.toFixed(3)}|${px.toFixed(2)}|${sampleKey}`;
+    if (cssBaselinePxCache.has(cacheKey)) return cssBaselinePxCache.get(cacheKey);
+
+    if (!baselineProbeWrap && typeof document !== "undefined" && document.body) {
+      baselineProbeWrap = document.createElement("div");
+      baselineProbeWrap.style.cssText =
+        "position:fixed;left:-9999px;top:-9999px;visibility:hidden;pointer-events:none;padding:0;margin:0;border:none;white-space:pre;";
+      baselineProbeTextNode = document.createTextNode("Hg");
+      baselineProbeStrut = document.createElement("span");
+      baselineProbeStrut.style.cssText =
+        "display:inline-block;width:0;height:0;margin:0;padding:0;border:0;overflow:hidden;vertical-align:baseline;";
+      baselineProbeWrap.appendChild(baselineProbeTextNode);
+      baselineProbeWrap.appendChild(baselineProbeStrut);
+      document.body.appendChild(baselineProbeWrap);
+    }
+    if (!baselineProbeWrap) return px * 0.86;
+
+    baselineProbeTextNode.nodeValue = isEmbSub ? (firstLine.slice(0, 12) || "Hg") : (hasNonAscii ? "Hg中" : "Hg");
+    baselineProbeWrap.style.fontFamily = fontStack;
+    baselineProbeWrap.style.fontSize = `${px}px`;
+    baselineProbeWrap.style.fontWeight = bold ? "700" : "400";
+    baselineProbeWrap.style.fontStyle = italic ? "italic" : "normal";
+    baselineProbeWrap.style.lineHeight = String(lh);
+
+    const wrapRect = baselineProbeWrap.getBoundingClientRect();
+    const strutRect = baselineProbeStrut.getBoundingClientRect();
+    const offsetPx = strutRect.top - wrapRect.top;
+    const safeOffset = offsetPx > px * 0.35 && offsetPx < px * 1.55 ? offsetPx : px * 0.86;
+    if (cssBaselinePxCache.size > 600) cssBaselinePxCache.clear();
+    cssBaselinePxCache.set(cacheKey, safeOffset);
+    return safeOffset;
+  }
+
   function promoteOrigSpanToEdit(slot, sp) {
     const sampled = sampleColorsAroundSpan(sp);
+    const info = getSlotSizeInfo(slot);
+    const cssH =
+      parseFloat(el.spreadCanvas.style.height) ||
+      (el.textEditOverlay && el.textEditOverlay.clientHeight) ||
+      info.hPt ||
+      800;
+    const curScale = cssH / Math.max(1, info.hPt);
+    const initLh = 1.08;
+    const fKey = sp.fontKey || "sans";
+    const fStack = window.ShibaPrepress.getCssFontStack(fKey);
+    const fontPx = Math.max(4, sp.fontPt) * curScale;
+    const baseOffPx = measureCssBaselinePx(fStack, Boolean(sp.bold), Boolean(sp.italic), initLh, sp.str, fontPx);
+    const baseRatio = Math.round((baseOffPx / fontPx) * 10000) / 10000;
+    const hasBaseV = typeof sp.baselineV === "number";
+    const exactV = hasBaseV ? Math.max(0, (sp.baselineV * cssH - baseOffPx) / Math.max(1, cssH)) : sp.v;
+
     const newEd = {
       id: `ed_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       origId: sp.id,
-      origRect: { u: sp.u, v: sp.v, uw: sp.uw, vh: sp.vh },
+      origRect: sp.maskRect
+        ? { u: sp.maskRect.u, v: sp.maskRect.v, uw: sp.maskRect.uw, vh: sp.maskRect.vh }
+        : { u: sp.u, v: sp.v, uw: sp.uw, vh: sp.vh },
       u: sp.u,
-      v: sp.v,
+      v: exactV,
+      baselineV: hasBaseV ? sp.baselineV : null,
       boxWidthU: null,
       text: sp.str,
       fontPt: sp.fontPt,
-      ascent: sp.ascent || 0.84,
+      ascent: baseRatio || sp.ascent || 0.86,
       bold: Boolean(sp.bold),
       italic: Boolean(sp.italic),
       underline: false,
       strike: false,
       textAlign: "left",
-      lineHeight: 1.16,
+      lineHeight: initLh,
       letterSpacing: 0,
       opacity: 1,
       origFontName: sp.origFontName || "",
-      fontKey: sp.fontKey || "sans",
+      fontKey: fKey,
       color: sampled.fg,
       maskBg: true,
       bgColor: sampled.bg
@@ -1728,6 +1792,11 @@
     pushUndo();
     const changed = window.ShibaEditProps.alignAndDistributeItems(items, op);
     if (changed) {
+      if (op === "top" || op === "center-v" || op === "bottom" || op === "distribute-v") {
+        items.forEach((b) => {
+          if (b.kind === "text") b.ref.baselineV = null;
+        });
+      }
       renderTextEditorOverlay();
       updateTopStripControls();
       scheduleWorkspaceCacheSave();
@@ -1783,6 +1852,7 @@
       copyObj.id = `${b.kind === "text" ? "ed" : "imed"}_${Date.now()}_${idx}_${Math.random().toString(36).slice(2, 5)}`;
       copyObj.origId = null;
       copyObj.origRect = null;
+      copyObj.baselineV = null;
       copyObj.u = Math.min(0.94, b.ref.u + 0.025);
       copyObj.v = Math.min(0.94, b.ref.v + 0.025);
       if (b.kind === "text") {
@@ -2388,10 +2458,19 @@
         if (editedOrigIds.has(sp.id)) return;
         const hit = document.createElement("div");
         hit.className = "pdf-text-hit";
+        const spFontPx = Math.max(4, sp.fontPt) * cssScale;
+        let hitTopPx = sp.v * cssH;
+        let hitHPx = Math.max(10, sp.vh * cssH);
+        if (typeof sp.baselineV === "number") {
+          const spStack = window.ShibaPrepress.getCssFontStack(sp.fontKey || "sans");
+          const spBaseOffPx = measureCssBaselinePx(spStack, Boolean(sp.bold), Boolean(sp.italic), 1.08, sp.str, spFontPx);
+          hitTopPx = sp.baselineV * cssH - spBaseOffPx;
+          hitHPx = Math.max(10, spFontPx * 1.08);
+        }
         hit.style.left = `${sp.u * cssW}px`;
-        hit.style.top = `${sp.v * cssH}px`;
+        hit.style.top = `${hitTopPx}px`;
         hit.style.width = `${Math.max(10, sp.uw * cssW)}px`;
-        hit.style.height = `${Math.max(10, sp.vh * cssH)}px`;
+        hit.style.height = `${hitHPx}px`;
         hit.dataset.spanId = sp.id;
         hit.addEventListener("click", (ev) => {
           ev.stopPropagation();
@@ -2450,11 +2529,28 @@
 
       const isSelected = state.selectedTextId === ed.id;
       const isMulti = isInMultiSelection("text", ed.id);
+      const fontStack = window.ShibaPrepress.getCssFontStack(ed.fontKey);
+      const fontPx = Math.max(4, ed.fontPt) * cssScale;
+      const lhVal = typeof ed.lineHeight === "number" ? ed.lineHeight : 1.16;
+      const baseOffPx = measureCssBaselinePx(fontStack, Boolean(ed.bold), Boolean(ed.italic), lhVal, ed.text, fontPx);
+      const curBaseRatio = Math.round((baseOffPx / fontPx) * 10000) / 10000;
+      if (Math.abs((ed.ascent || 0) - curBaseRatio) > 0.002) {
+        ed.ascent = curBaseRatio;
+      }
+      let boxTopPx = ed.v * cssH;
+      if (typeof ed.baselineV === "number") {
+        boxTopPx = Math.max(0, ed.baselineV * cssH - baseOffPx);
+        const syncedV = boxTopPx / Math.max(1, cssH);
+        if (Math.abs(ed.v - syncedV) > 1e-5) {
+          ed.v = syncedV;
+        }
+      }
+
       const wrap = document.createElement("div");
       wrap.className = "text-box-wrap" + (isSelected ? " selected" : "") + (isMulti ? " multi-selected" : "");
       wrap.dataset.editId = ed.id;
       wrap.style.left = `${ed.u * cssW}px`;
-      wrap.style.top = `${ed.v * cssH}px`;
+      wrap.style.top = `${boxTopPx}px`;
       if (ed.boxWidthU && ed.boxWidthU > 0.02) {
         wrap.style.width = `${ed.boxWidthU * cssW}px`;
       }
@@ -2475,11 +2571,11 @@
       textNode.contentEditable = isSelected ? "true" : "false";
       textNode.spellcheck = false;
       textNode.textContent = ed.text;
-      textNode.style.fontFamily = window.ShibaPrepress.getCssFontStack(ed.fontKey);
-      textNode.style.fontSize = `${Math.max(7, ed.fontPt) * cssScale}px`;
+      textNode.style.fontFamily = fontStack;
+      textNode.style.fontSize = `${fontPx}px`;
       textNode.style.fontWeight = ed.bold ? "700" : "400";
       textNode.style.fontStyle = ed.italic ? "italic" : "normal";
-      textNode.style.lineHeight = String(typeof ed.lineHeight === "number" ? ed.lineHeight : 1.16);
+      textNode.style.lineHeight = String(lhVal);
       textNode.style.letterSpacing = ed.letterSpacing ? `${ed.letterSpacing * cssScale}px` : "normal";
       textNode.style.textAlign = ed.textAlign || "left";
       const decs = [];
@@ -2540,6 +2636,7 @@
               groupSnap.forEach((g) => {
                 g.ref.u = Math.min(0.97, Math.max(0, g.u0 + dx / cssW));
                 g.ref.v = Math.min(0.97, Math.max(0, g.v0 + dy / cssH));
+                if (g.kind === "text") g.ref.baselineV = null;
                 if (g.kind === "img") g.ref.moved = true;
                 if (g.el) {
                   g.el.style.left = `${g.ref.u * cssW}px`;
@@ -2547,6 +2644,7 @@
                 }
               });
             } else {
+              ed.baselineV = null;
               ed.u = Math.min(0.97, Math.max(0, origU + dx / cssW));
               ed.v = Math.min(0.97, Math.max(0, origV + dy / cssH));
               wrap.style.left = `${ed.u * cssW}px`;
@@ -2604,6 +2702,7 @@
         ev.preventDefault();
         ev.stopPropagation();
         pushUndo();
+        ed.baselineV = null;
         const startX = ev.clientX;
         const startY = ev.clientY;
         const startFontPt = ed.fontPt;
@@ -5835,8 +5934,10 @@
       const b0 = items[0];
       pushUndo();
       if (idx === 0) b0.ref.u = Math.min(0.96, Math.max(0, (parseFloat(inp.value) || 0) / info.wMm));
-      else if (idx === 1) b0.ref.v = Math.min(0.96, Math.max(0, (parseFloat(inp.value) || 0) / info.hMm));
-      else {
+      else if (idx === 1) {
+        if (b0.kind === "text") b0.ref.baselineV = null;
+        b0.ref.v = Math.min(0.96, Math.max(0, (parseFloat(inp.value) || 0) / info.hMm));
+      } else {
         const wU = Math.min(0.98, Math.max(0.03, (parseFloat(inp.value) || 20) / info.wMm));
         if (b0.kind === "text") b0.ref.boxWidthU = wU;
         else b0.ref.uw = wU;

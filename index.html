@@ -1290,7 +1290,7 @@ svg.lucide {
   z-index: 12;
   display: inline-block;
   outline: 1.5px dashed rgba(35, 131, 226, 0.65);
-  outline-offset: 2px;
+  outline-offset: 1px;
   border-radius: 2px;
   cursor: grab;
 }
@@ -1300,8 +1300,8 @@ svg.lucide {
 }
 
 .text-box-wrap.selected {
-  outline: 1.75px solid #2383e2;
-  outline-offset: 2px;
+  outline: 1.5px solid #2383e2;
+  outline-offset: 1px;
   z-index: 22;
 }
 
@@ -2425,7 +2425,7 @@ svg.lucide {
 .text-box-wrap.multi-selected,
 .img-box-wrap.multi-selected {
   outline: 2px solid var(--accent) !important;
-  outline-offset: 2px;
+  outline-offset: 1px;
   background-color: rgba(35, 131, 226, 0.06);
   z-index: 24;
 }
@@ -2684,7 +2684,7 @@ svg.lucide {
         <div class="brand-mark">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /> </svg>
           <span>ShibaPDF</span>
-          <span class="version-pill">v1.9.1</span>
+          <span class="version-pill">v1.9.2</span>
         </div>
         <div class="header-mini-btns">
           <button id="langBtn" class="ghost-btn" type="button" title="Switch Language">
@@ -2847,7 +2847,7 @@ svg.lucide {
         <button id="mobileMenuBtn" class="ghost-btn" type="button">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /> </svg>
           <span style="font-weight:700;">ShibaPDF</span>
-          <span class="version-pill">v1.9.1</span>
+          <span class="version-pill">v1.9.2</span>
         </button>
         <div style="display:flex;align-items:center;gap:4px;">
           <button id="mobileQuickOpenBtn" class="ghost-btn" type="button">
@@ -5053,17 +5053,25 @@ window.ShibaPrepress = (function () {
       } catch (_) {}
 
       const tx = pdfjsLib.Util.transform(vp.transform, item.transform);
-      const fontH = Math.max(7, Math.hypot(tx[2], tx[3]));
-      const ascent = (typeof st.ascent === "number" && st.ascent > 0.45 && st.ascent < 1.15) ? st.ascent : 0.84;
-      const descent = (typeof st.descent === "number" && Math.abs(st.descent) < 0.5) ? Math.abs(st.descent) : Math.max(0.14, 1 - ascent);
+      const det = Math.abs(tx[0] * tx[3] - tx[1] * tx[2]);
+      const scaleX = Math.hypot(tx[0], tx[1]) || Math.hypot(tx[2], tx[3]) || 1;
+      const fontH = Math.max(4, det > 0.01 ? det / scaleX : Math.hypot(tx[2], tx[3]));
+      const ascent = (typeof st.ascent === "number" && st.ascent > 0.45 && st.ascent < 1.15) ? st.ascent : 0.86;
+      const descent = (typeof st.descent === "number" && Math.abs(st.descent) < 0.5) ? Math.abs(st.descent) : Math.max(0.16, 1 - ascent);
       const left = tx[4];
       const baselineY = tx[5];
       const top = baselineY - fontH * ascent;
       const boxH = fontH * (ascent + descent);
+      const maskAsc = Math.max(ascent, 0.90);
+      const maskDesc = Math.max(descent, 0.24);
+      const maskTop = Math.max(0, baselineY - fontH * maskAsc);
+      const maskH = fontH * (maskAsc + maskDesc);
       const w = Math.max(fontH * 0.55, item.width || fontH * item.str.length * 0.58);
 
       const u = Math.min(0.985, Math.max(0, left / vp.width));
       const v = Math.min(0.985, Math.max(0, top / vp.height));
+      const maskV = Math.min(0.985, Math.max(0, maskTop / vp.height));
+      const uw = Math.min(1 - u, Math.max(0.01, w / vp.width));
       const fMeta = classifyPdfFontStyle(realPdfFontName || item.fontName, st);
 
       spans.push({
@@ -5071,9 +5079,16 @@ window.ShibaPrepress = (function () {
         str: item.str,
         u,
         v,
-        uw: Math.min(1 - u, Math.max(0.01, w / vp.width)),
+        baselineV: baselineY / vp.height,
+        uw,
         vh: Math.min(1 - v, Math.max(0.012, boxH / vp.height)),
-        fontPt: Math.round(fontH * 10) / 10,
+        maskRect: {
+          u,
+          v: maskV,
+          uw,
+          vh: Math.min(1 - maskV, Math.max(0.012, maskH / vp.height))
+        },
+        fontPt: Math.round(fontH * 100) / 100,
         ascent: Math.round(ascent * 1000) / 1000,
         bold: Boolean(fontObjBold || fMeta.bold),
         italic: Boolean(fontObjItalic || fMeta.italic),
@@ -9638,28 +9653,92 @@ window.ShibaUX = (function () {
     renderTextEditorOverlay();
   }
 
+  let baselineProbeWrap = null;
+  let baselineProbeTextNode = null;
+  let baselineProbeStrut = null;
+  const cssBaselinePxCache = new Map();
+
+  function measureCssBaselinePx(fontStack, bold, italic, lineHeight, sampleText, fontPx) {
+    const px = Math.max(4, fontPx || 16);
+    const lh = typeof lineHeight === "number" && lineHeight >= 0.8 ? lineHeight : 1.08;
+    const firstLine = String(sampleText || "").split("\n")[0] || "";
+    const hasNonAscii = /[^\x00-\x7F]/.test(firstLine);
+    const isEmbSub = String(fontStack || "").includes("ShibaPdfEmb_");
+    const sampleKey = isEmbSub ? firstLine.slice(0, 6) : hasNonAscii ? "cjk" : "asc";
+    const cacheKey = `${fontStack}|${bold ? 700 : 400}|${italic ? 1 : 0}|${lh.toFixed(3)}|${px.toFixed(2)}|${sampleKey}`;
+    if (cssBaselinePxCache.has(cacheKey)) return cssBaselinePxCache.get(cacheKey);
+
+    if (!baselineProbeWrap && typeof document !== "undefined" && document.body) {
+      baselineProbeWrap = document.createElement("div");
+      baselineProbeWrap.style.cssText =
+        "position:fixed;left:-9999px;top:-9999px;visibility:hidden;pointer-events:none;padding:0;margin:0;border:none;white-space:pre;";
+      baselineProbeTextNode = document.createTextNode("Hg");
+      baselineProbeStrut = document.createElement("span");
+      baselineProbeStrut.style.cssText =
+        "display:inline-block;width:0;height:0;margin:0;padding:0;border:0;overflow:hidden;vertical-align:baseline;";
+      baselineProbeWrap.appendChild(baselineProbeTextNode);
+      baselineProbeWrap.appendChild(baselineProbeStrut);
+      document.body.appendChild(baselineProbeWrap);
+    }
+    if (!baselineProbeWrap) return px * 0.86;
+
+    baselineProbeTextNode.nodeValue = isEmbSub ? (firstLine.slice(0, 12) || "Hg") : (hasNonAscii ? "Hg中" : "Hg");
+    baselineProbeWrap.style.fontFamily = fontStack;
+    baselineProbeWrap.style.fontSize = `${px}px`;
+    baselineProbeWrap.style.fontWeight = bold ? "700" : "400";
+    baselineProbeWrap.style.fontStyle = italic ? "italic" : "normal";
+    baselineProbeWrap.style.lineHeight = String(lh);
+
+    const wrapRect = baselineProbeWrap.getBoundingClientRect();
+    const strutRect = baselineProbeStrut.getBoundingClientRect();
+    const offsetPx = strutRect.top - wrapRect.top;
+    const safeOffset = offsetPx > px * 0.35 && offsetPx < px * 1.55 ? offsetPx : px * 0.86;
+    if (cssBaselinePxCache.size > 600) cssBaselinePxCache.clear();
+    cssBaselinePxCache.set(cacheKey, safeOffset);
+    return safeOffset;
+  }
+
   function promoteOrigSpanToEdit(slot, sp) {
     const sampled = sampleColorsAroundSpan(sp);
+    const info = getSlotSizeInfo(slot);
+    const cssH =
+      parseFloat(el.spreadCanvas.style.height) ||
+      (el.textEditOverlay && el.textEditOverlay.clientHeight) ||
+      info.hPt ||
+      800;
+    const curScale = cssH / Math.max(1, info.hPt);
+    const initLh = 1.08;
+    const fKey = sp.fontKey || "sans";
+    const fStack = window.ShibaPrepress.getCssFontStack(fKey);
+    const fontPx = Math.max(4, sp.fontPt) * curScale;
+    const baseOffPx = measureCssBaselinePx(fStack, Boolean(sp.bold), Boolean(sp.italic), initLh, sp.str, fontPx);
+    const baseRatio = Math.round((baseOffPx / fontPx) * 10000) / 10000;
+    const hasBaseV = typeof sp.baselineV === "number";
+    const exactV = hasBaseV ? Math.max(0, (sp.baselineV * cssH - baseOffPx) / Math.max(1, cssH)) : sp.v;
+
     const newEd = {
       id: `ed_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       origId: sp.id,
-      origRect: { u: sp.u, v: sp.v, uw: sp.uw, vh: sp.vh },
+      origRect: sp.maskRect
+        ? { u: sp.maskRect.u, v: sp.maskRect.v, uw: sp.maskRect.uw, vh: sp.maskRect.vh }
+        : { u: sp.u, v: sp.v, uw: sp.uw, vh: sp.vh },
       u: sp.u,
-      v: sp.v,
+      v: exactV,
+      baselineV: hasBaseV ? sp.baselineV : null,
       boxWidthU: null,
       text: sp.str,
       fontPt: sp.fontPt,
-      ascent: sp.ascent || 0.84,
+      ascent: baseRatio || sp.ascent || 0.86,
       bold: Boolean(sp.bold),
       italic: Boolean(sp.italic),
       underline: false,
       strike: false,
       textAlign: "left",
-      lineHeight: 1.16,
+      lineHeight: initLh,
       letterSpacing: 0,
       opacity: 1,
       origFontName: sp.origFontName || "",
-      fontKey: sp.fontKey || "sans",
+      fontKey: fKey,
       color: sampled.fg,
       maskBg: true,
       bgColor: sampled.bg
@@ -9727,6 +9806,11 @@ window.ShibaUX = (function () {
     pushUndo();
     const changed = window.ShibaEditProps.alignAndDistributeItems(items, op);
     if (changed) {
+      if (op === "top" || op === "center-v" || op === "bottom" || op === "distribute-v") {
+        items.forEach((b) => {
+          if (b.kind === "text") b.ref.baselineV = null;
+        });
+      }
       renderTextEditorOverlay();
       updateTopStripControls();
       scheduleWorkspaceCacheSave();
@@ -9782,6 +9866,7 @@ window.ShibaUX = (function () {
       copyObj.id = `${b.kind === "text" ? "ed" : "imed"}_${Date.now()}_${idx}_${Math.random().toString(36).slice(2, 5)}`;
       copyObj.origId = null;
       copyObj.origRect = null;
+      copyObj.baselineV = null;
       copyObj.u = Math.min(0.94, b.ref.u + 0.025);
       copyObj.v = Math.min(0.94, b.ref.v + 0.025);
       if (b.kind === "text") {
@@ -10387,10 +10472,19 @@ window.ShibaUX = (function () {
         if (editedOrigIds.has(sp.id)) return;
         const hit = document.createElement("div");
         hit.className = "pdf-text-hit";
+        const spFontPx = Math.max(4, sp.fontPt) * cssScale;
+        let hitTopPx = sp.v * cssH;
+        let hitHPx = Math.max(10, sp.vh * cssH);
+        if (typeof sp.baselineV === "number") {
+          const spStack = window.ShibaPrepress.getCssFontStack(sp.fontKey || "sans");
+          const spBaseOffPx = measureCssBaselinePx(spStack, Boolean(sp.bold), Boolean(sp.italic), 1.08, sp.str, spFontPx);
+          hitTopPx = sp.baselineV * cssH - spBaseOffPx;
+          hitHPx = Math.max(10, spFontPx * 1.08);
+        }
         hit.style.left = `${sp.u * cssW}px`;
-        hit.style.top = `${sp.v * cssH}px`;
+        hit.style.top = `${hitTopPx}px`;
         hit.style.width = `${Math.max(10, sp.uw * cssW)}px`;
-        hit.style.height = `${Math.max(10, sp.vh * cssH)}px`;
+        hit.style.height = `${hitHPx}px`;
         hit.dataset.spanId = sp.id;
         hit.addEventListener("click", (ev) => {
           ev.stopPropagation();
@@ -10449,11 +10543,28 @@ window.ShibaUX = (function () {
 
       const isSelected = state.selectedTextId === ed.id;
       const isMulti = isInMultiSelection("text", ed.id);
+      const fontStack = window.ShibaPrepress.getCssFontStack(ed.fontKey);
+      const fontPx = Math.max(4, ed.fontPt) * cssScale;
+      const lhVal = typeof ed.lineHeight === "number" ? ed.lineHeight : 1.16;
+      const baseOffPx = measureCssBaselinePx(fontStack, Boolean(ed.bold), Boolean(ed.italic), lhVal, ed.text, fontPx);
+      const curBaseRatio = Math.round((baseOffPx / fontPx) * 10000) / 10000;
+      if (Math.abs((ed.ascent || 0) - curBaseRatio) > 0.002) {
+        ed.ascent = curBaseRatio;
+      }
+      let boxTopPx = ed.v * cssH;
+      if (typeof ed.baselineV === "number") {
+        boxTopPx = Math.max(0, ed.baselineV * cssH - baseOffPx);
+        const syncedV = boxTopPx / Math.max(1, cssH);
+        if (Math.abs(ed.v - syncedV) > 1e-5) {
+          ed.v = syncedV;
+        }
+      }
+
       const wrap = document.createElement("div");
       wrap.className = "text-box-wrap" + (isSelected ? " selected" : "") + (isMulti ? " multi-selected" : "");
       wrap.dataset.editId = ed.id;
       wrap.style.left = `${ed.u * cssW}px`;
-      wrap.style.top = `${ed.v * cssH}px`;
+      wrap.style.top = `${boxTopPx}px`;
       if (ed.boxWidthU && ed.boxWidthU > 0.02) {
         wrap.style.width = `${ed.boxWidthU * cssW}px`;
       }
@@ -10474,11 +10585,11 @@ window.ShibaUX = (function () {
       textNode.contentEditable = isSelected ? "true" : "false";
       textNode.spellcheck = false;
       textNode.textContent = ed.text;
-      textNode.style.fontFamily = window.ShibaPrepress.getCssFontStack(ed.fontKey);
-      textNode.style.fontSize = `${Math.max(7, ed.fontPt) * cssScale}px`;
+      textNode.style.fontFamily = fontStack;
+      textNode.style.fontSize = `${fontPx}px`;
       textNode.style.fontWeight = ed.bold ? "700" : "400";
       textNode.style.fontStyle = ed.italic ? "italic" : "normal";
-      textNode.style.lineHeight = String(typeof ed.lineHeight === "number" ? ed.lineHeight : 1.16);
+      textNode.style.lineHeight = String(lhVal);
       textNode.style.letterSpacing = ed.letterSpacing ? `${ed.letterSpacing * cssScale}px` : "normal";
       textNode.style.textAlign = ed.textAlign || "left";
       const decs = [];
@@ -10539,6 +10650,7 @@ window.ShibaUX = (function () {
               groupSnap.forEach((g) => {
                 g.ref.u = Math.min(0.97, Math.max(0, g.u0 + dx / cssW));
                 g.ref.v = Math.min(0.97, Math.max(0, g.v0 + dy / cssH));
+                if (g.kind === "text") g.ref.baselineV = null;
                 if (g.kind === "img") g.ref.moved = true;
                 if (g.el) {
                   g.el.style.left = `${g.ref.u * cssW}px`;
@@ -10546,6 +10658,7 @@ window.ShibaUX = (function () {
                 }
               });
             } else {
+              ed.baselineV = null;
               ed.u = Math.min(0.97, Math.max(0, origU + dx / cssW));
               ed.v = Math.min(0.97, Math.max(0, origV + dy / cssH));
               wrap.style.left = `${ed.u * cssW}px`;
@@ -10603,6 +10716,7 @@ window.ShibaUX = (function () {
         ev.preventDefault();
         ev.stopPropagation();
         pushUndo();
+        ed.baselineV = null;
         const startX = ev.clientX;
         const startY = ev.clientY;
         const startFontPt = ed.fontPt;
@@ -13834,8 +13948,10 @@ window.ShibaUX = (function () {
       const b0 = items[0];
       pushUndo();
       if (idx === 0) b0.ref.u = Math.min(0.96, Math.max(0, (parseFloat(inp.value) || 0) / info.wMm));
-      else if (idx === 1) b0.ref.v = Math.min(0.96, Math.max(0, (parseFloat(inp.value) || 0) / info.hMm));
-      else {
+      else if (idx === 1) {
+        if (b0.kind === "text") b0.ref.baselineV = null;
+        b0.ref.v = Math.min(0.96, Math.max(0, (parseFloat(inp.value) || 0) / info.hMm));
+      } else {
         const wU = Math.min(0.98, Math.max(0.03, (parseFloat(inp.value) || 20) / info.wMm));
         if (b0.kind === "text") b0.ref.boxWidthU = wU;
         else b0.ref.uw = wU;

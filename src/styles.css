@@ -1272,7 +1272,7 @@ svg.lucide {
   z-index: 12;
   display: inline-block;
   outline: 1.5px dashed rgba(35, 131, 226, 0.65);
-  outline-offset: 2px;
+  outline-offset: 1px;
   border-radius: 2px;
   cursor: grab;
 }
@@ -1282,8 +1282,8 @@ svg.lucide {
 }
 
 .text-box-wrap.selected {
-  outline: 1.75px solid #2383e2;
-  outline-offset: 2px;
+  outline: 1.5px solid #2383e2;
+  outline-offset: 1px;
   z-index: 22;
 }
 
@@ -2407,7 +2407,7 @@ svg.lucide {
 .text-box-wrap.multi-selected,
 .img-box-wrap.multi-selected {
   outline: 2px solid var(--accent) !important;
-  outline-offset: 2px;
+  outline-offset: 1px;
   background-color: rgba(35, 131, 226, 0.06);
   z-index: 24;
 }
