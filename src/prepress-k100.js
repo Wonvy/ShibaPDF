@@ -142,6 +142,60 @@ window.ShibaPrepress = (function () {
   }
 
   const registeredEmbeddedFaces = new Map(); // cleanFontName -> CSS @font-face family name
+  const registeredLocalFaces = new Map(); // cleanFontName -> CSS @font-face family name (full OS SFNT via queryLocalFonts)
+  const localFontIndex = new Map(); // normalized postscript/full/family key -> FontData
+
+  function normFontLookupKey(str) {
+    return String(str || "")
+      .replace(/--GBK1-0|--GB1-0|-GBK|-GB2312|-UTF8/gi, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9\u4e00-\u9fa5]/g, "");
+  }
+
+  function indexSystemFontData(fontList) {
+    if (!Array.isArray(fontList)) return 0;
+    localFontIndex.clear();
+    fontList.forEach((fd) => {
+      if (!fd) return;
+      [fd.postscriptName, fd.fullName, `${fd.family || ""}-${fd.style || ""}`, fd.family].forEach((k) => {
+        const nk = normFontLookupKey(k);
+        if (nk && !localFontIndex.has(nk)) localFontIndex.set(nk, fd);
+      });
+    });
+    return localFontIndex.size;
+  }
+
+  function findMatchingLocalFontData(cleanName) {
+    if (!cleanName || !localFontIndex.size) return null;
+    const candidates = [cleanName, ...expandPdfFontAliases(cleanName).map((s) => s.replace(/"/g, ""))];
+    for (const c of candidates) {
+      const nk = normFontLookupKey(c);
+      if (nk && localFontIndex.has(nk)) return localFontIndex.get(nk);
+    }
+    return null;
+  }
+
+  async function ensureLocalFontForPdfName(cleanName) {
+    if (!cleanName || registeredLocalFaces.has(cleanName)) return registeredLocalFaces.has(cleanName);
+    const fd = findMatchingLocalFontData(cleanName);
+    if (!fd || typeof fd.blob !== "function" || typeof FontFace === "undefined") return false;
+    try {
+      const blob = await fd.blob();
+      const buf = await blob.arrayBuffer();
+      const fMeta = classifyPdfFontStyle(cleanName, null);
+      const safeId = `ShibaLocalMatch_${registeredLocalFaces.size}_${cleanName.replace(/[^A-Za-z0-9]/g, "")}`;
+      const face = new FontFace(safeId, buf, {
+        weight: String(fMeta.fontWeight || 400),
+        style: fMeta.italic ? "italic" : "normal"
+      });
+      await face.load();
+      document.fonts.add(face);
+      registeredLocalFaces.set(cleanName, safeId);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 
   function hasValidUnicodeSfntCmap(u8) {
     if (!u8 || u8.length < 28) return false;
@@ -178,12 +232,239 @@ window.ShibaPrepress = (function () {
     return false;
   }
 
-  async function tryRegisterEmbeddedPdfFontFace(cleanName, fontStreamObj, fMeta) {
+  // Parse PDF /ToUnicode CMap stream + optional /CIDToGIDMap stream into Map<unicodeBMP, glyphId>
+  function parsePdfToUnicodeMap(toUniStreamObj, cidToGidStreamObj) {
+    const uniToGid = new Map();
+    if (!toUniStreamObj || !(toUniStreamObj instanceof PDFLib.PDFRawStream)) return uniToGid;
+    try {
+      const cmapBytes = PDFLib.decodePDFRawStream(toUniStreamObj).decode();
+      const txt = uint8ToLatin1(cmapBytes);
+      let cidMapBytes = null;
+      if (cidToGidStreamObj && cidToGidStreamObj instanceof PDFLib.PDFRawStream) {
+        try { cidMapBytes = PDFLib.decodePDFRawStream(cidToGidStreamObj).decode(); } catch (_) {}
+      }
+      const mapCid = (cid) => {
+        if (cidMapBytes && cid * 2 + 1 < cidMapBytes.length) {
+          return (cidMapBytes[cid * 2] << 8) | cidMapBytes[cid * 2 + 1];
+        }
+        return cid;
+      };
+
+      const bfCharRe = /beginbfchar([\s\S]*?)endbfchar/g;
+      let m;
+      while ((m = bfCharRe.exec(txt)) !== null) {
+        const pairRe = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>/g;
+        let pm;
+        while ((pm = pairRe.exec(m[1])) !== null) {
+          const cid = parseInt(pm[1], 16);
+          if (pm[2].length === 4) {
+            const uni = parseInt(pm[2], 16);
+            const gid = mapCid(cid);
+            if (gid > 0 && uni >= 0x20 && uni <= 0xfffd && !uniToGid.has(uni)) {
+              uniToGid.set(uni, gid);
+            }
+          }
+        }
+      }
+
+      const bfRangeRe = /beginbfrange([\s\S]*?)endbfrange/g;
+      while ((m = bfRangeRe.exec(txt)) !== null) {
+        const lineRe = /<([0-9A-Fa-f]+)>\s*<([0-9A-Fa-f]+)>\s*(?:<([0-9A-Fa-f]+)>|\[([^\]]*)\])/g;
+        let rm;
+        while ((rm = lineRe.exec(m[1])) !== null) {
+          const cStart = parseInt(rm[1], 16);
+          const cEnd = parseInt(rm[2], 16);
+          if (rm[3]) {
+            if (rm[3].length === 4) {
+              let uCur = parseInt(rm[3], 16);
+              for (let c = cStart; c <= cEnd && c - cStart < 4096; c++, uCur++) {
+                const gid = mapCid(c);
+                if (gid > 0 && uCur >= 0x20 && uCur <= 0xfffd && !uniToGid.has(uCur)) {
+                  uniToGid.set(uCur, gid);
+                }
+              }
+            }
+          } else if (rm[4]) {
+            const hexItems = rm[4].match(/<([0-9A-Fa-f]+)>/g) || [];
+            for (let k = 0; k < hexItems.length && cStart + k <= cEnd; k++) {
+              const hx = hexItems[k].slice(1, -1);
+              if (hx.length === 4) {
+                const uVal = parseInt(hx, 16);
+                const gid = mapCid(cStart + k);
+                if (gid > 0 && uVal >= 0x20 && uVal <= 0xfffd && !uniToGid.has(uVal)) {
+                  uniToGid.set(uVal, gid);
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (_) {}
+    return uniToGid;
+  }
+
+  // Synthesize a valid OpenType Format-4 cmap (+ post/name if stripped) into a TrueType FontFile2 subset binary!
+  function patchSfntWithSynthesizedCmap(origBytes, uniToGid) {
+    if (!origBytes || origBytes.length < 28 || !uniToGid || uniToGid.size === 0) return null;
+    const b0 = origBytes[0], b1 = origBytes[1], b2 = origBytes[2], b3 = origBytes[3];
+    const isTtf = (b0 === 0x00 && b1 === 0x01 && b2 === 0x00 && b3 === 0x00) ||
+      (b0 === 0x74 && b1 === 0x72 && b2 === 0x75 && b3 === 0x65);
+    if (!isTtf) return null;
+
+    const dv = new DataView(origBytes.buffer, origBytes.byteOffset, origBytes.byteLength);
+    const numTables = dv.getUint16(4, false);
+    if (numTables === 0 || numTables > 64 || origBytes.length < 12 + numTables * 16) return null;
+
+    const tables = new Map();
+    for (let i = 0; i < numTables; i++) {
+      const off = 12 + i * 16;
+      const tag = String.fromCharCode(origBytes[off], origBytes[off + 1], origBytes[off + 2], origBytes[off + 3]);
+      const tOff = dv.getUint32(off + 8, false);
+      const tLen = dv.getUint32(off + 12, false);
+      if (tOff + tLen <= origBytes.length && tag !== "cmap") {
+        tables.set(tag, origBytes.slice(tOff, tOff + tLen));
+      }
+    }
+    if (!tables.has("head") || !tables.has("hhea") || !tables.has("maxp") || !tables.has("hmtx") || !tables.has("loca") || !tables.has("glyf")) {
+      return null;
+    }
+
+    // Build Format 4 cmap subtable (Platform 3, Encoding 1)
+    const sorted = Array.from(uniToGid.entries()).sort((a, b) => a[0] - b[0]);
+    const segs = [];
+    for (const [u, gid] of sorted) {
+      const delta = (gid - u) & 0xffff;
+      const prev = segs[segs.length - 1];
+      if (prev && prev.end + 1 === u && prev.delta === delta) {
+        prev.end = u;
+      } else {
+        segs.push({ start: u, end: u, delta });
+      }
+    }
+    segs.push({ start: 0xffff, end: 0xffff, delta: 1 });
+    const segCount = segs.length;
+    const subLen = 16 + segCount * 8;
+    if (subLen > 65520) return null;
+
+    const cmapBuf = new Uint8Array(12 + subLen);
+    const cdv = new DataView(cmapBuf.buffer);
+    cdv.setUint16(0, 0, false); // version
+    cdv.setUint16(2, 1, false); // numTables = 1
+    cdv.setUint16(4, 3, false); // platformID = 3 (Windows)
+    cdv.setUint16(6, 1, false); // encodingID = 1 (Unicode BMP)
+    cdv.setUint32(8, 12, false); // offset = 12
+
+    const subOff = 12;
+    const pow2 = 1 << Math.floor(Math.log2(segCount));
+    const searchRange = pow2 * 2;
+    const entrySelector = Math.floor(Math.log2(segCount));
+    const rangeShift = segCount * 2 - searchRange;
+
+    cdv.setUint16(subOff + 0, 4, false);
+    cdv.setUint16(subOff + 2, subLen, false);
+    cdv.setUint16(subOff + 4, 0, false);
+    cdv.setUint16(subOff + 6, segCount * 2, false);
+    cdv.setUint16(subOff + 8, searchRange, false);
+    cdv.setUint16(subOff + 10, entrySelector, false);
+    cdv.setUint16(subOff + 12, rangeShift, false);
+
+    let p = subOff + 14;
+    for (let i = 0; i < segCount; i++) { cdv.setUint16(p, segs[i].end, false); p += 2; }
+    cdv.setUint16(p, 0, false); p += 2; // reservedPad
+    for (let i = 0; i < segCount; i++) { cdv.setUint16(p, segs[i].start, false); p += 2; }
+    for (let i = 0; i < segCount; i++) { cdv.setUint16(p, segs[i].delta, false); p += 2; }
+    for (let i = 0; i < segCount; i++) { cdv.setUint16(p, 0, false); p += 2; } // idRangeOffset = 0
+    tables.set("cmap", cmapBuf);
+
+    // Ensure minimal valid post v3.0 table (32 bytes) if stripped
+    if (!tables.has("post")) {
+      const postBuf = new Uint8Array(32);
+      const pdv = new DataView(postBuf.buffer);
+      pdv.setUint32(0, 0x00030000, false);
+      pdv.setInt16(8, -100, false);
+      pdv.setInt16(10, 50, false);
+      tables.set("post", postBuf);
+    }
+
+    // Ensure minimal valid name table if stripped
+    if (!tables.has("name")) {
+      const strBytes = new Uint8Array([0, 83, 0, 104, 0, 105, 0, 98, 0, 97]); // UTF-16BE "Shiba"
+      const recIds = [1, 2, 4, 6];
+      const nameBuf = new Uint8Array(6 + recIds.length * 12 + strBytes.length);
+      const ndv = new DataView(nameBuf.buffer);
+      ndv.setUint16(0, 0, false);
+      ndv.setUint16(2, recIds.length, false);
+      ndv.setUint16(4, 6 + recIds.length * 12, false);
+      recIds.forEach((nid, idx) => {
+        const ro = 6 + idx * 12;
+        ndv.setUint16(ro + 0, 3, false);
+        ndv.setUint16(ro + 2, 1, false);
+        ndv.setUint16(ro + 4, 0x0409, false);
+        ndv.setUint16(ro + 6, nid, false);
+        ndv.setUint16(ro + 8, strBytes.length, false);
+        ndv.setUint16(ro + 10, 0, false);
+      });
+      nameBuf.set(strBytes, 6 + recIds.length * 12);
+      tables.set("name", nameBuf);
+    }
+
+    // Zero checkSumAdjustment in head
+    const headCopy = tables.get("head").slice();
+    if (headCopy.length >= 12) {
+      new DataView(headCopy.buffer).setUint32(8, 0, false);
+      tables.set("head", headCopy);
+    }
+
+    const sortedTags = Array.from(tables.keys()).sort();
+    const outNum = sortedTags.length;
+    let totalSize = 12 + outNum * 16;
+    sortedTags.forEach((tg) => {
+      totalSize += (tables.get(tg).length + 3) & ~3;
+    });
+
+    const out = new Uint8Array(totalSize);
+    const odv = new DataView(out.buffer);
+    odv.setUint32(0, 0x00010000, false);
+    odv.setUint16(4, outNum, false);
+    const tPow2 = 1 << Math.floor(Math.log2(outNum));
+    odv.setUint16(6, tPow2 * 16, false);
+    odv.setUint16(8, Math.floor(Math.log2(outNum)), false);
+    odv.setUint16(10, outNum * 16 - tPow2 * 16, false);
+
+    let dataPos = 12 + outNum * 16;
+    sortedTags.forEach((tg, idx) => {
+      const buf = tables.get(tg);
+      const padLen = (buf.length + 3) & ~3;
+      out.set(buf, dataPos);
+
+      let sum = 0;
+      for (let k = 0; k < padLen; k += 4) {
+        sum = (sum + odv.getUint32(dataPos + k, false)) >>> 0;
+      }
+      const rec = 12 + idx * 16;
+      out[rec] = tg.charCodeAt(0);
+      out[rec + 1] = tg.charCodeAt(1);
+      out[rec + 2] = tg.charCodeAt(2);
+      out[rec + 3] = tg.charCodeAt(3);
+      odv.setUint32(rec + 4, sum, false);
+      odv.setUint32(rec + 8, dataPos, false);
+      odv.setUint32(rec + 12, buf.length, false);
+      dataPos += padLen;
+    });
+    return out;
+  }
+
+  async function tryRegisterEmbeddedPdfFontFace(cleanName, fontStreamObj, fMeta, toUniStreamObj, cidToGidStreamObj) {
     if (!cleanName || registeredEmbeddedFaces.has(cleanName)) return;
     if (typeof FontFace === "undefined" || typeof document === "undefined" || !document.fonts) return;
     try {
-      const decoded = PDFLib.decodePDFRawStream(fontStreamObj).decode();
-      if (!hasValidUnicodeSfntCmap(decoded)) return;
+      let decoded = PDFLib.decodePDFRawStream(fontStreamObj).decode();
+      if (!hasValidUnicodeSfntCmap(decoded)) {
+        const uniMap = parsePdfToUnicodeMap(toUniStreamObj, cidToGidStreamObj);
+        const patched = patchSfntWithSynthesizedCmap(decoded, uniMap);
+        if (!patched) return;
+        decoded = patched;
+      }
       const safeId = `ShibaPdfEmb_${registeredEmbeddedFaces.size}_${cleanName.replace(/[^A-Za-z0-9]/g, "")}`;
       const copyBuf = decoded.slice().buffer;
       const face = new FontFace(safeId, copyBuf, {
@@ -199,16 +480,20 @@ window.ShibaPrepress = (function () {
   function classifyPdfFontStyle(fontName, styleObj) {
     const raw = `${fontName || ""} ${(styleObj && styleObj.fontFamily) || ""}`;
     let fontWeight = 400;
-    if (/extrabold|heavy|black|ultra|-eb\b|-h\b|w[89]|大黑|特黑|浓/i.test(raw)) {
+    if (/ultralight|extralight|thin|hairline|-el\b|-ul\b|w[12]|25s|极细|纤黑|超细/i.test(raw)) {
+      fontWeight = 200;
+    } else if (/demilight|light|-light|-l\b|fzltxh|w3|35s|45l|细体|细黑|细宋/i.test(raw)) {
+      fontWeight = 300;
+    } else if (/\bnormal\b|-normal|40s/i.test(raw)) {
+      fontWeight = 350;
+    } else if (/extrabold|heavy|black|ultra|-eb\b|-h\b|w[89]|大黑|特黑|浓/i.test(raw)) {
       fontWeight = 700;
     } else if (/\bbold\b|-bold|-b\b|w7|粗体|粗宋|粗黑|粗楷/i.test(raw) && !/semibold|demibold/i.test(raw)) {
       fontWeight = 700;
     } else if (/semibold|demibold|demi|-db\b|-sb\b|w6|中黑|中粗|半粗/i.test(raw)) {
       fontWeight = 600;
-    } else if (/\bmedium\b|-medium|-m\b|w5|中等/i.test(raw)) {
+    } else if (/\bmedium\b|-medium|-m\b|w5|55s|中等/i.test(raw)) {
       fontWeight = 500;
-    } else if (/\blight\b|\bthin\b|-light|-l\b|w[123]|细体|极细/i.test(raw)) {
-      fontWeight = 300;
     }
     const bold = fontWeight >= 700;
     const italic = /italic|oblique|倾斜/i.test(raw);
@@ -302,11 +587,16 @@ window.ShibaPrepress = (function () {
     if (fontKey && fontKey.startsWith("orig:")) {
       const origName = fontKey.slice(5).trim();
       const parts = [];
+      const locFace = registeredLocalFaces.get(origName);
+      if (locFace) parts.push(`"${locFace}"`);
       const embFace = registeredEmbeddedFaces.get(origName);
       if (embFace) parts.push(`"${embFace}"`);
       parts.push(...expandPdfFontAliases(origName));
-      const cat = classifyPdfFontStyle(origName, null).fontKey;
-      parts.push(getBaseCategoryStack(cat));
+      const fStyle = classifyPdfFontStyle(origName, null);
+      if (fStyle.fontKey === "sans" && fStyle.fontWeight <= 350) {
+        parts.push('"PingFang SC"', '"Microsoft YaHei Light"', '"DengXian Light"', '"DengXian"');
+      }
+      parts.push(getBaseCategoryStack(fStyle.fontKey));
       return parts.join(", ");
     }
     if (fontKey && fontKey.startsWith("local:")) {
@@ -507,6 +797,7 @@ window.ShibaPrepress = (function () {
 
     const allFonts = new Map();
     const fontDetailsMap = new Map();
+    const detectedWeightsMap = new Map();
     const fontEmbedTasks = [];
     const queuedEmbedNames = new Set();
     const placedDpis = [];
@@ -544,6 +835,8 @@ window.ShibaPrepress = (function () {
           let embedded = subTypeRaw === "Type3";
           let streamFormat = subTypeRaw === "Type3" ? "Type3" : "";
           let sfntStreamObj = null;
+          const toUniObj = fObj.lookup(PDFLib.PDFName.of("ToUnicode"));
+          let cidToGidObj = null;
 
           let desc = fObj.lookup(PDFLib.PDFName.of("FontDescriptor"));
           if (!desc) {
@@ -552,6 +845,7 @@ window.ShibaPrepress = (function () {
               const cidFont = doc.context.lookup(descArr.get(0));
               if (cidFont && cidFont instanceof PDFLib.PDFDict) {
                 cidSubType = (cidFont.get(PDFLib.PDFName.of("Subtype")) || "").toString().replace(/^\//, "");
+                cidToGidObj = cidFont.lookup(PDFLib.PDFName.of("CIDToGIDMap"));
                 desc = cidFont.lookup(PDFLib.PDFName.of("FontDescriptor"));
               }
             }
@@ -571,6 +865,19 @@ window.ShibaPrepress = (function () {
             }
           }
 
+          let pdfDescWeight = 0;
+          if (desc && desc instanceof PDFLib.PDFDict) {
+            const fwObj = desc.get(PDFLib.PDFName.of("FontWeight"));
+            if (fwObj && typeof fwObj.asNumber === "function") pdfDescWeight = fwObj.asNumber();
+          }
+          if (pdfDescWeight >= 100 && pdfDescWeight <= 900 && cleanName) {
+            detectedWeightsMap.set(cleanName, pdfDescWeight);
+          }
+
+          if (cleanName && localFontIndex.size > 0 && !registeredLocalFaces.has(cleanName)) {
+            fontEmbedTasks.push(ensureLocalFontForPdfName(cleanName));
+          }
+
           if (
             sfntStreamObj &&
             sfntStreamObj instanceof PDFLib.PDFRawStream &&
@@ -580,15 +887,17 @@ window.ShibaPrepress = (function () {
           ) {
             queuedEmbedNames.add(cleanName);
             const fMeta = classifyPdfFontStyle(cleanName, null);
+            if (pdfDescWeight >= 100 && pdfDescWeight <= 900) {
+              fMeta.fontWeight = pdfDescWeight;
+              fMeta.bold = pdfDescWeight >= 700;
+            }
             if (desc && desc instanceof PDFLib.PDFDict) {
-              const fwObj = desc.get(PDFLib.PDFName.of("FontWeight"));
               const flObj = desc.get(PDFLib.PDFName.of("Flags"));
-              const descWeight = fwObj && typeof fwObj.asNumber === "function" ? fwObj.asNumber() : 0;
               const descFlags = flObj && typeof flObj.asNumber === "function" ? flObj.asNumber() : 0;
-              if (descWeight >= 600 || (descFlags & 262144)) fMeta.bold = true;
+              if (descFlags & 262144) { fMeta.bold = true; fMeta.fontWeight = 700; }
               if (descFlags & 64) fMeta.italic = true;
             }
-            fontEmbedTasks.push(tryRegisterEmbeddedPdfFontFace(cleanName, sfntStreamObj, fMeta));
+            fontEmbedTasks.push(tryRegisterEmbeddedPdfFontFace(cleanName, sfntStreamObj, fMeta, toUniObj, cidToGidObj));
           }
 
           const dispType = cidSubType ? `${subTypeRaw} (${cidSubType})` : subTypeRaw;
@@ -834,6 +1143,19 @@ window.ShibaPrepress = (function () {
       await Promise.all(fontEmbedTasks);
     }
 
+    // Backfill exact PDF FontDescriptor /FontWeight onto extracted textSpans if detected
+    if (detectedWeightsMap.size > 0) {
+      origPages.forEach((op) => {
+        (op.textSpans || []).forEach((sp) => {
+          if (sp.origFontName && detectedWeightsMap.has(sp.origFontName)) {
+            const dw = detectedWeightsMap.get(sp.origFontName);
+            sp.fontWeight = dw;
+            sp.bold = dw >= 700;
+          }
+        });
+      });
+    }
+
     for (const pIdx of nonK100PageIndices) {
       const spans = origPages[pIdx].textSpans || [];
       const pg = await pdfJsDoc.getPage(pIdx + 1);
@@ -1064,7 +1386,10 @@ window.ShibaPrepress = (function () {
   return {
     KNOWN_NET_SIZES,
     getCssFontStack,
-    hasEmbeddedFontFace: (name) => registeredEmbeddedFaces.has(name),
+    hasEmbeddedFontFace: (name) => registeredEmbeddedFaces.has(name) || registeredLocalFaces.has(name),
+    hasLocalFontMatch: (name) => registeredLocalFaces.has(name) || Boolean(findMatchingLocalFontData(name)),
+    indexSystemFontData,
+    ensureLocalFontForPdfName,
     hasValidUnicodeSfntCmap,
     extractPageTextSpans,
     runPrepressPreflight,

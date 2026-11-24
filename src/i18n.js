@@ -72,7 +72,7 @@ window.SHIBA_I18N = {
     rotSelBtn: "旋转所选",
     delSelBtn: "删除所选",
     dragSortHint: "点击勾选页面可单独提取，按住卡片可拖拽排序，拖入新 PDF 自动追加合并",
-    exportMergedBtn: "导出完整 PDF ({n}页)",
+    exportMergedBtn: "导出 PDF",
     addTextBtn: "添加文字",
     addImgBtn: "添加图片",
     cancelTaskBtn: "退出当前选择 (Esc)",
@@ -377,6 +377,7 @@ window.SHIBA_I18N = {
     sysFontsUnsupported: "当前浏览器不支持直接枚举本机字库（建议使用 Chrome / Edge 桌面版）。",
     subsetFontLoadedHint: "已载入内嵌字库「{f}」（原文已有字形直接渲染；输入新字将优先匹配本机同名原字体）。",
     subsetFontFallbackHint: "识别为原文档「{f}」（PDF 子集字体仅含原文已有字形，编辑与输入新字时优先调用本机同名原字体）。",
+    grantSysFontsPrompt: "🔗 点击授权访问本机系统字体，自动精确匹配原文档字库（授权一次永久生效，不再提示）",
 
     // v2.0 Visual Imposition Sidebar & 6 Binding Methods
     imposeSidebarBtn: "拼版侧栏",
@@ -490,7 +491,7 @@ window.SHIBA_I18N = {
     rotSelBtn: "Rotate",
     delSelBtn: "Delete",
     dragSortHint: "Click pages to select & extract, drag thumbnails to reorder, or drop more PDFs to merge",
-    exportMergedBtn: "Export Full PDF ({n}p)",
+    exportMergedBtn: "Export PDF",
     addTextBtn: "Add Text",
     addImgBtn: "Add Image",
     cancelTaskBtn: "Cancel / Deselect (Esc)",
@@ -788,6 +789,7 @@ window.SHIBA_I18N = {
     sysFontsUnsupported: "Local Font Access API is not available in this browser (try desktop Chrome / Edge).",
     subsetFontLoadedHint: "Embedded font \"{f}\" loaded (existing glyphs render directly; new chars match local installed fonts).",
     subsetFontFallbackHint: "Matched PDF font \"{f}\" (PDF embeds subset glyphs only; editing & new chars prioritize matching local fonts).",
+    grantSysFontsPrompt: "🔗 Click to grant local font access for automatic 1:1 PDF font matching (one-time setup)",
 
     imposeSidebarBtn: "Impose Panel",
     imposeDrawerTitle: "Binding & Imposition",

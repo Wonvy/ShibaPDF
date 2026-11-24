@@ -49,6 +49,7 @@
 
     // Content Editor State (Text, Images, Multi-Selection & Right Inspector)
     editPropsOpen: localStorage.getItem("shibapdf_edit_props") !== "0",
+    sysFontsLoaded: false,
     placingNewText: false,
     selectedTextId: null,
     selectedOrigImgId: null,
@@ -1157,6 +1158,7 @@
     const info = getSlotSizeInfo(slot);
     const scale = w / Math.max(1, info.wPt);
     slot.edits.forEach((ed) => {
+      if (ed.origId && ed.modified === false) return;
       if (ed.maskBg && ed.origRect) {
         ctx.fillStyle = ed.bgColor || "#ffffff";
         ctx.fillRect(
@@ -1532,20 +1534,25 @@
       br /= bgPts.length; bg /= bgPts.length; bb /= bgPts.length;
       const bgHex = rgbToHex(br, bg, bb);
 
-      // Find pixel inside span with maximum contrast from background for exact ink color!
+      // Collect foreground ink pixels & take 75th-percentile contrast pixel (avoids single stroke-crossing #000000 outlier!)
       const block = ctx.getImageData(x, y, w, h).data;
       let maxDist = -1;
-      let fr = 24, fg = 24, fb = 23;
+      for (let i = 0; i < block.length; i += 4) {
+        const dist = Math.abs(block[i] - br) + Math.abs(block[i + 1] - bg) + Math.abs(block[i + 2] - bb);
+        if (dist > maxDist) maxDist = dist;
+      }
+      if (maxDist <= 45) return { fg: "#231f20", bg: bgHex };
+
+      const thresh = maxDist * 0.58;
+      const inkSamples = [];
       for (let i = 0; i < block.length; i += 4) {
         const r = block[i], g = block[i + 1], b = block[i + 2];
         const dist = Math.abs(r - br) + Math.abs(g - bg) + Math.abs(b - bb);
-        if (dist > maxDist) {
-          maxDist = dist;
-          fr = r; fg = g; fb = b;
-        }
+        if (dist >= thresh) inkSamples.push({ dist, r, g, b });
       }
-      const fgHex = maxDist > 45 ? rgbToHex(fr, fg, fb) : "#181817";
-      return { fg: fgHex, bg: bgHex };
+      inkSamples.sort((a, b) => a.dist - b.dist);
+      const pick = inkSamples[Math.min(inkSamples.length - 1, Math.floor(inkSamples.length * 0.75))];
+      return { fg: rgbToHex(pick.r, pick.g, pick.b), bg: bgHex };
     } catch (_) {
       return { fg: "#181817", bg: "#ffffff" };
     }
@@ -1737,6 +1744,7 @@
     const newEd = {
       id: `ed_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
       origId: sp.id,
+      modified: false,
       origRect: sp.maskRect
         ? { u: sp.maskRect.u, v: sp.maskRect.v, uw: sp.maskRect.uw, vh: sp.maskRect.vh }
         : { u: sp.u, v: sp.v, uw: sp.uw, vh: sp.vh },
@@ -1825,11 +1833,14 @@
     pushUndo();
     const changed = window.ShibaEditProps.alignAndDistributeItems(items, op);
     if (changed) {
-      if (op === "top" || op === "center-v" || op === "bottom" || op === "distribute-v") {
-        items.forEach((b) => {
-          if (b.kind === "text") b.ref.baselineV = null;
-        });
-      }
+      items.forEach((b) => {
+        if (b.kind === "text") {
+          b.ref.modified = true;
+          if (op === "top" || op === "center-v" || op === "bottom" || op === "distribute-v") {
+            b.ref.baselineV = null;
+          }
+        }
+      });
       renderTextEditorOverlay();
       updateTopStripControls();
       scheduleWorkspaceCacheSave();
@@ -1847,6 +1858,7 @@
       slot.edits = (slot.edits || []).filter((ed) => {
         if (!txtIds.has(ed.id)) return true;
         if (ed.origRect) {
+          ed.modified = true;
           ed.text = "";
           ed.maskBg = true;
           return true;
@@ -1952,11 +1964,26 @@
       if (el.propSubsetFontHint) {
         if (fk.startsWith("orig:")) {
           const origNm = fk.slice(5).trim();
-          const hasEmb = window.ShibaPrepress && window.ShibaPrepress.hasEmbeddedFontFace && window.ShibaPrepress.hasEmbeddedFontFace(origNm);
-          el.propSubsetFontHint.textContent = t(hasEmb ? "subsetFontLoadedHint" : "subsetFontFallbackHint", { f: origNm });
-          el.propSubsetFontHint.classList.remove("hidden");
+          const hasEmb =
+            window.ShibaPrepress &&
+            window.ShibaPrepress.hasEmbeddedFontFace &&
+            window.ShibaPrepress.hasEmbeddedFontFace(origNm);
+          if (!hasEmb && state.sysFontsLoaded && window.ShibaPrepress && window.ShibaPrepress.ensureLocalFontForPdfName) {
+            window.ShibaPrepress.ensureLocalFontForPdfName(origNm).then((ok) => {
+              if (ok) renderTextEditorOverlay();
+            });
+          }
+          if (hasEmb || state.sysFontsLoaded || typeof window.queryLocalFonts !== "function") {
+            el.propSubsetFontHint.classList.add("hidden");
+            el.propSubsetFontHint.classList.remove("clickable-grant");
+          } else {
+            el.propSubsetFontHint.textContent = t("grantSysFontsPrompt");
+            el.propSubsetFontHint.classList.add("clickable-grant");
+            el.propSubsetFontHint.classList.remove("hidden");
+          }
         } else {
           el.propSubsetFontHint.classList.add("hidden");
+          el.propSubsetFontHint.classList.remove("clickable-grant");
         }
       }
       if (document.activeElement !== el.propSizeInput) {
@@ -2541,18 +2568,34 @@
     }
 
     // 2. Render background mask patches over original PDF text locations first
+    // (Hidden while an original span is clicked in pristine unedited state so PDF vector ink stays 100% untouched!)
     slot.edits.forEach((ed) => {
       if (ed.maskBg && ed.origRect) {
         const patch = document.createElement("div");
         patch.className = "text-mask-patch";
+        patch.dataset.patchFor = ed.id;
         patch.style.left = `${ed.origRect.u * cssW - 1}px`;
         patch.style.top = `${ed.origRect.v * cssH - 1}px`;
         patch.style.width = `${ed.origRect.uw * cssW + 2}px`;
         patch.style.height = `${ed.origRect.vh * cssH + 2}px`;
         patch.style.backgroundColor = ed.bgColor || "#ffffff";
+        if (ed.origId && ed.modified === false) {
+          patch.style.display = "none";
+        }
         el.textEditOverlay.appendChild(patch);
       }
     });
+
+    function activateModifiedEditDom(edObj, nodeEl) {
+      if (edObj.modified !== false) return;
+      edObj.modified = true;
+      if (nodeEl) {
+        nodeEl.classList.remove("pristine-orig");
+        nodeEl.style.color = edObj.color || "#231f20";
+      }
+      const pEl = el.textEditOverlay.querySelector(`.text-mask-patch[data-patch-for="${edObj.id}"]`);
+      if (pEl && edObj.maskBg) pEl.style.display = "block";
+    }
 
     // 3. Render interactive zero-offset text boxes with move & resize handles
     let selectedWrapEl = null;
@@ -2599,10 +2642,14 @@
       dragHandle.innerHTML = (ICONS["move"] ? ICONS["move"].replace('class="lucide', 'style="width:10px;height:10px;" class="lucide') : "✥");
       wrap.appendChild(dragHandle);
 
-      // Editable Text Node (zero padding so position matches PDF glyph box 1:1)
+      // Editable Text Node (zero padding; pristine-orig keeps underlying PDF vector ink untouched until first edit!)
+      const isPristine = Boolean(ed.origId && ed.modified === false);
       const isSingleJustify = ed.textAlign === "justify" && !String(ed.text || "").includes("\n");
       const textNode = document.createElement("div");
-      textNode.className = "editable-text-node" + (isSingleJustify ? " single-line-justify" : "");
+      textNode.className =
+        "editable-text-node" +
+        (isSingleJustify ? " single-line-justify" : "") +
+        (isPristine ? " pristine-orig" : "");
       textNode.contentEditable = isSelected ? "true" : "false";
       textNode.spellcheck = false;
       textNode.textContent = ed.text;
@@ -2618,7 +2665,8 @@
       if (ed.strike) decs.push("line-through");
       textNode.style.textDecoration = decs.length ? decs.join(" ") : "none";
       textNode.style.opacity = String(typeof ed.opacity === "number" ? ed.opacity : 1);
-      textNode.style.color = ed.color || "#181817";
+      textNode.style.color = ed.color || "#231f20";
+      textNode.style.caretColor = ed.color || "#231f20";
       wrap.appendChild(textNode);
 
       // Resize Handles: Bottom-Right Corner (scales font size, cursor: nwse-resize) & Right Edge (adjusts wrap width, cursor: ew-resize)
@@ -2671,7 +2719,10 @@
               groupSnap.forEach((g) => {
                 g.ref.u = Math.min(0.97, Math.max(0, g.u0 + dx / cssW));
                 g.ref.v = Math.min(0.97, Math.max(0, g.v0 + dy / cssH));
-                if (g.kind === "text") g.ref.baselineV = null;
+                if (g.kind === "text") {
+                  g.ref.baselineV = null;
+                  activateModifiedEditDom(g.ref, g.el ? g.el.querySelector(".editable-text-node") : null);
+                }
                 if (g.kind === "img") g.ref.moved = true;
                 if (g.el) {
                   g.el.style.left = `${g.ref.u * cssW}px`;
@@ -2680,6 +2731,7 @@
               });
             } else {
               ed.baselineV = null;
+              activateModifiedEditDom(ed, textNode);
               ed.u = Math.min(0.97, Math.max(0, origU + dx / cssW));
               ed.v = Math.min(0.97, Math.max(0, origV + dy / cssH));
               wrap.style.left = `${ed.u * cssW}px`;
@@ -2738,6 +2790,7 @@
         ev.stopPropagation();
         pushUndo();
         ed.baselineV = null;
+        activateModifiedEditDom(ed, textNode);
         const startX = ev.clientX;
         const startY = ev.clientY;
         const startFontPt = ed.fontPt;
@@ -2771,6 +2824,7 @@
         ev.preventDefault();
         ev.stopPropagation();
         pushUndo();
+        activateModifiedEditDom(ed, textNode);
         const startX = ev.clientX;
         const startW = wrap.getBoundingClientRect().width;
 
@@ -2795,6 +2849,7 @@
       });
 
       textNode.addEventListener("input", () => {
+        activateModifiedEditDom(ed, textNode);
         ed.text = textNode.innerText;
         positionTextFmtBar(wrap);
         scheduleWorkspaceCacheSave();
@@ -4398,6 +4453,7 @@
       if (slot.edits && slot.edits.length) {
         const crop = pg.getCropBox();
         for (const ed of slot.edits) {
+          if (ed.origId && ed.modified === false) continue;
           if (ed.maskBg && ed.origRect) {
             const r = normVisualToPdfRect(crop, totalRot, ed.origRect);
             const bg = hexToRgb01(ed.bgColor);
@@ -5311,6 +5367,7 @@
     const ed = getSelectedEditObj();
     if (!ed) return;
     pushUndo();
+    ed.modified = true;
     ed.fontKey = el.fmtFontSelect.value;
     renderTextEditorOverlay();
   });
@@ -5318,6 +5375,7 @@
   el.fmtSmallerBtn.addEventListener("click", () => {
     const ed = getSelectedEditObj();
     if (!ed) return;
+    ed.modified = true;
     ed.fontPt = Math.max(6, Math.round((ed.fontPt - 1.5) * 10) / 10);
     renderTextEditorOverlay();
   });
@@ -5325,6 +5383,7 @@
   el.fmtLargerBtn.addEventListener("click", () => {
     const ed = getSelectedEditObj();
     if (!ed) return;
+    ed.modified = true;
     ed.fontPt = Math.min(140, Math.round((ed.fontPt + 1.5) * 10) / 10);
     renderTextEditorOverlay();
   });
@@ -5332,6 +5391,7 @@
   el.fmtBoldBtn.addEventListener("click", () => {
     const ed = getSelectedEditObj();
     if (!ed) return;
+    ed.modified = true;
     ed.bold = !ed.bold;
     ed.fontWeight = ed.bold ? 700 : 400;
     renderTextEditorOverlay();
@@ -5340,6 +5400,7 @@
   el.fmtItalicBtn.addEventListener("click", () => {
     const ed = getSelectedEditObj();
     if (!ed) return;
+    ed.modified = true;
     ed.italic = !ed.italic;
     renderTextEditorOverlay();
   });
@@ -5347,6 +5408,7 @@
   el.fmtColorInput.addEventListener("input", () => {
     const ed = getSelectedEditObj();
     if (!ed) return;
+    ed.modified = true;
     ed.color = el.fmtColorInput.value;
     renderTextEditorOverlay();
   });
@@ -5354,6 +5416,7 @@
   el.fmtMaskCheck.addEventListener("change", () => {
     const ed = getSelectedEditObj();
     if (!ed) return;
+    ed.modified = true;
     ed.maskBg = el.fmtMaskCheck.checked;
     renderTextEditorOverlay();
   });
@@ -5361,6 +5424,7 @@
   el.fmtBgInput.addEventListener("input", () => {
     const ed = getSelectedEditObj();
     if (!ed) return;
+    ed.modified = true;
     ed.bgColor = el.fmtBgInput.value;
     ed.maskBg = true;
     el.fmtMaskCheck.checked = true;
@@ -5373,6 +5437,7 @@
     if (!slot || !ed) return;
     pushUndo();
     if (ed.origRect) {
+      ed.modified = true;
       ed.text = "";
       ed.maskBg = true;
     } else {
@@ -5896,7 +5961,10 @@
     if (!targets.length) return;
     state.textSessionInitial = null;
     pushUndo();
-    targets.forEach((ed) => mutatorFn(ed));
+    targets.forEach((ed) => {
+      ed.modified = true;
+      mutatorFn(ed);
+    });
     renderTextEditorOverlay();
     updateTopStripControls();
   }
@@ -5905,43 +5973,87 @@
     applyBatchTextProp((ed) => { ed.fontKey = el.propFontSelect.value; });
   });
 
-  if (el.loadSysFontsBtn) {
-    el.loadSysFontsBtn.addEventListener("click", async () => {
-      if (typeof window.queryLocalFonts !== "function") {
-        alert(t("sysFontsUnsupported"));
-        return;
+  async function requestAndLoadLocalFonts(silent) {
+    if (typeof window.queryLocalFonts !== "function") {
+      if (!silent) alert(t("sysFontsUnsupported"));
+      return false;
+    }
+    try {
+      const fonts = await window.queryLocalFonts();
+      if (!fonts || !fonts.length) return false;
+      if (window.ShibaPrepress && window.ShibaPrepress.indexSystemFontData) {
+        window.ShibaPrepress.indexSystemFontData(fonts);
       }
-      try {
-        const fonts = await window.queryLocalFonts();
-        const famSet = new Set();
-        fonts.forEach((f) => {
-          const fam = f && f.family ? String(f.family).trim() : "";
-          if (fam && !fam.startsWith("@")) famSet.add(fam);
-        });
-        const sorted = Array.from(famSet).sort((a, b) => a.localeCompare(b, "zh-CN"));
-        if (!sorted.length) return;
+      const famSet = new Set();
+      fonts.forEach((f) => {
+        const fam = f && f.family ? String(f.family).trim() : "";
+        if (fam && !fam.startsWith("@")) famSet.add(fam);
+      });
+      const sorted = Array.from(famSet).sort((a, b) => a.localeCompare(b, "zh-CN"));
+      if (!sorted.length) return false;
 
-        [el.propFontSelect, el.fmtFontSelect].forEach((sel) => {
-          if (!sel) return;
-          const prevGrp = sel.querySelector('optgroup[data-sys-fonts="1"]');
-          if (prevGrp) prevGrp.remove();
-          const grp = document.createElement("optgroup");
-          grp.dataset.sysFonts = "1";
-          grp.label = t("sysFontsGroupLabel");
-          sorted.forEach((fam) => {
-            const opt = document.createElement("option");
-            opt.value = `local:${fam}`;
-            opt.textContent = fam;
-            grp.appendChild(opt);
-          });
-          sel.appendChild(grp);
+      [el.propFontSelect, el.fmtFontSelect].forEach((sel) => {
+        if (!sel) return;
+        const prevGrp = sel.querySelector('optgroup[data-sys-fonts="1"]');
+        if (prevGrp) prevGrp.remove();
+        const grp = document.createElement("optgroup");
+        grp.dataset.sysFonts = "1";
+        grp.label = t("sysFontsGroupLabel");
+        sorted.forEach((fam) => {
+          const opt = document.createElement("option");
+          opt.value = `local:${fam}`;
+          opt.textContent = fam;
+          grp.appendChild(opt);
         });
+        sel.appendChild(grp);
+      });
 
+      state.sysFontsLoaded = true;
+      if (el.loadSysFontsBtn) {
         const lblSpan = el.loadSysFontsBtn.querySelector("span") || el.loadSysFontsBtn;
         lblSpan.removeAttribute("data-i18n");
         lblSpan.textContent = t("sysFontsLoadedFmt", { n: sorted.length });
-        syncEditPropsPanel();
-      } catch (_) {}
+      }
+
+      // Eagerly match & register any original PDF fonts across currently loaded documents!
+      if (window.ShibaPrepress && window.ShibaPrepress.ensureLocalFontForPdfName) {
+        const usedOrigNames = new Set();
+        state.sourceDocs.forEach((docEntry) => {
+          (docEntry.origPages || []).forEach((op) => {
+            (op.textSpans || []).forEach((sp) => {
+              if (sp.origFontName) usedOrigNames.add(sp.origFontName);
+            });
+          });
+        });
+        await Promise.all(Array.from(usedOrigNames).map((nm) => window.ShibaPrepress.ensureLocalFontForPdfName(nm)));
+      }
+
+      if (hasPages() && state.pillar === "pages" && state.pagesSub === "text") {
+        renderTextEditorOverlay();
+      }
+      syncEditPropsPanel();
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  async function autoInitPermittedLocalFonts() {
+    if (typeof window.queryLocalFonts !== "function" || !navigator.permissions || !navigator.permissions.query) return;
+    try {
+      const status = await navigator.permissions.query({ name: "local-fonts" });
+      if (status && status.state === "granted") {
+        await requestAndLoadLocalFonts(true);
+      }
+    } catch (_) {}
+  }
+
+  if (el.loadSysFontsBtn) {
+    el.loadSysFontsBtn.addEventListener("click", () => requestAndLoadLocalFonts(false));
+  }
+  if (el.propSubsetFontHint) {
+    el.propSubsetFontHint.addEventListener("click", () => {
+      if (!state.sysFontsLoaded) requestAndLoadLocalFonts(false);
     });
   }
 
@@ -6057,6 +6169,7 @@
       const info = getSlotSizeInfo(slot);
       const b0 = items[0];
       pushUndo();
+      if (b0.kind === "text") b0.ref.modified = true;
       if (idx === 0) b0.ref.u = Math.min(0.96, Math.max(0, (parseFloat(inp.value) || 0) / info.wMm));
       else if (idx === 1) {
         if (b0.kind === "text") b0.ref.baselineV = null;
@@ -6476,5 +6589,6 @@
   // Initialize App & Auto-Restore Cached Project from Browser IndexedDB
   applyTheme();
   applyLanguage();
+  autoInitPermittedLocalFonts();
   restoreCachedProjectOnBoot();
 })();

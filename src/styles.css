@@ -693,19 +693,32 @@ svg.lucide {
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
+.strip-right .primary-btn {
+  height: 30px;
+  padding: 0 11px;
+  border-radius: 8px;
+  font-size: 12px;
+  gap: 5px;
+}
+
+.strip-right .primary-btn svg {
+  width: 13.5px;
+  height: 13.5px;
+}
+
 .primary-btn {
-  height: 34px;
-  padding: 0 16px;
+  height: 32px;
+  padding: 0 13px;
   border: none;
-  border-radius: 9px;
+  border-radius: 8px;
   background: var(--btn-bg);
   color: var(--btn-fg);
-  font-size: 12.5px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   white-space: nowrap;
   transition: background-color 0.14s, opacity 0.14s;
 }
@@ -1333,6 +1346,31 @@ svg.lucide {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
+  transform: translateZ(0);
+  will-change: transform;
+}
+
+.editable-text-node.pristine-orig {
+  color: transparent !important;
+}
+
+.editable-text-node.pristine-orig::selection {
+  background: rgba(35, 131, 226, 0.24);
+  color: transparent;
+}
+
+#propSubsetFontHint.clickable-grant {
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(35, 131, 226, 0.08);
+  color: #2383e2 !important;
+  border: 1px dashed rgba(35, 131, 226, 0.35);
+  transition: background-color 0.14s;
+}
+
+#propSubsetFontHint.clickable-grant:hover {
+  background: rgba(35, 131, 226, 0.15);
 }
 
 .text-box-wrap.selected .editable-text-node {
