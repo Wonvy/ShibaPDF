@@ -1059,14 +1059,12 @@
       <!-- Real-Time PDF Import & Parsing Progress Modal -->
       <div id="loadProgressOverlay" class="load-progress-overlay hidden">
         <div class="load-progress-card">
-          <div class="load-progress-head">
-            <span id="loadProgressTitle" class="load-progress-title">正在解析文档</span>
+          <div class="load-spinner-wrap" aria-hidden="true">
+            <div class="load-spinner-ring"></div>
             <span id="loadProgressPct" class="load-progress-pct">0%</span>
           </div>
+          <div id="loadProgressTitle" class="load-progress-title">正在解析文档</div>
           <div id="loadProgressFile" class="load-progress-file"></div>
-          <div class="load-progress-track">
-            <div id="loadProgressFill" class="load-progress-fill"></div>
-          </div>
           <div id="loadProgressStep" class="load-progress-step"></div>
         </div>
       </div>

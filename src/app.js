@@ -630,6 +630,7 @@
     } finally {
       state.bootRestoreDone = true;
       el.loadProgressOverlay.classList.add("hidden");
+      if (!hasPages()) el.emptyStage.classList.remove("hidden");
     }
   }
 
@@ -986,11 +987,12 @@
 
   function updateLoadModal(pct, titleStr, fileName, stepStr) {
     const clamped = Math.max(0, Math.min(100, Math.round(pct)));
+    el.emptyStage.classList.add("hidden");
     el.loadProgressOverlay.classList.remove("hidden");
     el.loadProgressTitle.textContent = titleStr;
     el.loadProgressPct.textContent = `${clamped}%`;
     el.loadProgressFile.textContent = fileName || "";
-    el.loadProgressFill.style.width = `${clamped}%`;
+    if (el.loadProgressFill) el.loadProgressFill.style.width = `${clamped}%`;
     el.loadProgressStep.textContent = stepStr || "";
   }
 
@@ -1080,6 +1082,7 @@
       await nextUiFrame();
     } finally {
       el.loadProgressOverlay.classList.add("hidden");
+      if (!hasPages()) el.emptyStage.classList.remove("hidden");
     }
 
     if (wasEmpty) {

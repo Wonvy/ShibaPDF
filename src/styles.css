@@ -404,20 +404,14 @@ svg.lucide {
 }
 
 .tool-btn-title {
-  font-size: 12.5px;
+  font-size: 14px;
   font-weight: 600;
   color: var(--text-1);
   letter-spacing: -0.01em;
 }
 
 .tool-btn-desc {
-  display: block;
-  font-size: 10.5px;
-  color: var(--text-3);
-  margin-top: 1px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: none;
 }
 
 .status-pill {
@@ -2009,11 +2003,16 @@ svg.lucide {
   font-weight: 600;
 }
 
+@keyframes shibaSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .load-progress-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(16, 16, 16, 0.28);
-  backdrop-filter: blur(5px);
+  background: var(--bg-canvas);
   z-index: 160;
   display: flex;
   align-items: center;
@@ -2021,38 +2020,64 @@ svg.lucide {
 }
 
 .load-progress-card {
-  width: 356px;
+  width: 310px;
   max-width: 90%;
-  padding: 20px 22px;
+  padding: 26px 24px 22px;
   border-radius: 14px;
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border-subtle);
   background: var(--bg-surface);
-  box-shadow: var(--shadow-popover);
+  box-shadow: var(--shadow-float);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
 }
 
-.load-progress-head {
+.load-spinner-wrap {
+  position: relative;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 14px;
-  font-weight: 650;
-  color: var(--text-1);
+  justify-content: center;
+  margin-bottom: 4px;
+}
+
+.load-spinner-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2.5px solid var(--border-subtle);
+  border-top-color: var(--text-1);
+  animation: shibaSpin 0.8s linear infinite;
 }
 
 .load-progress-pct {
+  font-size: 11px;
+  font-weight: 650;
   font-variant-numeric: tabular-nums;
-  color: var(--accent);
+  color: var(--text-1);
+}
+
+.load-progress-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-1);
 }
 
 .load-progress-file {
+  max-width: 100%;
   font-size: 12px;
   color: var(--text-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.load-progress-step {
+  font-size: 11px;
+  color: var(--text-3);
 }
 
 .load-progress-track {
