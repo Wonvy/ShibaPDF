@@ -1400,12 +1400,52 @@ svg.lucide {
 /* Interactive Organize & Select Grid (Supports Ctrl + Wheel & Pinch Zoom via --org-min-w) */
 .clean-grid {
   --org-min-w: 172px;
+  --imp-min-w: 390px;
   width: 100%;
-  max-width: 1480px;
+  max-width: 1560px;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(var(--org-min-w), 1fr));
   gap: 22px 18px;
   padding-bottom: 32px;
+}
+
+.clean-grid.impose-grid {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, var(--imp-min-w)), 1fr));
+  gap: 26px 22px;
+}
+
+.impose-sheet-card {
+  border-radius: 14px;
+  padding: 14px 14px 12px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: zoom-in;
+  transition: background-color 0.14s, transform 0.14s;
+}
+
+.impose-sheet-card:hover {
+  background: var(--bg-rail);
+  transform: translateY(-2px);
+}
+
+.impose-sheet-card canvas {
+  max-width: 100%;
+  height: auto !important;
+  background: #ffffff;
+  box-shadow: var(--shadow-paper);
+  display: block;
+}
+
+.duplex-pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 5px;
+  background: var(--bg-pill);
+  color: var(--text-1);
 }
 
 .org-card {

@@ -334,17 +334,46 @@
             <!-- Sub: Imposition Controls -->
             <div id="imposeControls" class="strip-left">
               <div class="soft-pills">
+                <button id="impViewGridBtn" class="soft-pill active" type="button">
+                  <i data-lucide="layout-grid" style="width:13px;height:13px;"></i><span data-i18n="impViewGrid">多版总览</span>
+                </button>
+                <button id="impViewSingleBtn" class="soft-pill" type="button">
+                  <i data-lucide="maximize-2" style="width:13px;height:13px;"></i><span data-i18n="impViewSingle">单版精查</span>
+                </button>
+              </div>
+
+              <div class="soft-pills">
                 <button id="impBookletBtn" class="soft-pill active" type="button" data-i18n="imposeBooklet">骑马钉折手</button>
                 <button id="impSpreadBtn" class="soft-pill" type="button" data-i18n="imposeSpread2Up">单页合跨页</button>
                 <button id="impNupBtn" class="soft-pill" type="button" data-i18n="imposeNUp">多联拼版 (N拼)</button>
               </div>
+
+              <button id="impSpreadAutoBtn" class="ghost-btn active hidden" type="button" title="Toggle auto-splitting reader spreads into single pages">
+                <i data-lucide="scissors"></i>
+                <span id="impSpreadAutoText">跨页已拆单页</span>
+              </button>
 
               <div class="popover-anchor">
                 <button id="imposeParamsBtn" class="ghost-btn active" type="button">
                   <i data-lucide="sliders-horizontal"></i>
                   <span data-i18n="imposeParamsFmt">拼版参数 ▾</span>
                 </button>
-                <div id="imposePopover" class="popover-card hidden">
+                <div id="imposePopover" class="popover-card hidden" style="min-width:316px;">
+                  <label class="pop-row" style="cursor:pointer;">
+                    <span data-i18n="impAutoSplitLabel">自动将横向跨页原稿拆为单页再拼版</span>
+                    <span class="switch-ctrl"><input id="impAutoSplitCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+                  </label>
+
+                  <div id="impSpreadDetailRows" style="display:flex;flex-direction:column;gap:10px;padding-left:8px;border-left:2px solid var(--bg-pill);">
+                    <label class="pop-row" style="cursor:pointer;">
+                      <span data-i18n="impSpreadCoverLabel">首张跨页为「左封底 · 右封面」</span>
+                      <span class="switch-ctrl"><input id="impSpreadCoverCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+                    </label>
+                    <div class="pop-row">
+                      <span data-i18n="impSpreadBleedLabel">跨页外出血裁除</span>
+                      <span class="num-pill"><input id="impSpreadBleedInput" type="number" min="0" max="30" step="0.5" value="0" /><span class="unit-txt">mm</span></span>
+                    </div>
+                  </div>
                   <div id="nupOnlyRows" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
                     <div class="pop-row">
                       <span data-i18n="nupCountLabel">每张拼数</span>

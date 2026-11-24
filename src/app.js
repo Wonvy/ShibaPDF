@@ -79,7 +79,13 @@
     spacePressed: false,
     dragDepth: 0,
 
-    // Imposition State
+    // Imposition State (Default Multi-Sheet Grid Overview + Smart Reader-Spread Auto-Split)
+    imposeView: "grid", // 'grid' | 'single'
+    imposeGridScale: 1.0,
+    imposeAutoSplitSpreads: true,
+    imposeSpreadFirstBackFront: true,
+    imposeSpreadBleedMm: 0,
+    hiResSlotCache: new Map(),
     imposeType: "booklet", // 'booklet' | 'spread2up' | 'nup'
     imposeNup: 4,
     sheetPreset: "auto",
@@ -234,11 +240,19 @@
     subSplitBtn: document.getElementById("subSplitBtn"),
     subK100Btn: document.getElementById("subK100Btn"),
     imposeControls: document.getElementById("imposeControls"),
+    impViewGridBtn: document.getElementById("impViewGridBtn"),
+    impViewSingleBtn: document.getElementById("impViewSingleBtn"),
     impBookletBtn: document.getElementById("impBookletBtn"),
     impSpreadBtn: document.getElementById("impSpreadBtn"),
     impNupBtn: document.getElementById("impNupBtn"),
+    impSpreadAutoBtn: document.getElementById("impSpreadAutoBtn"),
+    impSpreadAutoText: document.getElementById("impSpreadAutoText"),
     imposeParamsBtn: document.getElementById("imposeParamsBtn"),
     imposePopover: document.getElementById("imposePopover"),
+    impAutoSplitCheck: document.getElementById("impAutoSplitCheck"),
+    impSpreadDetailRows: document.getElementById("impSpreadDetailRows"),
+    impSpreadCoverCheck: document.getElementById("impSpreadCoverCheck"),
+    impSpreadBleedInput: document.getElementById("impSpreadBleedInput"),
     nupOnlyRows: document.getElementById("nupOnlyRows"),
     nupChips: Array.from(document.querySelectorAll(".nup-chip")),
     sheetPresetSelect: document.getElementById("sheetPresetSelect"),
@@ -475,6 +489,9 @@
         bleedAction: state.bleedAction,
         imposeType: state.imposeType,
         imposeNup: state.imposeNup,
+        imposeAutoSplitSpreads: state.imposeAutoSplitSpreads,
+        imposeSpreadFirstBackFront: state.imposeSpreadFirstBackFront,
+        imposeSpreadBleedMm: state.imposeSpreadBleedMm,
         annotations: state.annotations,
         docOrder: state.docOrder,
         docs,
@@ -542,6 +559,9 @@
       if (snap.bleedAction) state.bleedAction = snap.bleedAction;
       if (snap.imposeType) state.imposeType = snap.imposeType;
       if (snap.imposeNup) state.imposeNup = snap.imposeNup;
+      if (typeof snap.imposeAutoSplitSpreads === "boolean") state.imposeAutoSplitSpreads = snap.imposeAutoSplitSpreads;
+      if (typeof snap.imposeSpreadFirstBackFront === "boolean") state.imposeSpreadFirstBackFront = snap.imposeSpreadFirstBackFront;
+      if (typeof snap.imposeSpreadBleedMm === "number") state.imposeSpreadBleedMm = snap.imposeSpreadBleedMm;
 
       if (window.ShibaImageEdit) {
         const imgTasks = [];
@@ -608,6 +628,10 @@
     return state.pillar === "pages" && state.pagesSub === "annotate";
   }
 
+  function isImposeGridMode() {
+    return isImposeMode() && state.imposeView === "grid";
+  }
+
   function updateZoomReadout() {
     if (isAnnotateMode()) {
       el.zoomLabel.textContent = `${Math.round(state.annScale * 100)}%`;
@@ -617,6 +641,12 @@
     if (isOrganizeMode()) {
       el.zoomLabel.textContent =
         Math.abs(state.orgGridScale - 1.0) < 0.02 ? "100%" : `${Math.round(state.orgGridScale * 100)}%`;
+      updateStatusBars();
+      return;
+    }
+    if (isImposeGridMode()) {
+      el.zoomLabel.textContent =
+        Math.abs(state.imposeGridScale - 1.0) < 0.02 ? "100%" : `${Math.round(state.imposeGridScale * 100)}%`;
       updateStatusBars();
       return;
     }
@@ -637,9 +667,25 @@
     }, 150);
   }
 
+  function setImposeGridZoom(newScale) {
+    const clamped = Math.min(2.6, Math.max(0.5, Math.round(newScale * 100) / 100));
+    if (Math.abs(clamped - state.imposeGridScale) < 0.005) return;
+    state.imposeGridScale = clamped;
+    el.sequenceGrid.style.setProperty("--imp-min-w", `${Math.round(390 * clamped)}px`);
+    updateZoomReadout();
+    clearTimeout(state.wheelRenderTimer);
+    state.wheelRenderTimer = setTimeout(() => {
+      if (isImposeGridMode()) renderImposeMultiSheetGrid();
+    }, 150);
+  }
+
   function setSmoothZoom(newFactor) {
     if (isOrganizeMode()) {
       setOrgGridZoom(newFactor);
+      return;
+    }
+    if (isImposeGridMode()) {
+      setImposeGridZoom(newFactor);
       return;
     }
     if (isAnnotateMode()) {
@@ -722,6 +768,10 @@
           setOrgGridZoom(state.orgGridScale * factor);
           return;
         }
+        if (isImposeGridMode()) {
+          setImposeGridZoom(state.imposeGridScale * factor);
+          return;
+        }
         if (el.spreadViewContainer.classList.contains("hidden")) return;
         setSmoothZoom(state.zoomFactor * factor);
       }
@@ -777,6 +827,11 @@
         clearAllContentSelections();
         updateTopStripControls();
         renderTextEditorOverlay();
+        return;
+      }
+      if (isImposeMode() && state.imposeView === "single") {
+        state.imposeView = "grid";
+        refreshWorkspace(true);
         return;
       }
       if (state.pillar === "pages" && state.pagesSub === "organize" && getSelectedSlots().length > 0) {
@@ -1066,7 +1121,7 @@
       const page = await docEntry.pdfJsDoc.getPage(slot.origIdx + 1);
       const totalRot = (docEntry.origPages[slot.origIdx].rot + slot.extraRot) % 360;
       const vp1 = page.getViewport({ scale: 1, rotation: totalRot });
-      const targetScale = Math.min(720 / Math.max(vp1.width, 1), 1.35);
+      const targetScale = Math.min(1320 / Math.max(vp1.width, 1), 2.0);
       const vp = page.getViewport({ scale: targetScale, rotation: totalRot });
 
       baseCv = document.createElement("canvas");
@@ -1089,6 +1144,72 @@
     oCtx.drawImage(baseCv, 0, 0);
     paintSlotEditsOntoCanvas(oCtx, out.width, out.height, slot);
     return out;
+  }
+
+  // True HiDPI Direct PDF Vector Rasterizer for Imposed Sheet Cells (Supports Half-Spread Cropping & Zoomed Retina Clarity!)
+  async function getHiResImposeUnitCanvas(unit, reqDevicePxW) {
+    if (!unit) return null;
+    const slot = state.pages[unit.slotIdx];
+    if (!slot) return null;
+    const docEntry = state.sourceDocs.get(slot.docId);
+    if (!docEntry) return null;
+
+    const fullReqPxW = Math.round(reqDevicePxW / Math.max(0.15, unit.uw || 1));
+    let bucketW = 1080;
+    if (fullReqPxW > 2200) bucketW = 3000;
+    else if (fullReqPxW > 1500) bucketW = 2200;
+    else if (fullReqPxW > 1080) bucketW = 1560;
+
+    const cacheKey = `${slot.docId}_${slot.origIdx}_${slot.extraRot}_${bucketW}`;
+    let baseFullCv = state.hiResSlotCache.get(cacheKey);
+
+    if (!baseFullCv) {
+      const page = await docEntry.pdfJsDoc.getPage(slot.origIdx + 1);
+      const totalRot = (docEntry.origPages[slot.origIdx].rot + slot.extraRot) % 360;
+      const vp1 = page.getViewport({ scale: 1, rotation: totalRot });
+      const targetScale = Math.min(bucketW / Math.max(vp1.width, 1), 3.6);
+      const vp = page.getViewport({ scale: targetScale, rotation: totalRot });
+
+      baseFullCv = document.createElement("canvas");
+      baseFullCv.width = Math.max(1, Math.round(vp.width));
+      baseFullCv.height = Math.max(1, Math.round(vp.height));
+      const ctx = baseFullCv.getContext("2d");
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, baseFullCv.width, baseFullCv.height);
+      await page.render({ canvasContext: ctx, viewport: vp }).promise;
+
+      if (state.hiResSlotCache.size >= 28) {
+        const oldestKey = state.hiResSlotCache.keys().next().value;
+        state.hiResSlotCache.delete(oldestKey);
+      }
+      state.hiResSlotCache.set(cacheKey, baseFullCv);
+    }
+
+    const hasEdits = (slot.edits && slot.edits.length) || (slot.imgEdits && slot.imgEdits.length);
+    let srcFull = baseFullCv;
+    if (hasEdits) {
+      srcFull = document.createElement("canvas");
+      srcFull.width = baseFullCv.width;
+      srcFull.height = baseFullCv.height;
+      const eCtx = srcFull.getContext("2d");
+      eCtx.drawImage(baseFullCv, 0, 0);
+      paintSlotEditsOntoCanvas(eCtx, srcFull.width, srcFull.height, slot);
+    }
+
+    if (unit.side === "full" && unit.u === 0 && unit.v === 0 && unit.uw === 1 && unit.vh === 1) {
+      return srcFull;
+    }
+
+    const sx = Math.max(0, Math.round(unit.u * srcFull.width));
+    const sy = Math.max(0, Math.round(unit.v * srcFull.height));
+    const sw = Math.max(1, Math.min(srcFull.width - sx, Math.round(unit.uw * srcFull.width)));
+    const sh = Math.max(1, Math.min(srcFull.height - sy, Math.round(unit.vh * srcFull.height)));
+
+    const cropCv = document.createElement("canvas");
+    cropCv.width = sw;
+    cropCv.height = sh;
+    cropCv.getContext("2d").drawImage(srcFull, sx, sy, sw, sh, 0, 0, sw, sh);
+    return cropCv;
   }
 
   // =========================================================================
@@ -1114,6 +1235,7 @@
   async function renderOrganizeGrid() {
     if (!hasPages()) return;
     const myToken = ++state.renderToken;
+    el.sequenceGrid.classList.remove("impose-grid");
     el.sequenceGrid.style.setProperty("--org-min-w", `${Math.round(172 * state.orgGridScale)}px`);
     el.sequenceGrid.innerHTML = "";
     updateRightOrgPreview(state.activeSlotIdx);
@@ -2513,9 +2635,76 @@
         sheetPreset: state.sheetPreset,
         gutterMm: state.gutterMm,
         cropMarks: state.cropMarks,
-        firstCoverAlone: state.firstCoverAlone
+        firstCoverAlone: state.firstCoverAlone,
+        autoSplitSpreads: state.imposeAutoSplitSpreads,
+        spreadFirstBackFront: state.imposeSpreadFirstBackFront,
+        spreadBleedMm: state.imposeSpreadBleedMm
       }
     );
+  }
+
+  async function renderImposeMultiSheetGrid() {
+    if (!hasPages() || !isImposeMode()) return;
+    const myToken = ++state.renderToken;
+    const plan = getCurrentImpositionPlan();
+    el.sequenceGrid.classList.add("impose-grid");
+    el.sequenceGrid.style.setProperty("--imp-min-w", `${Math.round(390 * state.imposeGridScale)}px`);
+    el.sequenceGrid.innerHTML = "";
+    updatePagerUI();
+
+    const targetCardCssW = Math.max(420, Math.min(1260, Math.round(520 * state.imposeGridScale)));
+
+    for (let i = 0; i < plan.sheets.length; i++) {
+      if (myToken !== state.renderToken) return;
+      const sh = plan.sheets[i];
+      const card = document.createElement("div");
+      card.className = "impose-sheet-card";
+      card.dataset.sheetIdx = String(i);
+
+      const cv = document.createElement("canvas");
+      card.appendChild(cv);
+
+      const cap = document.createElement("div");
+      cap.className = "clean-caption";
+      const st = document.createElement("strong");
+      st.textContent = t("impSheetTitleFmt", { i: i + 1 });
+      cap.appendChild(st);
+
+      if (sh.duplexSide) {
+        const dup = document.createElement("span");
+        dup.className = "duplex-pill";
+        dup.textContent = sh.duplexSide === "front" ? t("impDuplexFront") : t("impDuplexBack");
+        cap.appendChild(dup);
+      }
+
+      const pgSpan = document.createElement("span");
+      pgSpan.textContent = sh.pageSummary;
+      cap.appendChild(pgSpan);
+
+      const dimSpan = document.createElement("span");
+      dimSpan.style.color = "var(--text-3)";
+      dimSpan.textContent = `${plan.sheetWMm.toFixed(0)}×${plan.sheetHMm.toFixed(0)}mm`;
+      cap.appendChild(dimSpan);
+      card.appendChild(cap);
+
+      card.addEventListener("click", () => {
+        state.activeSheetIdx = i;
+        state.imposeView = "single";
+        state.zoomFactor = 1.0;
+        refreshWorkspace(true);
+      });
+
+      el.sequenceGrid.appendChild(card);
+
+      await window.ShibaImpose.renderImposedSheetPreview(
+        cv,
+        sh,
+        targetCardCssW,
+        getHiResImposeUnitCanvas,
+        state.cropMarks,
+        t("blankPad")
+      );
+    }
   }
 
   function computeSplitPlanForSlots(slots) {
@@ -2568,6 +2757,7 @@
   async function renderSplitSequenceGrid() {
     if (!hasPages()) return;
     const myToken = ++state.renderToken;
+    el.sequenceGrid.classList.remove("impose-grid");
     const plan = computeSplitPlanForSlots(state.pages);
     el.sequenceGrid.innerHTML = "";
 
@@ -3054,22 +3244,18 @@
       const sheet = plan.sheets[state.activeSheetIdx];
       const availW = Math.max(320, el.stageViewport.clientWidth - 88);
       const availH = Math.max(240, el.stageViewport.clientHeight - 112);
-      state.baseFitScale = Math.min(availW / sheet.wPt, availH / sheet.hPt, 1.4);
+      state.baseFitScale = Math.min(availW / sheet.wPt, availH / sheet.hPt, 1.55);
+      const cssW = Math.max(160, Math.round(sheet.wPt * state.baseFitScale * state.zoomFactor));
 
       await window.ShibaImpose.renderImposedSheetPreview(
         el.spreadCanvas,
         sheet,
-        (sIdx) => getSlotPreviewCanvas(sIdx),
+        cssW,
+        getHiResImposeUnitCanvas,
         state.cropMarks,
         t("blankPad")
       );
       if (myToken !== state.renderToken) return;
-
-      // Apply user zoom factor cleanly to imposed sheet canvas
-      const cssW = Math.round(sheet.wPt * state.baseFitScale * state.zoomFactor);
-      const cssH = Math.round(sheet.hPt * state.baseFitScale * state.zoomFactor);
-      el.spreadCanvas.style.width = `${cssW}px`;
-      el.spreadCanvas.style.height = `${cssH}px`;
       updatePagerUI();
       return;
     }
@@ -3326,6 +3512,14 @@
       updateZoomReadout();
       return;
     }
+    if (isImposeGridMode()) {
+      const plan = getCurrentImpositionPlan();
+      el.pageIndicator.textContent = `${plan.sheets.length} ${t("impSheetTitleFmt", { i: "" }).trim()}`;
+      el.prevSpreadBtn.classList.add("hidden");
+      el.nextSpreadBtn.classList.add("hidden");
+      updateZoomReadout();
+      return;
+    }
     el.prevSpreadBtn.classList.remove("hidden");
     el.nextSpreadBtn.classList.remove("hidden");
     if (isImposeMode()) {
@@ -3466,12 +3660,27 @@
     el.splitControls.classList.toggle("hidden", state.prepressSub !== "split");
     el.k100InlineHint.classList.toggle("hidden", state.prepressSub !== "k100");
 
+    el.impViewGridBtn.classList.toggle("active", state.imposeView === "grid");
+    el.impViewSingleBtn.classList.toggle("active", state.imposeView === "single");
     el.impBookletBtn.classList.toggle("active", state.imposeType === "booklet");
     el.impSpreadBtn.classList.toggle("active", state.imposeType === "spread2up");
     el.impNupBtn.classList.toggle("active", state.imposeType === "nup");
     el.nupOnlyRows.classList.toggle("hidden", state.imposeType !== "nup");
     el.firstCoverRow.classList.toggle("hidden", state.imposeType !== "spread2up");
     el.nupChips.forEach((ch) => ch.classList.toggle("active", Number(ch.dataset.nup) === state.imposeNup));
+    el.impAutoSplitCheck.checked = Boolean(state.imposeAutoSplitSpreads);
+    el.impSpreadCoverCheck.checked = Boolean(state.imposeSpreadFirstBackFront);
+    el.impSpreadDetailRows.classList.toggle("hidden", !state.imposeAutoSplitSpreads);
+    if (isPrep && state.prepressSub === "impose") {
+      const impCheck = getCurrentImpositionPlan();
+      el.impSpreadAutoBtn.classList.toggle("hidden", !impCheck.hasAnySpread);
+      el.impSpreadAutoBtn.classList.toggle("active", Boolean(state.imposeAutoSplitSpreads));
+      el.impSpreadAutoText.textContent = state.imposeAutoSplitSpreads
+        ? t("impAutoSplitPillOn", { p: impCheck.origLogicalCount })
+        : t("impAutoSplitPillOff");
+    } else {
+      el.impSpreadAutoBtn.classList.add("hidden");
+    }
 
     el.tabSpreadBtn.classList.toggle("active", state.splitTab === "spread");
     el.tabSeqBtn.classList.toggle("active", state.splitTab === "sequence");
@@ -3506,8 +3715,8 @@
     } else if (isPrep && state.prepressSub === "impose") {
       const impPlan = getCurrentImpositionPlan();
       const padNote =
-        state.imposeType === "booklet" && impPlan.paddedTotal > state.pages.length
-          ? t("bookletPadHint", { orig: state.pages.length, pad: impPlan.paddedTotal })
+        state.imposeType === "booklet" && impPlan.paddedTotal > impPlan.origLogicalCount
+          ? t("bookletPadHint", { orig: impPlan.origLogicalCount, pad: impPlan.paddedTotal })
           : "";
       el.dimSummaryText.textContent =
         t("imposeSheetMeta", {
@@ -3695,19 +3904,22 @@
           : `${t("imposeNUp")} (${state.imposeNup})`;
       const sTotal = Math.max(1, impPlan.sheets.length);
       const sCur = Math.min(sTotal, Math.max(1, state.activeSheetIdx + 1));
+      const splitNote = impPlan.didSplitSpreads ? ` · ${t("impAutoSplitPillOn", { p: impPlan.origLogicalCount })}` : "";
+      const gridNote = state.imposeView === "grid" ? t("impClickZoomHint") : "";
       el.rightStatusBadge.textContent = modLabel;
-      el.rightStatusMain.textContent = t("stImpMsg", {
-        mode: modeName,
-        s: impPlan.sheets.length,
-        crop: state.cropMarks ? t("stImpCropOn") : t("stImpCropOff"),
-        k100: state.imposeK100 ? t("stImpK100On") : t("stImpK100Off")
-      });
+      el.rightStatusMain.textContent =
+        t("stImpMsg", {
+          mode: modeName,
+          s: impPlan.sheets.length,
+          crop: state.cropMarks ? t("stImpCropOn") : t("stImpCropOff"),
+          k100: state.imposeK100 ? t("stImpK100On") : t("stImpK100Off")
+        }) + splitNote + gridNote;
       el.rightStatusMeta.textContent = t("stImpRight", {
-        i: sCur,
+        i: state.imposeView === "grid" ? sTotal : sCur,
         s: sTotal,
         w: impPlan.sheetWMm.toFixed(0),
         h: impPlan.sheetHMm.toFixed(0),
-        z: zoomDisp
+        z: state.imposeView === "grid" ? `${Math.round(state.imposeGridScale * 100)}%` : zoomDisp
       });
       return;
     }
@@ -3812,18 +4024,19 @@
 
     const showOrgGrid = state.pillar === "pages" && state.pagesSub === "organize";
     const showAnnotate = isAnnotateMode();
+    const showImposeGrid = isImposeGridMode();
     const showSplitGrid = state.pillar === "prepress" && state.prepressSub === "split" && state.splitTab === "sequence";
     const showConvert = state.pillar === "convert";
-    const showCanvas = !showOrgGrid && !showAnnotate && !showSplitGrid && !showConvert;
+    const showCanvas = !showOrgGrid && !showAnnotate && !showImposeGrid && !showSplitGrid && !showConvert;
 
-    el.stageViewport.classList.toggle("align-top", showOrgGrid || showSplitGrid || showConvert);
+    el.stageViewport.classList.toggle("align-top", showOrgGrid || showImposeGrid || showSplitGrid || showConvert);
     el.stageViewport.classList.toggle("freeform-mode", showAnnotate);
     el.spreadViewContainer.classList.toggle("hidden", !showCanvas);
-    el.sequenceGrid.classList.toggle("hidden", !(showOrgGrid || showSplitGrid));
+    el.sequenceGrid.classList.toggle("hidden", !(showOrgGrid || showImposeGrid || showSplitGrid));
     el.annotateBoardWrap.classList.toggle("hidden", !showAnnotate);
     el.convertViewPanel.classList.toggle("hidden", !showConvert);
-    el.bottomPager.classList.toggle("hidden", !(showCanvas || showAnnotate || showOrgGrid));
-    if (showOrgGrid) updatePagerUI();
+    el.bottomPager.classList.toggle("hidden", !(showCanvas || showAnnotate || showOrgGrid || showImposeGrid));
+    if (showOrgGrid || showImposeGrid) updatePagerUI();
     if (!showCanvas || state.pillar !== "pages" || state.pagesSub !== "text") {
       el.textFmtBar.classList.add("hidden");
       el.imgFmtBar.classList.add("hidden");
@@ -3832,6 +4045,7 @@
     if (!rerenderStage) return;
     if (showOrgGrid) renderOrganizeGrid();
     else if (showAnnotate) renderAnnotateBoard();
+    else if (showImposeGrid) renderImposeMultiSheetGrid();
     else if (showSplitGrid) renderSplitSequenceGrid();
     else if (showCanvas) renderCanvasStage();
   }
@@ -4012,7 +4226,7 @@
       } else if (state.pillar === "prepress" && state.prepressSub === "impose") {
         const prepDoc = await assembleSlotsPdfDoc(state.pages, state.imposeK100);
         const plan = getCurrentImpositionPlan();
-        const bytes = await window.ShibaImpose.exportImposedPdfBytes(prepDoc, plan, state.cropMarks);
+        const bytes = await window.ShibaImpose.exportImposedPdfBytes(prepDoc, plan, state.cropMarks, normVisualToPdfRect);
         const suffix = state.imposeType === "booklet" ? "_骑马钉拼版" : state.imposeType === "spread2up" ? "_跨页拼版" : `_${state.imposeNup}拼大版`;
         triggerDownloadBlob(new Blob([bytes], { type: "application/pdf" }), `${stem}${suffix}.pdf`);
       } else if (state.pillar === "prepress" && state.prepressSub === "split") {
@@ -4092,6 +4306,7 @@
     state.annotations = [];
     state.annUndoStack = [];
     state.bitmapCache.clear();
+    state.hiResSlotCache.clear();
     state.cacheSaved = false;
     state.cacheRestoredMsg = false;
     if (window.ShibaStorage) window.ShibaStorage.clearWorkspaceSnapshot();
@@ -4926,6 +5141,43 @@
     refreshWorkspace(true);
   });
 
+  el.impViewGridBtn.addEventListener("click", () => {
+    state.imposeView = "grid";
+    refreshWorkspace(true);
+  });
+
+  el.impViewSingleBtn.addEventListener("click", () => {
+    state.imposeView = "single";
+    refreshWorkspace(true);
+  });
+
+  el.impSpreadAutoBtn.addEventListener("click", () => {
+    state.imposeAutoSplitSpreads = !state.imposeAutoSplitSpreads;
+    state.activeSheetIdx = 0;
+    refreshWorkspace(true);
+    scheduleWorkspaceCacheSave();
+  });
+
+  el.impAutoSplitCheck.addEventListener("change", () => {
+    state.imposeAutoSplitSpreads = el.impAutoSplitCheck.checked;
+    state.activeSheetIdx = 0;
+    refreshWorkspace(true);
+    scheduleWorkspaceCacheSave();
+  });
+
+  el.impSpreadCoverCheck.addEventListener("change", () => {
+    state.imposeSpreadFirstBackFront = el.impSpreadCoverCheck.checked;
+    state.activeSheetIdx = 0;
+    refreshWorkspace(true);
+    scheduleWorkspaceCacheSave();
+  });
+
+  el.impSpreadBleedInput.addEventListener("input", () => {
+    state.imposeSpreadBleedMm = Math.max(0, Math.min(30, parseFloat(el.impSpreadBleedInput.value) || 0));
+    refreshWorkspace(true);
+    scheduleWorkspaceCacheSave();
+  });
+
   el.subSplitBtn.addEventListener("click", () => {
     state.pillar = "prepress";
     state.openGroups.prepress = true;
@@ -5496,14 +5748,17 @@
 
   el.zoomOutBtn.addEventListener("click", () => {
     if (isOrganizeMode()) setOrgGridZoom(state.orgGridScale / 1.18);
+    else if (isImposeGridMode()) setImposeGridZoom(state.imposeGridScale / 1.18);
     else setSmoothZoom(isAnnotateMode() ? state.annScale / 1.2 : state.zoomFactor / 1.18);
   });
   el.zoomInBtn.addEventListener("click", () => {
     if (isOrganizeMode()) setOrgGridZoom(state.orgGridScale * 1.18);
+    else if (isImposeGridMode()) setImposeGridZoom(state.imposeGridScale * 1.18);
     else setSmoothZoom(isAnnotateMode() ? state.annScale * 1.2 : state.zoomFactor * 1.18);
   });
   el.zoomFitBtn.addEventListener("click", () => {
     if (isOrganizeMode()) setOrgGridZoom(1.0);
+    else if (isImposeGridMode()) setImposeGridZoom(1.0);
     else if (isAnnotateMode()) fitAnnotateBoard();
     else setSmoothZoom(1.0);
   });
@@ -5526,6 +5781,8 @@
         if (!hasPages()) return;
         if (isOrganizeMode()) {
           setOrgGridZoom(state.orgGridScale * ratio);
+        } else if (isImposeGridMode()) {
+          setImposeGridZoom(state.imposeGridScale * ratio);
         } else if (isAnnotateMode()) {
           const rect = el.annotateBoardWrap.getBoundingClientRect();
           const mx = midX - rect.left;
