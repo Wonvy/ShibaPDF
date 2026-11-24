@@ -273,6 +273,7 @@ window.ShibaPrepress = (function () {
       }
 
       const pageImages = new Map();
+      const pageForms = new Map();
       const xObjDict = res && res instanceof PDFLib.PDFDict ? res.lookup(PDFLib.PDFName.of("XObject")) : null;
       if (xObjDict && xObjDict instanceof PDFLib.PDFDict) {
         for (const [kName, xRef] of xObjDict.entries()) {
@@ -280,6 +281,7 @@ window.ShibaPrepress = (function () {
           if (!xObj || !(xObj instanceof PDFLib.PDFRawStream)) continue;
           const sub = (xObj.dict.get(PDFLib.PDFName.of("Subtype")) || "").toString();
           if (sub === "/Image") {
+            // Skip helper soft-mask grayscale images unless drawn directly
             const wObj = xObj.dict.lookup(PDFLib.PDFName.of("Width"));
             const hObj = xObj.dict.lookup(PDFLib.PDFName.of("Height"));
             const pxW = wObj && typeof wObj.asNumber === "function" ? wObj.asNumber() : 0;
@@ -294,9 +296,14 @@ window.ShibaPrepress = (function () {
               seenImgRefs.add(refKey);
               if (isRgb) rgbImageCount++;
             }
+          } else if (sub === "/Form") {
+            pageForms.set(kName.toString(), xObj);
           }
         }
       }
+
+      const pageImgSpans = [];
+      const xObjUseCounts = new Map();
 
       let combinedStr = "";
       const cEntry = page.node.get(PDFLib.PDFName.of("Contents"));
@@ -315,9 +322,10 @@ window.ShibaPrepress = (function () {
         }
       });
 
-      if (combinedStr) {
-        const { tokens } = tokenizePdfContentStream(combinedStr);
-        let ctm = [1, 0, 0, 1, 0, 0];
+      function scanStreamForOps(streamLatin1, initCtm, localImagesMap, localFormsMap, insideForm, depth) {
+        if (!streamLatin1 || depth > 4) return;
+        const { tokens } = tokenizePdfContentStream(streamLatin1);
+        let ctm = initCtm.slice();
         const ctmStack = [];
         let pageHasNonK100 = false;
         let pageHasRgbVec = false;
@@ -333,7 +341,8 @@ window.ShibaPrepress = (function () {
             const nums = tokens.slice(i - 6, i);
             if (nums.every((x) => x.type === "num")) ctm = multiplyCtm(nums.map((x) => parseFloat(x.raw)), ctm);
           } else if (op === "Do" && i >= 1 && tokens[i - 1].type === "name") {
-            const imInfo = pageImages.get(tokens[i - 1].raw);
+            const rawName = tokens[i - 1].raw;
+            const imInfo = localImagesMap.get(rawName);
             if (imInfo && imInfo.pxW > 8 && imInfo.pxH > 8) {
               const box = pdfBoxToVisualNorm(rawCrop, ctm);
               const wIn = Math.hypot(ctm[0], ctm[1]) / 72.0;
@@ -346,6 +355,61 @@ window.ShibaPrepress = (function () {
                 }
               }
               if (imInfo.isRgb) rgbImgLocs.push({ pageIdx: pIdx, ...box, kind: "rgbImg" });
+
+              if (imInfo.pxW >= 16 && imInfo.pxH >= 16 && box.uw >= 0.02 && box.vh >= 0.02) {
+                const cleanKey = rawName.replace(/^\//, "");
+                if (!insideForm) xObjUseCounts.set(cleanKey, (xObjUseCounts.get(cleanKey) || 0) + 1);
+                pageImgSpans.push({
+                  id: `img_${pIdx + 1}_${pageImgSpans.length}`,
+                  xObjKey: cleanKey,
+                  inForm: insideForm,
+                  flipX: ctm[0] < 0,
+                  flipY: ctm[3] < 0,
+                  u: box.u,
+                  v: box.v,
+                  uw: box.uw,
+                  vh: box.vh,
+                  pxW: imInfo.pxW,
+                  pxH: imInfo.pxH
+                });
+              }
+            } else if (localFormsMap && localFormsMap.has(rawName)) {
+              const fmStream = localFormsMap.get(rawName);
+              try {
+                let fmCtm = ctm.slice();
+                const matArr = fmStream.dict.lookup(PDFLib.PDFName.of("Matrix"));
+                if (matArr && matArr instanceof PDFLib.PDFArray && matArr.size() === 6) {
+                  const m6 = [];
+                  for (let k = 0; k < 6; k++) m6.push(matArr.lookup(k).asNumber());
+                  fmCtm = multiplyCtm(m6, fmCtm);
+                }
+                const fmRes = fmStream.dict.lookup(PDFLib.PDFName.of("Resources"));
+                const fmImgs = new Map();
+                const fmSubForms = new Map();
+                const fmXObj = fmRes && fmRes instanceof PDFLib.PDFDict ? fmRes.lookup(PDFLib.PDFName.of("XObject")) : null;
+                if (fmXObj && fmXObj instanceof PDFLib.PDFDict) {
+                  for (const [fk, fRef] of fmXObj.entries()) {
+                    const fo = doc.context.lookup(fRef);
+                    if (!fo || !(fo instanceof PDFLib.PDFRawStream)) continue;
+                    const fSub = (fo.dict.get(PDFLib.PDFName.of("Subtype")) || "").toString();
+                    if (fSub === "/Image") {
+                      const fw = fo.dict.lookup(PDFLib.PDFName.of("Width"));
+                      const fh = fo.dict.lookup(PDFLib.PDFName.of("Height"));
+                      const csE = fo.dict.lookup(PDFLib.PDFName.of("ColorSpace"));
+                      const csS = csE ? csE.toString() : "";
+                      fmImgs.set(fk.toString(), {
+                        pxW: fw && typeof fw.asNumber === "function" ? fw.asNumber() : 0,
+                        pxH: fh && typeof fh.asNumber === "function" ? fh.asNumber() : 0,
+                        isRgb: csS.includes("DeviceRGB") || csS.includes("/N 3")
+                      });
+                    } else if (fSub === "/Form") {
+                      fmSubForms.set(fk.toString(), fo);
+                    }
+                  }
+                }
+                const fmDecoded = uint8ToLatin1(PDFLib.decodePDFRawStream(fmStream).decode());
+                scanStreamForOps(fmDecoded, fmCtm, fmImgs, fmSubForms, true, depth + 1);
+              } catch (_) {}
             }
           } else if ((op === "g" || op === "G") && i >= 1 && tokens[i - 1].type === "num") {
             if (hasRgbGroup && parseFloat(tokens[i - 1].raw) < 0.95) pageHasNonK100 = true;
@@ -366,6 +430,14 @@ window.ShibaPrepress = (function () {
         }
         if (pageHasNonK100) nonK100PageIndices.add(pIdx);
         if (pageHasRgbVec) rgbVectorPages++;
+      }
+
+      scanStreamForOps(combinedStr, [1, 0, 0, 1, 0, 0], pageImages, pageForms, false, 0);
+      pageImgSpans.forEach((sp) => {
+        sp.sharedOnPage = (xObjUseCounts.get(sp.xObjKey) || 0) > 1;
+      });
+      if (origPages[pIdx]) {
+        origPages[pIdx].imageSpans = pageImgSpans;
       }
     }
 

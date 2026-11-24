@@ -43,9 +43,12 @@
     lastClickedOrgIdx: -1,
     draggingOrgIdx: -1,
 
-    // Text Editor State
+    // Content Editor State (Text & Images)
     placingNewText: false,
     selectedTextId: null,
+    selectedOrigImgId: null,
+    selectedImgEditId: null,
+    imgInputMode: "replace",
 
     // Imposition State
     imposeType: "booklet", // 'booklet' | 'spread2up' | 'nup'
@@ -126,7 +129,9 @@
     extractSelText: document.getElementById("extractSelText"),
 
     textEditControls: document.getElementById("textEditControls"),
+    imgFileInput: document.getElementById("imgFileInput"),
     addTextBtn: document.getElementById("addTextBtn"),
+    addImgBtn: document.getElementById("addImgBtn"),
     rotatePageBtn: document.getElementById("rotatePageBtn"),
     deletePageBtn: document.getElementById("deletePageBtn"),
     undoEditBtn: document.getElementById("undoEditBtn"),
@@ -241,6 +246,14 @@
     fmtMaskCheck: document.getElementById("fmtMaskCheck"),
     fmtBgInput: document.getElementById("fmtBgInput"),
     fmtDeleteNodeBtn: document.getElementById("fmtDeleteNodeBtn"),
+
+    // Floating Image Replacement & Fit Bar
+    imgFmtBar: document.getElementById("imgFmtBar"),
+    imgReplaceDialogBtn: document.getElementById("imgReplaceDialogBtn"),
+    imgFitGroup: document.getElementById("imgFitGroup"),
+    imgFitChips: Array.from(document.querySelectorAll(".img-fit-chip")),
+    imgRestoreBtn: document.getElementById("imgRestoreBtn"),
+    imgDeleteNodeBtn: document.getElementById("imgDeleteNodeBtn"),
 
     // Bottom Pager
     bottomPager: document.getElementById("bottomPager"),
@@ -448,7 +461,8 @@
             origIdx: p - 1,
             extraRot: 0,
             selected: false,
-            edits: []
+            edits: [],
+            imgEdits: []
           });
         }
 
@@ -474,6 +488,8 @@
       state.zoomFactor = 1.0;
     }
     state.selectedTextId = null;
+    state.selectedOrigImgId = null;
+    state.selectedImgEditId = null;
     state.activePfHighlights = [];
     state.selectedPfCardIdx = -1;
     el.compResultBox.classList.add("hidden");
@@ -529,6 +545,9 @@
   // Cached Slot Thumbnail & Edits Painter
   // =========================================================================
   function paintSlotEditsOntoCanvas(ctx, w, h, slot) {
+    if (window.ShibaImageEdit && slot.imgEdits && slot.imgEdits.length) {
+      window.ShibaImageEdit.paintSlotImageEditsSync(ctx, w, h, slot);
+    }
     if (!slot.edits || !slot.edits.length) return;
     const info = getSlotSizeInfo(slot);
     const scale = w / Math.max(1, info.wPt);
@@ -586,7 +605,8 @@
       state.bitmapCache.set(baseKey, baseCv);
     }
 
-    if (!slot.edits || !slot.edits.length) return baseCv;
+    const hasEdits = (slot.edits && slot.edits.length) || (slot.imgEdits && slot.imgEdits.length);
+    if (!hasEdits) return baseCv;
 
     const out = document.createElement("canvas");
     out.width = baseCv.width;
@@ -858,14 +878,153 @@
     el.textFmtBar.style.top = `${top}px`;
   }
 
+  function getSelectedImgEditObj() {
+    const slot = getActiveSlot();
+    if (!slot || !slot.imgEdits || !state.selectedImgEditId) return null;
+    return slot.imgEdits.find((e) => e.id === state.selectedImgEditId) || null;
+  }
+
+  function clearAllContentSelections() {
+    state.selectedTextId = null;
+    state.selectedOrigImgId = null;
+    state.selectedImgEditId = null;
+  }
+
+  function openImageFileDialog(mode) {
+    state.imgInputMode = mode || "replace";
+    el.imgFileInput.click();
+  }
+
+  async function applyImageFileToTarget(file, explicitOrigSpan, explicitImgEd) {
+    if (!file || !window.ShibaImageEdit || !window.ShibaImageEdit.isImageFile(file)) return;
+    const slot = getActiveSlot();
+    if (!slot) return;
+    slot.imgEdits = slot.imgEdits || [];
+    const docEntry = state.sourceDocs.get(slot.docId);
+    const origPage = docEntry.origPages[slot.origIdx];
+    const meta = await window.ShibaImageEdit.readImageFileMeta(file);
+
+    const targetImgEd = explicitImgEd || (state.imgInputMode !== "add" ? getSelectedImgEditObj() : null);
+    const targetOrigSpan =
+      explicitOrigSpan ||
+      (!targetImgEd && state.imgInputMode !== "add" && state.selectedOrigImgId
+        ? (origPage.imageSpans || []).find((s) => s.id === state.selectedOrigImgId)
+        : null);
+
+    pushUndo();
+
+    if (targetImgEd) {
+      targetImgEd.dataUrl = meta.dataUrl;
+      targetImgEd.natW = meta.natW;
+      targetImgEd.natH = meta.natH;
+      targetImgEd.hasAlpha = meta.hasAlpha;
+      targetImgEd.deleted = false;
+      state.selectedTextId = null;
+      state.selectedOrigImgId = null;
+      state.selectedImgEditId = targetImgEd.id;
+    } else if (targetOrigSpan) {
+      const sampled = sampleColorsAroundSpan(targetOrigSpan);
+      const newImEd = {
+        id: `imed_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+        origId: targetOrigSpan.id,
+        xObjKey: targetOrigSpan.xObjKey,
+        inForm: Boolean(targetOrigSpan.inForm),
+        sharedOnPage: Boolean(targetOrigSpan.sharedOnPage),
+        flipX: Boolean(targetOrigSpan.flipX),
+        flipY: Boolean(targetOrigSpan.flipY),
+        origRect: { u: targetOrigSpan.u, v: targetOrigSpan.v, uw: targetOrigSpan.uw, vh: targetOrigSpan.vh },
+        u: targetOrigSpan.u,
+        v: targetOrigSpan.v,
+        uw: targetOrigSpan.uw,
+        vh: targetOrigSpan.vh,
+        moved: false,
+        deleted: false,
+        fitMode: "cover",
+        dataUrl: meta.dataUrl,
+        natW: meta.natW,
+        natH: meta.natH,
+        hasAlpha: meta.hasAlpha,
+        bgMaskColor: sampled.bg
+      };
+      slot.imgEdits.push(newImEd);
+      state.selectedTextId = null;
+      state.selectedOrigImgId = null;
+      state.selectedImgEditId = newImEd.id;
+    } else {
+      // Add new standalone image centered on current page preserving natural aspect ratio
+      const sz = getSlotSizeInfo(slot);
+      const uw = 0.36;
+      const rawVh = (uw * sz.wPt * (meta.natH / Math.max(1, meta.natW))) / Math.max(1, sz.hPt);
+      const vh = Math.min(0.75, Math.max(0.06, rawVh));
+      const newImEd = {
+        id: `imed_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+        origId: null,
+        xObjKey: null,
+        inForm: false,
+        sharedOnPage: false,
+        flipX: false,
+        flipY: false,
+        origRect: null,
+        u: (1 - uw) / 2,
+        v: (1 - vh) / 2,
+        uw,
+        vh,
+        moved: true,
+        deleted: false,
+        fitMode: "fill",
+        dataUrl: meta.dataUrl,
+        natW: meta.natW,
+        natH: meta.natH,
+        hasAlpha: meta.hasAlpha,
+        bgMaskColor: "#ffffff"
+      };
+      slot.imgEdits.push(newImEd);
+      state.selectedTextId = null;
+      state.selectedOrigImgId = null;
+      state.selectedImgEditId = newImEd.id;
+    }
+
+    updateTopStripControls();
+    renderTextEditorOverlay();
+  }
+
+  function positionImgFmtBar(targetEl) {
+    if (!targetEl || state.pillar !== "pages" || state.pagesSub !== "text") {
+      el.imgFmtBar.classList.add("hidden");
+      return;
+    }
+    const imEd = getSelectedImgEditObj();
+    const isOrigOnly = Boolean(state.selectedOrigImgId) && !imEd;
+    if (!imEd && !isOrigOnly) {
+      el.imgFmtBar.classList.add("hidden");
+      return;
+    }
+
+    el.imgFmtBar.classList.remove("hidden");
+    el.imgFitGroup.classList.toggle("hidden", isOrigOnly);
+    el.imgRestoreBtn.classList.toggle("hidden", !(imEd && imEd.origId));
+    if (imEd) {
+      el.imgFitChips.forEach((ch) => ch.classList.toggle("active", ch.dataset.fit === (imEd.fitMode || "cover")));
+    }
+
+    const r = targetEl.getBoundingClientRect();
+    const barW = el.imgFmtBar.offsetWidth || 280;
+    const left = Math.max(12, Math.min(window.innerWidth - barW - 12, r.left));
+    const top = r.top > 56 ? r.top - 46 : r.bottom + 10;
+    el.imgFmtBar.style.left = `${left}px`;
+    el.imgFmtBar.style.top = `${top}px`;
+  }
+
   function renderTextEditorOverlay() {
     if (state.pillar !== "pages" || state.pagesSub !== "text" || !hasPages()) {
       el.textEditOverlay.classList.add("hidden");
       el.textFmtBar.classList.add("hidden");
+      el.imgFmtBar.classList.add("hidden");
       return;
     }
 
     const slot = getActiveSlot();
+    slot.imgEdits = slot.imgEdits || [];
     const docEntry = state.sourceDocs.get(slot.docId);
     const origPage = docEntry.origPages[slot.origIdx];
     const cssW = parseFloat(el.spreadCanvas.style.width) || el.spreadCanvas.width;
@@ -873,10 +1032,259 @@
     if (!cssW || !cssH) return;
 
     const cssScale = cssW / Math.max(1, getSlotSizeInfo(slot).wPt);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
     el.textEditOverlay.classList.remove("hidden");
     el.textEditOverlay.classList.toggle("placing-mode", state.placingNewText);
     el.textEditOverlay.innerHTML = "";
+
+    let selectedImgTargetEl = null;
+    const editedOrigImgIds = new Set(slot.imgEdits.filter((e) => e.origId).map((e) => e.origId));
+
+    // 0A. Clickable & Drop-Replaceable Original PDF Image Hit Boxes
+    if (slot.extraRot === 0 && !state.placingNewText) {
+      (origPage.imageSpans || []).forEach((sp) => {
+        if (editedOrigImgIds.has(sp.id)) return;
+        const isSelOrig = state.selectedOrigImgId === sp.id;
+        const imgHit = document.createElement("div");
+        imgHit.className = "pdf-img-hit" + (isSelOrig ? " selected-orig" : "");
+        imgHit.dataset.origImgId = sp.id;
+        imgHit.title = t("imgHoverHint");
+        imgHit.style.left = `${sp.u * cssW}px`;
+        imgHit.style.top = `${sp.v * cssH}px`;
+        imgHit.style.width = `${Math.max(16, sp.uw * cssW)}px`;
+        imgHit.style.height = `${Math.max(16, sp.vh * cssH)}px`;
+
+        let promptEl = null;
+        if (isSelOrig) {
+          promptEl = document.createElement("div");
+          promptEl.className = "img-drop-prompt";
+          promptEl.textContent = t("imgSelectedPrompt");
+          imgHit.appendChild(promptEl);
+          selectedImgTargetEl = imgHit;
+        }
+
+        imgHit.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          state.selectedTextId = null;
+          state.selectedImgEditId = null;
+          state.selectedOrigImgId = sp.id;
+          renderTextEditorOverlay();
+        });
+
+        imgHit.addEventListener("dblclick", (ev) => {
+          ev.stopPropagation();
+          state.selectedTextId = null;
+          state.selectedImgEditId = null;
+          state.selectedOrigImgId = sp.id;
+          openImageFileDialog("replace");
+        });
+
+        imgHit.addEventListener("dragover", (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          imgHit.classList.add("drag-hover");
+          if (promptEl) promptEl.textContent = t("imgDropActivePrompt");
+        });
+
+        imgHit.addEventListener("dragleave", () => {
+          imgHit.classList.remove("drag-hover");
+          if (promptEl) promptEl.textContent = t("imgSelectedPrompt");
+        });
+
+        imgHit.addEventListener("drop", (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          imgHit.classList.remove("drag-hover");
+          const files = ev.dataTransfer && ev.dataTransfer.files ? Array.from(ev.dataTransfer.files) : [];
+          const imgFile = files.find((f) => window.ShibaImageEdit.isImageFile(f));
+          if (imgFile) applyImageFileToTarget(imgFile, sp, null);
+        });
+
+        el.textEditOverlay.appendChild(imgHit);
+      });
+    }
+
+    // 0B. Background Masks for Moved/Deleted/Replaced Original PDF Images + Interactive Replaced/Added Image Boxes
+    slot.imgEdits.forEach((imEd) => {
+      if (imEd.origRect && (imEd.moved || imEd.deleted || !imEd.hasAlpha || imEd.fitMode === "contain")) {
+        const mPatch = document.createElement("div");
+        mPatch.className = "text-mask-patch";
+        mPatch.style.zIndex = "3";
+        mPatch.style.left = `${imEd.origRect.u * cssW - 0.5}px`;
+        mPatch.style.top = `${imEd.origRect.v * cssH - 0.5}px`;
+        mPatch.style.width = `${imEd.origRect.uw * cssW + 1}px`;
+        mPatch.style.height = `${imEd.origRect.vh * cssH + 1}px`;
+        mPatch.style.backgroundColor = imEd.bgMaskColor || "#ffffff";
+        el.textEditOverlay.appendChild(mPatch);
+      }
+
+      if (imEd.deleted || !imEd.dataUrl) return;
+
+      const isImgSel = state.selectedImgEditId === imEd.id;
+      const iWrap = document.createElement("div");
+      iWrap.className = "img-box-wrap" + (isImgSel ? " selected" : "");
+      iWrap.dataset.imgEditId = imEd.id;
+      const boxPxW = Math.max(20, imEd.uw * cssW);
+      const boxPxH = Math.max(20, imEd.vh * cssH);
+      iWrap.style.left = `${imEd.u * cssW}px`;
+      iWrap.style.top = `${imEd.v * cssH}px`;
+      iWrap.style.width = `${boxPxW}px`;
+      iWrap.style.height = `${boxPxH}px`;
+
+      const liveCv = document.createElement("canvas");
+      liveCv.className = "img-live-cv";
+      liveCv.width = Math.max(1, Math.round(boxPxW * dpr));
+      liveCv.height = Math.max(1, Math.round(boxPxH * dpr));
+      window.ShibaImageEdit.ensureCachedImage(imEd.dataUrl).then((imgEl) => {
+        if (!imgEl) return;
+        const c2d = liveCv.getContext("2d");
+        c2d.clearRect(0, 0, liveCv.width, liveCv.height);
+        window.ShibaImageEdit.drawImageWithFit(c2d, imgEl, 0, 0, liveCv.width, liveCv.height, imEd.fitMode || "cover");
+      });
+      iWrap.appendChild(liveCv);
+
+      const dragHandle = document.createElement("div");
+      dragHandle.className = "text-drag-handle";
+      dragHandle.innerHTML = (ICONS["move"] ? ICONS["move"].replace('class="lucide', 'style="width:10px;height:10px;" class="lucide') : "✥");
+      iWrap.appendChild(dragHandle);
+
+      const seH = document.createElement("div");
+      seH.className = "text-resize-handle se";
+      const eH = document.createElement("div");
+      eH.className = "text-resize-handle e";
+      const sH = document.createElement("div");
+      sH.className = "text-resize-handle s";
+      iWrap.appendChild(seH);
+      iWrap.appendChild(eH);
+      iWrap.appendChild(sH);
+
+      function startMoveImg(downEv) {
+        downEv.preventDefault();
+        downEv.stopPropagation();
+        const sx = downEv.clientX;
+        const sy = downEv.clientY;
+        const oU = imEd.u;
+        const oV = imEd.v;
+        let didMove = false;
+        document.body.classList.add("is-dragging-box");
+
+        function onMv(mvEv) {
+          const dx = mvEv.clientX - sx;
+          const dy = mvEv.clientY - sy;
+          if (!didMove && Math.hypot(dx, dy) > 2) {
+            didMove = true;
+            pushUndo();
+          }
+          if (didMove) {
+            imEd.u = Math.min(0.98, Math.max(-0.2, oU + dx / cssW));
+            imEd.v = Math.min(0.98, Math.max(-0.2, oV + dy / cssH));
+            imEd.moved = true;
+            iWrap.style.left = `${imEd.u * cssW}px`;
+            iWrap.style.top = `${imEd.v * cssH}px`;
+            if (isImgSel) positionImgFmtBar(iWrap);
+          }
+        }
+
+        function onUp() {
+          window.removeEventListener("pointermove", onMv);
+          window.removeEventListener("pointerup", onUp);
+          document.body.classList.remove("is-dragging-box");
+          if (!didMove && !isImgSel) {
+            state.selectedTextId = null;
+            state.selectedOrigImgId = null;
+            state.selectedImgEditId = imEd.id;
+            renderTextEditorOverlay();
+          } else if (didMove) {
+            renderTextEditorOverlay();
+            updateTopStripControls();
+          }
+        }
+
+        window.addEventListener("pointermove", onMv);
+        window.addEventListener("pointerup", onUp);
+      }
+
+      dragHandle.addEventListener("pointerdown", startMoveImg);
+      iWrap.addEventListener("pointerdown", (ev) => {
+        if (ev.target === seH || ev.target === eH || ev.target === sH || ev.target === dragHandle) return;
+        startMoveImg(ev);
+      });
+
+      iWrap.addEventListener("dblclick", (ev) => {
+        ev.stopPropagation();
+        state.selectedTextId = null;
+        state.selectedOrigImgId = null;
+        state.selectedImgEditId = imEd.id;
+        openImageFileDialog("replace");
+      });
+
+      // Resize handles (SE / E / S) with dynamic cursors
+      function bindImgResize(handleEl, mode, bodyCls) {
+        handleEl.addEventListener("pointerdown", (ev) => {
+          ev.preventDefault();
+          ev.stopPropagation();
+          pushUndo();
+          const sx = ev.clientX;
+          const sy = ev.clientY;
+          const oUw = imEd.uw;
+          const oVh = imEd.vh;
+          const aspect = oUw / Math.max(0.01, oVh);
+          document.body.classList.add(bodyCls);
+
+          function onMv(mvEv) {
+            const du = (mvEv.clientX - sx) / cssW;
+            const dv = (mvEv.clientY - sy) / cssH;
+            if (mode === "se") {
+              imEd.uw = Math.max(0.03, Math.min(1.2, oUw + du));
+              imEd.vh = mvEv.shiftKey ? Math.max(0.03, oVh + dv) : Math.max(0.03, imEd.uw / aspect);
+            } else if (mode === "e") {
+              imEd.uw = Math.max(0.03, Math.min(1.2, oUw + du));
+            } else {
+              imEd.vh = Math.max(0.03, Math.min(1.2, oVh + dv));
+            }
+            imEd.moved = true;
+            iWrap.style.width = `${imEd.uw * cssW}px`;
+            iWrap.style.height = `${imEd.vh * cssH}px`;
+            positionImgFmtBar(iWrap);
+          }
+
+          function onUp() {
+            window.removeEventListener("pointermove", onMv);
+            window.removeEventListener("pointerup", onUp);
+            document.body.classList.remove(bodyCls);
+            renderTextEditorOverlay();
+            updateTopStripControls();
+          }
+
+          window.addEventListener("pointermove", onMv);
+          window.addEventListener("pointerup", onUp);
+        });
+      }
+
+      bindImgResize(seH, "se", "is-resizing-se");
+      bindImgResize(eH, "e", "is-resizing-e");
+      bindImgResize(sH, "s", "is-resizing-s");
+
+      // Drag & Drop another image file onto this replaced/added image box!
+      iWrap.addEventListener("dragover", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        iWrap.classList.add("drag-hover");
+      });
+      iWrap.addEventListener("dragleave", () => iWrap.classList.remove("drag-hover"));
+      iWrap.addEventListener("drop", (ev) => {
+        ev.preventDefault();
+        ev.stopPropagation();
+        iWrap.classList.remove("drag-hover");
+        const files = ev.dataTransfer && ev.dataTransfer.files ? Array.from(ev.dataTransfer.files) : [];
+        const imgFile = files.find((f) => window.ShibaImageEdit.isImageFile(f));
+        if (imgFile) applyImageFileToTarget(imgFile, null, imEd);
+      });
+
+      el.textEditOverlay.appendChild(iWrap);
+      if (isImgSel) selectedImgTargetEl = iWrap;
+    });
 
     const editedOrigIds = new Set(slot.edits.filter((e) => e.origId).map((e) => e.origId));
 
@@ -912,6 +1320,8 @@
             bgColor: sampled.bg
           };
           slot.edits.push(newEd);
+          state.selectedOrigImgId = null;
+          state.selectedImgEditId = null;
           state.selectedTextId = newEd.id;
           renderTextEditorOverlay();
           focusSelectedEditorNode();
@@ -1015,6 +1425,8 @@
           window.removeEventListener("pointerup", onUp);
           document.body.classList.remove("is-dragging-box");
           if (!moved && state.selectedTextId !== ed.id) {
+            state.selectedOrigImgId = null;
+            state.selectedImgEditId = null;
             state.selectedTextId = ed.id;
             renderTextEditorOverlay();
             focusSelectedEditorNode();
@@ -1111,9 +1523,15 @@
     });
 
     if (selectedWrapEl) {
+      el.imgFmtBar.classList.add("hidden");
       requestAnimationFrame(() => positionTextFmtBar(selectedWrapEl));
     } else {
       el.textFmtBar.classList.add("hidden");
+      if (selectedImgTargetEl) {
+        requestAnimationFrame(() => positionImgFmtBar(selectedImgTargetEl));
+      } else {
+        el.imgFmtBar.classList.add("hidden");
+      }
     }
   }
 
@@ -1696,7 +2114,8 @@
     if (myToken !== state.renderToken) return;
 
     // Burn active edits onto non-text-edit views (Split, K100, Preflight) so user edits show everywhere!
-    if (!(state.pillar === "pages" && state.pagesSub === "text") && slot.edits && slot.edits.length) {
+    const hasAnySlotEdits = (slot.edits && slot.edits.length) || (slot.imgEdits && slot.imgEdits.length);
+    if (!(state.pillar === "pages" && state.pagesSub === "text") && hasAnySlotEdits) {
       paintSlotEditsOntoCanvas(ctx, el.spreadCanvas.width, el.spreadCanvas.height, slot);
     }
 
@@ -1742,6 +2161,7 @@
       el.convertViewPanel.classList.add("hidden");
       el.bottomPager.classList.add("hidden");
       el.textFmtBar.classList.add("hidden");
+      el.imgFmtBar.classList.add("hidden");
       el.stageViewport.classList.remove("align-top");
       return;
     }
@@ -1865,6 +2285,7 @@
     el.bottomPager.classList.toggle("hidden", !showCanvas);
     if (!showCanvas || state.pillar !== "pages" || state.pagesSub !== "text") {
       el.textFmtBar.classList.add("hidden");
+      el.imgFmtBar.classList.add("hidden");
     }
 
     if (!rerenderStage) return;
@@ -1986,6 +2407,19 @@
       const baseRot = pg.getRotation().angle || 0;
       const totalRot = (baseRot + slot.extraRot) % 360;
       pg.setRotation(PDFLib.degrees(totalRot));
+
+      if (slot.imgEdits && slot.imgEdits.length && window.ShibaImageEdit) {
+        const crop = pg.getCropBox();
+        await window.ShibaImageEdit.applySlotImageEditsToPdfPage(
+          outDoc,
+          pg,
+          slot,
+          crop,
+          totalRot,
+          normVisualToPdfRect,
+          hexToRgb01
+        );
+      }
 
       if (slot.edits && slot.edits.length) {
         const crop = pg.getCropBox();
@@ -2113,7 +2547,7 @@
     if (state.pillar === p) return;
     state.pillar = p;
     state.placingNewText = false;
-    state.selectedTextId = null;
+    clearAllContentSelections();
     closeAllPopovers();
     refreshWorkspace(true);
   }
@@ -2142,6 +2576,8 @@
     state.undoStack = [];
     state.bitmapCache.clear();
     state.selectedTextId = null;
+    state.selectedOrigImgId = null;
+    state.selectedImgEditId = null;
     state.activePfHighlights = [];
     renderFileList();
     refreshWorkspace(true);
@@ -2161,8 +2597,25 @@
     if (state.draggingOrgIdx >= 0) return;
     ev.preventDefault();
     el.dropzone.classList.remove("dragover");
-    if (ev.dataTransfer && ev.dataTransfer.files && ev.dataTransfer.files.length) {
-      loadPdfFiles(ev.dataTransfer.files);
+    const files = ev.dataTransfer && ev.dataTransfer.files ? Array.from(ev.dataTransfer.files) : [];
+    if (!files.length) return;
+
+    const pdfFiles = files.filter((f) => f.name.toLowerCase().endsWith(".pdf") || f.type === "application/pdf");
+    const imgFiles = window.ShibaImageEdit ? files.filter((f) => window.ShibaImageEdit.isImageFile(f)) : [];
+
+    if (pdfFiles.length) {
+      loadPdfFiles(pdfFiles);
+      return;
+    }
+    if (imgFiles.length && hasPages()) {
+      const hasSelTarget = Boolean(state.selectedOrigImgId || state.selectedImgEditId);
+      if (state.pillar !== "pages" || state.pagesSub !== "text") {
+        state.pillar = "pages";
+        state.pagesSub = "text";
+        refreshWorkspace(true);
+      }
+      state.imgInputMode = hasSelTarget ? "replace" : "add";
+      applyImageFileToTarget(imgFiles[0], null, null);
     }
   });
 
@@ -2176,7 +2629,7 @@
   el.subOrgBtn.addEventListener("click", () => {
     state.pagesSub = "organize";
     state.placingNewText = false;
-    state.selectedTextId = null;
+    clearAllContentSelections();
     refreshWorkspace(true);
   });
 
@@ -2247,12 +2700,104 @@
     }
   });
 
-  // Text Edit Controls & Floating Format Bar
+  // Content Edit Controls (Text & Images) & Floating Format Bars
   el.addTextBtn.addEventListener("click", () => {
     state.placingNewText = !state.placingNewText;
-    state.selectedTextId = null;
+    clearAllContentSelections();
     updateTopStripControls();
     renderTextEditorOverlay();
+  });
+
+  el.addImgBtn.addEventListener("click", () => {
+    state.placingNewText = false;
+    clearAllContentSelections();
+    updateTopStripControls();
+    openImageFileDialog("add");
+  });
+
+  el.imgFileInput.addEventListener("change", async (ev) => {
+    const file = ev.target.files && ev.target.files[0];
+    ev.target.value = "";
+    if (!file) return;
+    await applyImageFileToTarget(file, null, null);
+  });
+
+  el.imgReplaceDialogBtn.addEventListener("click", () => {
+    openImageFileDialog("replace");
+  });
+
+  el.imgFitChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const imEd = getSelectedImgEditObj();
+      if (!imEd) return;
+      pushUndo();
+      imEd.fitMode = chip.dataset.fit || "cover";
+      renderTextEditorOverlay();
+      updateTopStripControls();
+    });
+  });
+
+  el.imgRestoreBtn.addEventListener("click", () => {
+    const slot = getActiveSlot();
+    const imEd = getSelectedImgEditObj();
+    if (!slot || !imEd) return;
+    pushUndo();
+    slot.imgEdits = (slot.imgEdits || []).filter((x) => x.id !== imEd.id);
+    clearAllContentSelections();
+    renderTextEditorOverlay();
+    updateTopStripControls();
+  });
+
+  el.imgDeleteNodeBtn.addEventListener("click", () => {
+    const slot = getActiveSlot();
+    if (!slot) return;
+    slot.imgEdits = slot.imgEdits || [];
+    const imEd = getSelectedImgEditObj();
+    if (imEd) {
+      pushUndo();
+      if (imEd.origId) {
+        imEd.deleted = true;
+      } else {
+        slot.imgEdits = slot.imgEdits.filter((x) => x.id !== imEd.id);
+      }
+      clearAllContentSelections();
+      renderTextEditorOverlay();
+      updateTopStripControls();
+      return;
+    }
+    if (state.selectedOrigImgId) {
+      const docEntry = state.sourceDocs.get(slot.docId);
+      const sp = (docEntry.origPages[slot.origIdx].imageSpans || []).find((s) => s.id === state.selectedOrigImgId);
+      if (sp) {
+        const sampled = sampleColorsAroundSpan(sp);
+        pushUndo();
+        slot.imgEdits.push({
+          id: `imed_${Date.now()}`,
+          origId: sp.id,
+          xObjKey: sp.xObjKey,
+          inForm: Boolean(sp.inForm),
+          sharedOnPage: Boolean(sp.sharedOnPage),
+          flipX: Boolean(sp.flipX),
+          flipY: Boolean(sp.flipY),
+          origRect: { u: sp.u, v: sp.v, uw: sp.uw, vh: sp.vh },
+          u: sp.u,
+          v: sp.v,
+          uw: sp.uw,
+          vh: sp.vh,
+          moved: false,
+          deleted: true,
+          fitMode: "cover",
+          dataUrl: "",
+          natW: 0,
+          natH: 0,
+          hasAlpha: false,
+          bgMaskColor: sampled.bg
+        });
+      }
+      clearAllContentSelections();
+      renderTextEditorOverlay();
+      updateTopStripControls();
+    }
   });
 
   el.textEditOverlay.addEventListener("click", (ev) => {
@@ -2284,12 +2829,13 @@
       };
       slot.edits.push(newEd);
       state.placingNewText = false;
+      clearAllContentSelections();
       state.selectedTextId = newEd.id;
       updateTopStripControls();
       renderTextEditorOverlay();
       focusSelectedEditorNode();
-    } else if (state.selectedTextId) {
-      state.selectedTextId = null;
+    } else if (state.selectedTextId || state.selectedOrigImgId || state.selectedImgEditId) {
+      clearAllContentSelections();
       renderTextEditorOverlay();
     }
   });
@@ -2299,7 +2845,7 @@
     if (!slot) return;
     pushUndo();
     slot.extraRot = (slot.extraRot + 90) % 360;
-    state.selectedTextId = null;
+    clearAllContentSelections();
     refreshWorkspace(true);
   });
 
@@ -2308,16 +2854,25 @@
     pushUndo();
     state.pages.splice(state.activeSlotIdx, 1);
     clampActiveIndices();
-    state.selectedTextId = null;
+    clearAllContentSelections();
     renderFileList();
     refreshWorkspace(true);
   });
 
-  el.undoEditBtn.addEventListener("click", () => {
+  el.undoEditBtn.addEventListener("click", async () => {
     if (!state.undoStack.length) return;
     state.pages = JSON.parse(state.undoStack.pop());
     clampActiveIndices();
-    state.selectedTextId = null;
+    clearAllContentSelections();
+    if (window.ShibaImageEdit) {
+      const tasks = [];
+      state.pages.forEach((s) => {
+        (s.imgEdits || []).forEach((ie) => {
+          if (ie.dataUrl) tasks.push(window.ShibaImageEdit.ensureCachedImage(ie.dataUrl).catch(() => null));
+        });
+      });
+      await Promise.all(tasks);
+    }
     renderFileList();
     refreshWorkspace(true);
   });
@@ -2752,7 +3307,7 @@
       }
     } else if (state.activeSlotIdx > 0) {
       state.activeSlotIdx--;
-      state.selectedTextId = null;
+      clearAllContentSelections();
       state.activePfHighlights = [];
       renderCanvasStage();
     }
@@ -2767,7 +3322,7 @@
       }
     } else if (state.activeSlotIdx < state.pages.length - 1) {
       state.activeSlotIdx++;
-      state.selectedTextId = null;
+      clearAllContentSelections();
       state.activePfHighlights = [];
       renderCanvasStage();
     }

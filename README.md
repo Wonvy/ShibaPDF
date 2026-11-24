@@ -20,7 +20,7 @@
 
 1. **Pages & Edit (`Pages & Edit`)**
    - **Merge, Multi-Select & Extract**: Drop multiple PDFs to merge into one workspace, drag-and-drop thumbnails to reorder, rotate/delete selected pages, or **extract selected pages** directly as a new PDF or PNG/ZIP archive.
-   - **Zero-Shift In-Place Text Editor**: Click any existing PDF text to edit in-place with exact font ascent/baseline matching, automatic ink & background mask color sampling, font family picker (`Sans / Serif / Kai / Mono`), and dynamic pointer feedback (`grab`, `grabbing`, `text`, `nwse-resize`, `ew-resize`, `crosshair`).
+   - **In-Place Text & Image Editor**: Click any existing PDF text to edit with zero baseline shift, or **click any PDF image to replace it via drag-and-drop or file picker** (`Cover / Contain / Stretch` fit modes, preserving foreground text layers via PDF `XObject` swapping), plus drag/resize handles with dynamic cursors (`grab`, `grabbing`, `text`, `nwse-resize`, `ew-resize`, `ns-resize`, `crosshair`).
 2. **Prepress & Impose (`Prepress & Impose`)**
    - **Print Imposition (`Imposition`)**: Build **Saddle-Stitch Booklets** (auto `4P` signature padding & front/back pairing), **2-Up Reader Spreads**, or **N-Up Press Sheets (`2/4/8-Up`)** on Auto, `SRA3`, `A3`, `4-Kai Large`, or `4-Kai Standard` sheets with vector **Pure `K100` crop marks**.
    - **Spread Splitter (`Split Spreads`) & Pure `K100` Fix**: Losslessly slice double-page spreads into single pages with outer bleed trimming and automatic `[Back Cover | Front Cover]` reordering, or convert 4-color rich black text to **Pure CMYK Black (`C0 M0 Y0 K100`)** while keeping live soft-mask shadows.
@@ -57,7 +57,8 @@ If you modify files under `src/`, rebuild the standalone single-file `index.html
 
 ```bash
 npm install
-npm run build
+npm run build   # One-shot 30ms bundle -> index.html
+npm run watch   # Auto-rebuild index.html whenever any file in src/ changes
 ```
 
 ---

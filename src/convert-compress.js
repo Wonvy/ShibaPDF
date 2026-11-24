@@ -26,7 +26,10 @@ window.ShibaConvert = (function () {
     ctx.fillRect(0, 0, cv.width, cv.height);
     await page.render({ canvasContext: ctx, viewport: vp }).promise;
 
-    // Also burn any user text edits onto the rendered canvas with exact baseline & font family!
+    // Also burn any user image replacements & text edits onto the rendered canvas!
+    if (window.ShibaImageEdit && slot.imgEdits && slot.imgEdits.length) {
+      window.ShibaImageEdit.paintSlotImageEditsSync(ctx, cv.width, cv.height, slot);
+    }
     if (slot.edits && slot.edits.length) {
       const getStack = (window.ShibaPrepress && window.ShibaPrepress.getCssFontStack)
         ? window.ShibaPrepress.getCssFontStack

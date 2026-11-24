@@ -119,6 +119,12 @@ body.is-resizing-e * {
   user-select: none !important;
 }
 
+body.is-resizing-s,
+body.is-resizing-s * {
+  cursor: ns-resize !important;
+  user-select: none !important;
+}
+
 body.is-sorting-pages,
 body.is-sorting-pages * {
   cursor: grabbing !important;
@@ -831,14 +837,102 @@ svg.lucide {
   white-space: nowrap;
 }
 
-/* Text Edit Layer — Zero-Shift Baseline & Dynamic Cursors */
+/* Content Edit Layer — Images & Zero-Shift Text with Dynamic Cursors */
 #textEditOverlay.placing-mode,
 #textEditOverlay.placing-mode * {
   cursor: crosshair !important;
 }
 
+.pdf-img-hit {
+  position: absolute;
+  z-index: 2;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background-color 0.12s, outline-color 0.12s;
+}
+
+.pdf-img-hit:hover {
+  background: rgba(35, 131, 226, 0.08);
+  outline: 1.5px dashed rgba(35, 131, 226, 0.72);
+  outline-offset: -1px;
+}
+
+.pdf-img-hit.selected-orig {
+  z-index: 19;
+  background: rgba(35, 131, 226, 0.10);
+  outline: 2px solid #2383e2;
+  outline-offset: -1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.img-drop-prompt {
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: rgba(24, 24, 23, 0.82);
+  backdrop-filter: blur(6px);
+  color: #ffffff;
+  font-size: 11.5px;
+  font-weight: 500;
+  pointer-events: none;
+  text-align: center;
+  max-width: 90%;
+  line-height: 1.4;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.22);
+}
+
+.pdf-img-hit.drag-hover,
+.img-box-wrap.drag-hover {
+  background: rgba(35, 131, 226, 0.22) !important;
+  outline: 2.5px dashed #2383e2 !important;
+}
+
+.img-box-wrap {
+  position: absolute;
+  z-index: 4;
+  cursor: grab;
+  border-radius: 2px;
+}
+
+.img-box-wrap:hover {
+  outline: 1.5px dashed rgba(35, 131, 226, 0.8);
+}
+
+.img-box-wrap.selected {
+  z-index: 20;
+  outline: 2px solid #2383e2;
+}
+
+.img-box-wrap canvas.img-live-cv {
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.img-box-wrap:hover .text-drag-handle,
+.img-box-wrap.selected .text-drag-handle {
+  display: inline-flex;
+}
+
+.img-box-wrap.selected .text-resize-handle {
+  display: block;
+}
+
+.text-resize-handle.s {
+  bottom: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-radius: 2px;
+  width: 12px;
+  height: 6px;
+  cursor: ns-resize;
+}
+
 .pdf-text-hit {
   position: absolute;
+  z-index: 8;
   cursor: text;
   border-radius: 2px;
   transition: background-color 0.1s;
@@ -852,11 +946,13 @@ svg.lucide {
 
 .text-mask-patch {
   position: absolute;
+  z-index: 7;
   pointer-events: none;
 }
 
 .text-box-wrap {
   position: absolute;
+  z-index: 12;
   display: inline-block;
   outline: 1.5px dashed rgba(35, 131, 226, 0.65);
   outline-offset: 2px;
@@ -871,7 +967,7 @@ svg.lucide {
 .text-box-wrap.selected {
   outline: 1.75px solid #2383e2;
   outline-offset: 2px;
-  z-index: 15;
+  z-index: 22;
 }
 
 /* Dedicated Move Handle Pill Above Selected/Hovered Text Box */
