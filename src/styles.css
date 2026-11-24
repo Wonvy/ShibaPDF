@@ -1321,11 +1321,12 @@ svg.lucide {
 .rail-sub-list {
   display: none;
   flex-direction: column;
-  gap: 2px;
-  margin-left: 29px;
-  padding-left: 12px;
+  gap: 4px;
+  margin-left: 20px;
+  padding-left: 11px;
   border-left: 1.5px solid var(--bg-pill);
-  margin-bottom: 4px;
+  margin-top: 2px;
+  margin-bottom: 6px;
 }
 
 .rail-group.open .rail-sub-list {
@@ -1333,17 +1334,27 @@ svg.lucide {
 }
 
 .rail-sub-btn {
-  height: 31px;
-  padding: 0 11px;
+  height: 38px;
+  padding: 0 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
   color: var(--text-2);
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 9px;
   transition: background-color 0.14s, color 0.14s;
+}
+
+.rail-sub-btn svg.lucide {
+  width: 15.5px;
+  height: 15.5px;
+  opacity: 0.78;
+  transition: opacity 0.14s;
 }
 
 .rail-sub-btn:hover {
@@ -1351,11 +1362,19 @@ svg.lucide {
   color: var(--text-1);
 }
 
+.rail-sub-btn:hover svg.lucide {
+  opacity: 1;
+}
+
 .rail-sub-btn.active {
   background: var(--bg-active-card);
   color: var(--text-1);
   font-weight: 600;
   box-shadow: var(--shadow-active);
+}
+
+.rail-sub-btn.active svg.lucide {
+  opacity: 1;
 }
 
 /* Freeform Infinite Designer Annotation Board */

@@ -1330,11 +1330,12 @@ svg.lucide {
 .rail-sub-list {
   display: none;
   flex-direction: column;
-  gap: 2px;
-  margin-left: 29px;
-  padding-left: 12px;
+  gap: 4px;
+  margin-left: 20px;
+  padding-left: 11px;
   border-left: 1.5px solid var(--bg-pill);
-  margin-bottom: 4px;
+  margin-top: 2px;
+  margin-bottom: 6px;
 }
 
 .rail-group.open .rail-sub-list {
@@ -1342,17 +1343,27 @@ svg.lucide {
 }
 
 .rail-sub-btn {
-  height: 31px;
-  padding: 0 11px;
+  height: 38px;
+  padding: 0 12px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: transparent;
   color: var(--text-2);
-  font-size: 12.5px;
+  font-size: 13.5px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 9px;
   transition: background-color 0.14s, color 0.14s;
+}
+
+.rail-sub-btn svg.lucide {
+  width: 15.5px;
+  height: 15.5px;
+  opacity: 0.78;
+  transition: opacity 0.14s;
 }
 
 .rail-sub-btn:hover {
@@ -1360,11 +1371,19 @@ svg.lucide {
   color: var(--text-1);
 }
 
+.rail-sub-btn:hover svg.lucide {
+  opacity: 1;
+}
+
 .rail-sub-btn.active {
   background: var(--bg-active-card);
   color: var(--text-1);
   font-weight: 600;
   box-shadow: var(--shadow-active);
+}
+
+.rail-sub-btn.active svg.lucide {
+  opacity: 1;
 }
 
 /* Freeform Infinite Designer Annotation Board */
@@ -1630,9 +1649,15 @@ svg.lucide {
             </span>
           </button>
           <div class="rail-sub-list">
-            <button id="subOrgBtn" class="rail-sub-btn active" type="button" data-i18n="navSubOrg">页面管理</button>
-            <button id="subTextBtn" class="rail-sub-btn" type="button" data-i18n="navSubEdit">图文编辑</button>
-            <button id="subAnnotateBtn" class="rail-sub-btn" type="button" data-i18n="navSubAnnotate">设计批注</button>
+            <button id="subOrgBtn" class="rail-sub-btn active" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-layout-grid" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="7" height="7" x="3" y="3" rx="1" /> <rect width="7" height="7" x="14" y="3" rx="1" /> <rect width="7" height="7" x="14" y="14" rx="1" /> <rect width="7" height="7" x="3" y="14" rx="1" /> </svg><span data-i18n="navSubOrg">页面管理</span>
+            </button>
+            <button id="subTextBtn" class="rail-sub-btn" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-pen-line" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M13 21h8" /> <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> </svg><span data-i18n="navSubEdit">图文编辑</span>
+            </button>
+            <button id="subAnnotateBtn" class="rail-sub-btn" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-pencil-ruler" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M13 7 8.7 2.7a2.41 2.41 0 0 0-3.4 0L2.7 5.3a2.41 2.41 0 0 0 0 3.4L7 13" /> <path d="m8 6 2-2" /> <path d="m18 16 2-2" /> <path d="m17 11 4.3 4.3c.94.94.94 2.46 0 3.4l-2.6 2.6c-.94.94-2.46.94-3.4 0L11 17" /> <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /> </svg><span data-i18n="navSubAnnotate">设计批注</span>
+            </button>
           </div>
         </div>
 
@@ -1649,9 +1674,15 @@ svg.lucide {
             </span>
           </button>
           <div class="rail-sub-list">
-            <button id="subImposeBtn" class="rail-sub-btn active" type="button" data-i18n="navSubImpose">印刷拼版</button>
-            <button id="subSplitBtn" class="rail-sub-btn" type="button" data-i18n="navSubSplit">跨页拆单页</button>
-            <button id="subK100Btn" class="rail-sub-btn" type="button" data-i18n="navSubK100">印前单黑 K100</button>
+            <button id="subImposeBtn" class="rail-sub-btn active" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-grid-2x2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 3v18" /> <path d="M3 12h18" /> <rect x="3" y="3" width="18" height="18" rx="2" /> </svg><span data-i18n="navSubImpose">印刷拼版</span>
+            </button>
+            <button id="subSplitBtn" class="rail-sub-btn" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-scissors" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="6" cy="6" r="3" /> <path d="M8.12 8.12 12 12" /> <path d="M20 4 8.12 15.88" /> <circle cx="6" cy="18" r="3" /> <path d="M14.8 14.8 20 20" /> </svg><span data-i18n="navSubSplit">跨页拆单页</span>
+            </button>
+            <button id="subK100Btn" class="rail-sub-btn" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-contrast" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="M12 18a6 6 0 0 0 0-12v12z" /> </svg><span data-i18n="navSubK100">印前单黑 K100</span>
+            </button>
           </div>
         </div>
 
@@ -1680,9 +1711,15 @@ svg.lucide {
             </span>
           </button>
           <div class="rail-sub-list">
-            <button id="subCompBtn" class="rail-sub-btn active" type="button" data-i18n="navSubCompress">减小 PDF 体积</button>
-            <button id="subImgBtn" class="rail-sub-btn" type="button" data-i18n="navSubExportImg">导出高清图片</button>
-            <button id="subImgPdfBtn" class="rail-sub-btn" type="button" data-i18n="navSubImgPdf">转为图片版 PDF</button>
+            <button id="subCompBtn" class="rail-sub-btn active" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-minimize-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m14 10 7-7" /> <path d="M20 10h-6V4" /> <path d="m3 21 7-7" /> <path d="M4 14h6v6" /> </svg><span data-i18n="navSubCompress">减小 PDF 体积</span>
+            </button>
+            <button id="subImgBtn" class="rail-sub-btn" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-images" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m22 11-1.296-1.296a2.4 2.4 0 0 0-3.408 0L11 16" /> <path d="M4 8a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2" /> <circle cx="13" cy="7" r="1" fill="currentColor" /> <rect x="8" y="2" width="14" height="14" rx="2" /> </svg><span data-i18n="navSubExportImg">导出高清图片</span>
+            </button>
+            <button id="subImgPdfBtn" class="rail-sub-btn" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-file-lock-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 9.8V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.706.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2h-3" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M9 17v-2a2 2 0 0 0-4 0v2" /> <rect width="8" height="5" x="3" y="17" rx="1" /> </svg><span data-i18n="navSubImgPdf">转为图片版 PDF</span>
+            </button>
           </div>
         </div>
       </nav>
