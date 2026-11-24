@@ -204,6 +204,8 @@
     propWidthMmInput: document.getElementById("propWidthMmInput"),
     propTextSection: document.getElementById("propTextSection"),
     propFontSelect: document.getElementById("propFontSelect"),
+    loadSysFontsBtn: document.getElementById("loadSysFontsBtn"),
+    propSubsetFontHint: document.getElementById("propSubsetFontHint"),
     propSizeDecBtn: document.getElementById("propSizeDecBtn"),
     propSizeIncBtn: document.getElementById("propSizeIncBtn"),
     propSizeInput: document.getElementById("propSizeInput"),
@@ -1529,6 +1531,38 @@
     return slot.edits.find((e) => e.id === state.selectedTextId) || null;
   }
 
+  function syncFontSelectDynamicOption(selectEl, fontKey, origFontName, isShort) {
+    if (!selectEl) return;
+    const fk = fontKey || "sans";
+    const resolvedOrig = fk.startsWith("orig:") ? fk.slice(5).trim() : (origFontName || "").trim();
+    let dynOrig = selectEl.querySelector('option[data-dyn-orig="1"]');
+    if (resolvedOrig) {
+      if (!dynOrig) {
+        dynOrig = document.createElement("option");
+        dynOrig.dataset.dynOrig = "1";
+        selectEl.insertBefore(dynOrig, selectEl.firstChild);
+      }
+      dynOrig.value = `orig:${resolvedOrig}`;
+      dynOrig.textContent = t(isShort ? "fontOrigShortFmt" : "fontOrigFmt", { f: resolvedOrig });
+    } else if (dynOrig) {
+      dynOrig.remove();
+    }
+
+    if (fk.startsWith("local:")) {
+      const hasOpt = Array.from(selectEl.options).some((o) => o.value === fk);
+      if (!hasOpt) {
+        const fam = fk.slice(6).trim();
+        const opt = document.createElement("option");
+        opt.dataset.dynLocal = "1";
+        opt.value = fk;
+        opt.textContent = fam;
+        selectEl.appendChild(opt);
+      }
+    }
+    selectEl.value = fk;
+    if (selectEl.value !== fk) selectEl.value = "sans";
+  }
+
   function positionTextFmtBar(targetWrapEl) {
     syncEditPropsPanel();
     const ed = getSelectedEditObj();
@@ -1538,7 +1572,7 @@
       return;
     }
     el.textFmtBar.classList.remove("hidden");
-    el.fmtFontSelect.value = ed.fontKey || "sans";
+    syncFontSelectDynamicOption(el.fmtFontSelect, ed.fontKey || "sans", ed.origFontName, true);
     el.fmtSizeLabel.textContent = String(Math.round(ed.fontPt));
     el.fmtBoldBtn.classList.toggle("active", Boolean(ed.bold));
     el.fmtItalicBtn.classList.toggle("active", Boolean(ed.italic));
@@ -1625,6 +1659,7 @@
       lineHeight: 1.16,
       letterSpacing: 0,
       opacity: 1,
+      origFontName: sp.origFontName || "",
       fontKey: sp.fontKey || "sans",
       color: sampled.fg,
       maskBg: true,
@@ -1809,7 +1844,18 @@
     el.propTextSection.classList.toggle("hidden", !showText);
     if (showText) {
       const t0 = selTexts[0];
-      el.propFontSelect.value = t0.fontKey || "sans";
+      const fk = t0.fontKey || "sans";
+      syncFontSelectDynamicOption(el.propFontSelect, fk, t0.origFontName, false);
+      if (el.propSubsetFontHint) {
+        if (fk.startsWith("orig:")) {
+          const origNm = fk.slice(5).trim();
+          const hasEmb = window.ShibaPrepress && window.ShibaPrepress.hasEmbeddedFontFace && window.ShibaPrepress.hasEmbeddedFontFace(origNm);
+          el.propSubsetFontHint.textContent = t(hasEmb ? "subsetFontLoadedHint" : "subsetFontFallbackHint", { f: origNm });
+          el.propSubsetFontHint.classList.remove("hidden");
+        } else {
+          el.propSubsetFontHint.classList.add("hidden");
+        }
+      }
       if (document.activeElement !== el.propSizeInput) {
         el.propSizeInput.value = String(Math.round(t0.fontPt * 10) / 10);
       }
@@ -5638,6 +5684,46 @@
   el.propFontSelect.addEventListener("change", () => {
     applyBatchTextProp((ed) => { ed.fontKey = el.propFontSelect.value; });
   });
+
+  if (el.loadSysFontsBtn) {
+    el.loadSysFontsBtn.addEventListener("click", async () => {
+      if (typeof window.queryLocalFonts !== "function") {
+        alert(t("sysFontsUnsupported"));
+        return;
+      }
+      try {
+        const fonts = await window.queryLocalFonts();
+        const famSet = new Set();
+        fonts.forEach((f) => {
+          const fam = f && f.family ? String(f.family).trim() : "";
+          if (fam && !fam.startsWith("@")) famSet.add(fam);
+        });
+        const sorted = Array.from(famSet).sort((a, b) => a.localeCompare(b, "zh-CN"));
+        if (!sorted.length) return;
+
+        [el.propFontSelect, el.fmtFontSelect].forEach((sel) => {
+          if (!sel) return;
+          const prevGrp = sel.querySelector('optgroup[data-sys-fonts="1"]');
+          if (prevGrp) prevGrp.remove();
+          const grp = document.createElement("optgroup");
+          grp.dataset.sysFonts = "1";
+          grp.label = t("sysFontsGroupLabel");
+          sorted.forEach((fam) => {
+            const opt = document.createElement("option");
+            opt.value = `local:${fam}`;
+            opt.textContent = fam;
+            grp.appendChild(opt);
+          });
+          sel.appendChild(grp);
+        });
+
+        const lblSpan = el.loadSysFontsBtn.querySelector("span") || el.loadSysFontsBtn;
+        lblSpan.removeAttribute("data-i18n");
+        lblSpan.textContent = t("sysFontsLoadedFmt", { n: sorted.length });
+        syncEditPropsPanel();
+      } catch (_) {}
+    });
+  }
 
   el.propSizeDecBtn.addEventListener("click", () => {
     applyBatchTextProp((ed) => { ed.fontPt = Math.max(6, Math.round((ed.fontPt - 1) * 10) / 10); });

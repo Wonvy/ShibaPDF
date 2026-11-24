@@ -368,7 +368,15 @@ window.SHIBA_I18N = {
     fontPagesLabel: "所在页：",
     infoCopyBtn: "复制属性报告",
     infoCopiedBtn: "已复制到剪贴板 ✓",
-    infoCloseBtn: "关闭"
+    infoCloseBtn: "关闭",
+    fontOrigFmt: "原文档字体：{f}",
+    fontOrigShortFmt: "原字体·{f}",
+    loadSysFontsBtn: "读取本机字体",
+    sysFontsLoadedFmt: "本机字体 ({n})",
+    sysFontsGroupLabel: "本机已安装字体",
+    sysFontsUnsupported: "当前浏览器不支持直接枚举本机字库（建议使用 Chrome / Edge 桌面版）。",
+    subsetFontLoadedHint: "已载入内嵌字库「{f}」（原文已有字形直接渲染；输入新字将优先匹配本机同名原字体）。",
+    subsetFontFallbackHint: "识别为原文档「{f}」（PDF 子集字体仅含原文已有字形，编辑与输入新字时优先调用本机同名原字体）。"
   },
 
   en: {
@@ -728,6 +736,14 @@ window.SHIBA_I18N = {
     fontPagesLabel: "Pages:",
     infoCopyBtn: "Copy Report",
     infoCopiedBtn: "Copied ✓",
-    infoCloseBtn: "Close"
+    infoCloseBtn: "Close",
+    fontOrigFmt: "PDF Font: {f}",
+    fontOrigShortFmt: "PDF·{f}",
+    loadSysFontsBtn: "Local Fonts",
+    sysFontsLoadedFmt: "Local ({n})",
+    sysFontsGroupLabel: "Installed Local Fonts",
+    sysFontsUnsupported: "Local Font Access API is not available in this browser (try desktop Chrome / Edge).",
+    subsetFontLoadedHint: "Embedded font \"{f}\" loaded (existing glyphs render directly; new chars match local installed fonts).",
+    subsetFontFallbackHint: "Matched PDF font \"{f}\" (PDF embeds subset glyphs only; editing & new chars prioritize matching local fonts)."
   }
 };

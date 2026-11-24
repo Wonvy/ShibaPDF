@@ -141,42 +141,200 @@ window.ShibaPrepress = (function () {
     };
   }
 
+  const registeredEmbeddedFaces = new Map(); // cleanFontName -> CSS @font-face family name
+
+  function hasValidUnicodeSfntCmap(u8) {
+    if (!u8 || u8.length < 28) return false;
+    const b0 = u8[0], b1 = u8[1], b2 = u8[2], b3 = u8[3];
+    const isTtf = b0 === 0x00 && b1 === 0x01 && b2 === 0x00 && b3 === 0x00;
+    const isOtto = b0 === 0x4f && b1 === 0x54 && b2 === 0x54 && b3 === 0x4f; // 'OTTO'
+    const isTrue = b0 === 0x74 && b1 === 0x72 && b2 === 0x75 && b3 === 0x65; // 'true'
+    if (!isTtf && !isOtto && !isTrue) return false;
+
+    const dv = new DataView(u8.buffer, u8.byteOffset, u8.byteLength);
+    const numTables = dv.getUint16(4, false);
+    if (numTables === 0 || numTables > 80 || u8.length < 12 + numTables * 16) return false;
+
+    for (let i = 0; i < numTables; i++) {
+      const recOff = 12 + i * 16;
+      const tag = String.fromCharCode(u8[recOff], u8[recOff + 1], u8[recOff + 2], u8[recOff + 3]);
+      if (tag === "cmap") {
+        const cmapOff = dv.getUint32(recOff + 8, false);
+        const cmapLen = dv.getUint32(recOff + 12, false);
+        if (cmapLen < 16 || cmapOff + cmapLen > u8.length) return false;
+        const numSub = dv.getUint16(cmapOff + 2, false);
+        if (numSub === 0 || cmapOff + 4 + numSub * 8 > u8.length) return false;
+        for (let s = 0; s < numSub; s++) {
+          const sOff = cmapOff + 4 + s * 8;
+          const platId = dv.getUint16(sOff, false);
+          const encId = dv.getUint16(sOff + 2, false);
+          if (platId === 0 || (platId === 3 && (encId === 1 || encId === 10))) {
+            return true;
+          }
+        }
+        return false;
+      }
+    }
+    return false;
+  }
+
+  async function tryRegisterEmbeddedPdfFontFace(cleanName, fontStreamObj, fMeta) {
+    if (!cleanName || registeredEmbeddedFaces.has(cleanName)) return;
+    if (typeof FontFace === "undefined" || typeof document === "undefined" || !document.fonts) return;
+    try {
+      const decoded = PDFLib.decodePDFRawStream(fontStreamObj).decode();
+      if (!hasValidUnicodeSfntCmap(decoded)) return;
+      const safeId = `ShibaPdfEmb_${registeredEmbeddedFaces.size}_${cleanName.replace(/[^A-Za-z0-9]/g, "")}`;
+      const copyBuf = decoded.slice().buffer;
+      const face = new FontFace(safeId, copyBuf, {
+        weight: fMeta.bold ? "700" : "400",
+        style: fMeta.italic ? "italic" : "normal"
+      });
+      await face.load();
+      document.fonts.add(face);
+      registeredEmbeddedFaces.set(cleanName, safeId);
+    } catch (_) {}
+  }
+
   function classifyPdfFontStyle(fontName, styleObj) {
     const raw = `${fontName || ""} ${(styleObj && styleObj.fontFamily) || ""}`;
-    const bold = /bold|heavy|black|demi|semibold|extrabold|-b\b|w[6789]/i.test(raw);
-    const italic = /italic|oblique/i.test(raw);
+    const bold = /bold|heavy|black|demi|semibold|extrabold|-b\b|-db\b|-eb\b|-h\b|w[6789]|粗|中黑|大黑|特黑|浓/i.test(raw);
+    const italic = /italic|oblique|倾斜/i.test(raw);
     let fontKey = "sans";
-    if (/mono|consolas|courier|menlo|code/i.test(raw)) {
+    if (/mono|consolas|courier|menlo|fira\s*code|jetbrains|等宽/i.test(raw)) {
       fontKey = "mono";
-    } else if (/kai|kaiti|stkaiti|fzkai/i.test(raw)) {
+    } else if (/fangsong|stfangsong|fzfs|仿宋/i.test(raw)) {
+      fontKey = "fangsong";
+    } else if (/kai|kaiti|stkaiti|fzkai|wenkai|楷/i.test(raw)) {
       fontKey = "kai";
-    } else if (/song|simsun|stsong|fangsong|mincho|ming|times|georgia|garamond|serif/i.test(raw) && !/sans/i.test(raw)) {
+    } else if (/yuan|youyuan|yuanti|fzy[1234]|圆/i.test(raw)) {
+      fontKey = "round";
+    } else if (/times|georgia|garamond|cambria|palatino|baskerville/i.test(raw)) {
+      fontKey = "times";
+    } else if (/song|simsun|stsong|nsimsun|fzss|fzxbs|sourcehanserif|notoserif|mincho|ming|宋|明体|serif/i.test(raw) && !/sans/i.test(raw)) {
       fontKey = "serif";
+    } else if (/arial|helvetica|calibri|roboto|inter|segoe/i.test(raw)) {
+      fontKey = "helvetica";
     }
     return { bold, italic, fontKey };
   }
 
-  function getCssFontStack(fontKey) {
-    if (fontKey === "serif") return '"Songti SC", "STSong", "Noto Serif CJK SC", "SimSun", Georgia, "Times New Roman", serif';
-    if (fontKey === "kai") return '"Kaiti SC", "STKaiti", "KaiTi", serif';
-    if (fontKey === "fangsong") return '"FangSong", "STFangsong", "FangSong_GB2312", "Songti SC", serif';
-    if (fontKey === "round") return '"YouYuan", "STYuanti-SC-Regular", "Microsoft YaHei UI", "PingFang SC", sans-serif';
-    if (fontKey === "helvetica") return 'Arial, "Helvetica Neue", Helvetica, "PingFang SC", "Microsoft YaHei", sans-serif';
-    if (fontKey === "times") return '"Times New Roman", Times, Georgia, "Songti SC", "SimSun", serif';
-    if (fontKey === "mono") return '"JetBrains Mono", Consolas, "SFMono-Regular", Menlo, "Courier New", monospace';
+  function expandPdfFontAliases(origName) {
+    const aliases = [];
+    const add = (nm) => {
+      const clean = String(nm || "").replace(/["']/g, "").trim();
+      if (clean && !aliases.includes(clean)) aliases.push(clean);
+    };
+    add(origName);
+
+    // Strip common PostScript suffixes (-Bold, -Regular, MT, PSMT, --GBK1-0, etc.)
+    const stem = origName
+      .replace(/--GBK1-0|--GB1-0|-GBK|-GB2312|-UTF8/gi, "")
+      .replace(/(?:PS)?-(?:BoldItalic|BoldOblique|Bold|Italic|Oblique|Regular|Medium|Light|Heavy|Black|SemiBold|DemiBold|ExtraBold|Thin|SC|CN|TC|HK)+$/gi, "")
+      .replace(/(?:PSMT|MT)$/g, "")
+      .trim();
+    add(stem);
+
+    // CamelCase split (e.g. SourceHanSansCN -> Source Han Sans CN, MicrosoftYaHei -> Microsoft YaHei)
+    const spaced = stem.replace(/([a-z])([A-Z])/g, "$1 $2").replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2");
+    add(spaced);
+
+    const low = origName.toLowerCase();
+    if (low.includes("sourcehansans") || low.includes("notosanscjk") || low.includes("思源黑")) {
+      ["Source Han Sans SC", "Source Han Sans CN", "思源黑体 CN", "思源黑体", "Noto Sans CJK SC", "Noto Sans SC"].forEach(add);
+    } else if (low.includes("sourcehanserif") || low.includes("notoserifcjk") || low.includes("思源宋")) {
+      ["Source Han Serif SC", "Source Han Serif CN", "思源宋体 CN", "思源宋体", "Noto Serif CJK SC", "Noto Serif SC"].forEach(add);
+    } else if (low.includes("dengxian") || low.includes("等线")) {
+      ["DengXian", "等线"].forEach(add);
+    } else if (low.includes("yahei") || low.includes("雅黑")) {
+      ["Microsoft YaHei", "微软雅黑"].forEach(add);
+    } else if (low.includes("simhei") || low === "heiti") {
+      ["SimHei", "黑体"].forEach(add);
+    } else if (low.includes("simsun") || low.includes("nsimsun")) {
+      ["SimSun", "宋体", "NSimSun", "新宋体"].forEach(add);
+    } else if (low.includes("stsong") || low.includes("华文宋")) {
+      ["STSong", "华文宋体", "Songti SC"].forEach(add);
+    } else if (low.includes("stkaiti") || low.includes("华文楷")) {
+      ["STKaiti", "华文楷体", "Kaiti SC", "KaiTi", "楷体"].forEach(add);
+    } else if (low.includes("kaiti") || low.includes("楷体")) {
+      ["KaiTi", "楷体", "STKaiti", "Kaiti SC"].forEach(add);
+    } else if (low.includes("fangsong") || low.includes("仿宋")) {
+      ["FangSong", "仿宋", "STFangsong", "华文仿宋"].forEach(add);
+    } else if (low.includes("alibaba") || low.includes("puhuiti") || low.includes("普惠")) {
+      ["Alibaba PuHuiTi 2.0", "Alibaba PuHuiTi 3.0", "Alibaba PuHuiTi", "阿里巴巴普惠体 2.0", "阿里巴巴普惠体"].forEach(add);
+    } else if (low.includes("harmonyos") || low.includes("鸿蒙")) {
+      ["HarmonyOS Sans SC", "HarmonyOS Sans"].forEach(add);
+    } else if (low.includes("fzlt") || low.includes("lanting") || low.includes("兰亭")) {
+      ["FZLanTingHeiS-R-GB", "FZLanTingHeiS-DB-GB", "FZLanTingHeiS-B-GB", "方正兰亭黑简体", "方正兰亭黑_GBK", "方正兰亭中黑_GBK"].forEach(add);
+    } else if (low.includes("times")) {
+      ["Times New Roman", "Times"].forEach(add);
+    } else if (low.includes("arial")) {
+      ["Arial", "Helvetica Neue", "Helvetica"].forEach(add);
+    }
+
+    return aliases.map((a) => `"${a}"`);
+  }
+
+  function getBaseCategoryStack(catKey) {
+    if (catKey === "serif") return '"Songti SC", "STSong", "Noto Serif CJK SC", "SimSun", Georgia, "Times New Roman", serif';
+    if (catKey === "kai") return '"Kaiti SC", "STKaiti", "KaiTi", serif';
+    if (catKey === "fangsong") return '"FangSong", "STFangsong", "FangSong_GB2312", "Songti SC", serif';
+    if (catKey === "round") return '"YouYuan", "STYuanti-SC-Regular", "Microsoft YaHei UI", "PingFang SC", sans-serif';
+    if (catKey === "helvetica") return 'Arial, "Helvetica Neue", Helvetica, "PingFang SC", "Microsoft YaHei", sans-serif';
+    if (catKey === "times") return '"Times New Roman", Times, Georgia, "Songti SC", "SimSun", serif';
+    if (catKey === "mono") return '"JetBrains Mono", Consolas, "SFMono-Regular", Menlo, "Courier New", monospace';
     return '-apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif';
+  }
+
+  function getCssFontStack(fontKey) {
+    if (fontKey && fontKey.startsWith("orig:")) {
+      const origName = fontKey.slice(5).trim();
+      const parts = [];
+      const embFace = registeredEmbeddedFaces.get(origName);
+      if (embFace) parts.push(`"${embFace}"`);
+      parts.push(...expandPdfFontAliases(origName));
+      const cat = classifyPdfFontStyle(origName, null).fontKey;
+      parts.push(getBaseCategoryStack(cat));
+      return parts.join(", ");
+    }
+    if (fontKey && fontKey.startsWith("local:")) {
+      const localFam = fontKey.slice(6).replace(/["']/g, "").trim();
+      const cat = classifyPdfFontStyle(localFam, null).fontKey;
+      return `"${localFam}", ${getBaseCategoryStack(cat)}`;
+    }
+    return getBaseCategoryStack(fontKey);
   }
 
   async function extractPageTextSpans(pdfJsDoc, pageOneBased) {
     const pg = await pdfJsDoc.getPage(pageOneBased);
     const vp = pg.getViewport({ scale: 1 });
     const tc = await pg.getTextContent();
+    try {
+      await pg.getOperatorList();
+    } catch (_) {}
     const styles = tc.styles || {};
     const spans = [];
 
     tc.items.forEach((item, idx) => {
       if (!item.str || !item.str.trim()) return;
       const st = styles[item.fontName] || {};
+      let realPdfFontName = "";
+      let fontObjBold = false;
+      let fontObjItalic = false;
+      try {
+        const fObj =
+          pg.commonObjs && pg.commonObjs.has(item.fontName)
+            ? pg.commonObjs.get(item.fontName)
+            : pg.objs && pg.objs.has(item.fontName)
+              ? pg.objs.get(item.fontName)
+              : null;
+        if (fObj) {
+          if (fObj.name) realPdfFontName = decodePdfFontBaseName(fObj.name).cleanName;
+          if (fObj.bold || fObj.black) fontObjBold = true;
+          if (fObj.italic) fontObjItalic = true;
+        }
+      } catch (_) {}
+
       const tx = pdfjsLib.Util.transform(vp.transform, item.transform);
       const fontH = Math.max(7, Math.hypot(tx[2], tx[3]));
       const ascent = (typeof st.ascent === "number" && st.ascent > 0.45 && st.ascent < 1.15) ? st.ascent : 0.84;
@@ -189,7 +347,7 @@ window.ShibaPrepress = (function () {
 
       const u = Math.min(0.985, Math.max(0, left / vp.width));
       const v = Math.min(0.985, Math.max(0, top / vp.height));
-      const fMeta = classifyPdfFontStyle(item.fontName, st);
+      const fMeta = classifyPdfFontStyle(realPdfFontName || item.fontName, st);
 
       spans.push({
         id: `orig_${pageOneBased}_${idx}`,
@@ -200,9 +358,10 @@ window.ShibaPrepress = (function () {
         vh: Math.min(1 - v, Math.max(0.012, boxH / vp.height)),
         fontPt: Math.round(fontH * 10) / 10,
         ascent: Math.round(ascent * 1000) / 1000,
-        bold: fMeta.bold,
-        italic: fMeta.italic,
-        fontKey: fMeta.fontKey
+        bold: Boolean(fontObjBold || fMeta.bold),
+        italic: Boolean(fontObjItalic || fMeta.italic),
+        origFontName: realPdfFontName || "",
+        fontKey: realPdfFontName ? `orig:${realPdfFontName}` : fMeta.fontKey
       });
     });
     return spans;
@@ -318,6 +477,8 @@ window.ShibaPrepress = (function () {
 
     const allFonts = new Map();
     const fontDetailsMap = new Map();
+    const fontEmbedTasks = [];
+    const queuedEmbedNames = new Set();
     const placedDpis = [];
     const seenImgRefs = new Set();
 
@@ -352,6 +513,7 @@ window.ShibaPrepress = (function () {
 
           let embedded = subTypeRaw === "Type3";
           let streamFormat = subTypeRaw === "Type3" ? "Type3" : "";
+          let sfntStreamObj = null;
 
           let desc = fObj.lookup(PDFLib.PDFName.of("FontDescriptor"));
           if (!desc) {
@@ -371,10 +533,32 @@ window.ShibaPrepress = (function () {
             } else if (desc.get(PDFLib.PDFName.of("FontFile2"))) {
               embedded = true;
               streamFormat = "TrueType";
+              sfntStreamObj = desc.lookup(PDFLib.PDFName.of("FontFile2"));
             } else if (desc.get(PDFLib.PDFName.of("FontFile3"))) {
               embedded = true;
               streamFormat = "OpenType / CFF";
+              sfntStreamObj = desc.lookup(PDFLib.PDFName.of("FontFile3"));
             }
+          }
+
+          if (
+            sfntStreamObj &&
+            sfntStreamObj instanceof PDFLib.PDFRawStream &&
+            cleanName &&
+            !registeredEmbeddedFaces.has(cleanName) &&
+            !queuedEmbedNames.has(cleanName)
+          ) {
+            queuedEmbedNames.add(cleanName);
+            const fMeta = classifyPdfFontStyle(cleanName, null);
+            if (desc && desc instanceof PDFLib.PDFDict) {
+              const fwObj = desc.get(PDFLib.PDFName.of("FontWeight"));
+              const flObj = desc.get(PDFLib.PDFName.of("Flags"));
+              const descWeight = fwObj && typeof fwObj.asNumber === "function" ? fwObj.asNumber() : 0;
+              const descFlags = flObj && typeof flObj.asNumber === "function" ? flObj.asNumber() : 0;
+              if (descWeight >= 600 || (descFlags & 262144)) fMeta.bold = true;
+              if (descFlags & 64) fMeta.italic = true;
+            }
+            fontEmbedTasks.push(tryRegisterEmbeddedPdfFontFace(cleanName, sfntStreamObj, fMeta));
           }
 
           const dispType = cidSubType ? `${subTypeRaw} (${cidSubType})` : subTypeRaw;
@@ -616,6 +800,10 @@ window.ShibaPrepress = (function () {
       }
     }
 
+    if (fontEmbedTasks.length) {
+      await Promise.all(fontEmbedTasks);
+    }
+
     for (const pIdx of nonK100PageIndices) {
       const spans = origPages[pIdx].textSpans || [];
       const pg = await pdfJsDoc.getPage(pIdx + 1);
@@ -846,6 +1034,8 @@ window.ShibaPrepress = (function () {
   return {
     KNOWN_NET_SIZES,
     getCssFontStack,
+    hasEmbeddedFontFace: (name) => registeredEmbeddedFaces.has(name),
+    hasValidUnicodeSfntCmap,
     extractPageTextSpans,
     runPrepressPreflight,
     applyPureBlackK100ToDoc

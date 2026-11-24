@@ -728,7 +728,12 @@
           <!-- Section 2: Font Family, Size, Styles, Paragraph Alignment (Left/Center/Right/Justify), Line & Letter Spacing -->
           <div id="propTextSection" class="prop-stack hidden">
             <div class="prop-card">
-              <div class="prop-sec-head"><span data-i18n="propSecFont">字体与字号</span></div>
+              <div class="prop-sec-head">
+                <span data-i18n="propSecFont">字体与字号</span>
+                <button id="loadSysFontsBtn" class="ghost-btn" style="height:22px;padding:0 7px;font-size:11px;" type="button">
+                  <span data-i18n="loadSysFontsBtn">读取本机字体</span>
+                </button>
+              </div>
               <select id="propFontSelect" class="prop-select">
                 <option value="sans" data-i18n="fontSans">黑体 (思源/雅黑)</option>
                 <option value="serif" data-i18n="fontSerif">宋体 (书刊衬线)</option>
@@ -739,6 +744,7 @@
                 <option value="times" data-i18n="fontTimes">Times New Roman</option>
                 <option value="mono" data-i18n="fontMono">等宽 (Consolas)</option>
               </select>
+              <div id="propSubsetFontHint" class="hidden" style="font-size:11px;line-height:1.45;color:var(--text-3);margin-top:5px;"></div>
 
               <div class="prop-size-row">
                 <div class="prop-stepper">
