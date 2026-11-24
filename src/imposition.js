@@ -20,72 +20,72 @@ window.ShibaImpose = (function () {
     return { cols: 2, rows: 1 };
   }
 
-  // Crisp visual schematic SVGs illustrating each binding & imposition method for intuitive selection
+  // Crisp monochrome architectural SVG schematics illustrating each binding & imposition method
   const BINDING_SVGS = {
     booklet: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M12 14 L44 19 L76 14 L76 46 L44 51 L12 46 Z" fill="currentColor" fill-opacity="0.07" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-      <path d="M17 10 L44 16 L71 10 L71 42 L44 48 L17 42 Z" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-      <line x1="44" y1="14" x2="44" y2="50" stroke="currentColor" stroke-width="1.3" stroke-dasharray="2.5 2"/>
-      <line x1="41.5" y1="23" x2="46.5" y2="23" stroke="#2383e2" stroke-width="2.2" stroke-linecap="round"/>
-      <line x1="41.5" y1="39" x2="46.5" y2="39" stroke="#2383e2" stroke-width="2.2" stroke-linecap="round"/>
-      <text x="27" y="30" font-size="8.5" font-weight="700" fill="currentColor" opacity="0.72" text-anchor="middle">Pn</text>
-      <text x="60" y="30" font-size="8.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
+      <path d="M12 14 L44 19 L76 14 L76 46 L44 51 L12 46 Z" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.55" stroke-width="1.3" stroke-linejoin="round"/>
+      <path d="M17 10 L44 16 L71 10 L71 42 L44 48 L17 42 Z" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/>
+      <line x1="44" y1="14" x2="44" y2="50" stroke="currentColor" stroke-opacity="0.45" stroke-width="1.2" stroke-dasharray="2.5 2"/>
+      <line x1="41.5" y1="23" x2="46.5" y2="23" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="41.5" y1="39" x2="46.5" y2="39" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+      <text x="27" y="30" font-size="8.5" font-weight="600" fill="currentColor" opacity="0.52" text-anchor="middle">Pn</text>
+      <text x="60" y="30" font-size="8.5" font-weight="700" fill="currentColor" text-anchor="middle">P1</text>
     </svg>`,
 
     perfect: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="14" y="10" width="27" height="36" rx="1.5" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.4"/>
-      <rect x="47" y="10" width="27" height="36" rx="1.5" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.4"/>
-      <rect x="41" y="9" width="6" height="38" rx="1" fill="#2383e2" fill-opacity="0.22" stroke="#2383e2" stroke-width="1.5"/>
-      <path d="M41 18 H47 M41 28 H47 M41 38 H47" stroke="#2383e2" stroke-width="1.4"/>
-      <line x1="18" y1="49" x2="40" y2="49" stroke="currentColor" stroke-width="1.2" opacity="0.45"/>
-      <line x1="48" y1="49" x2="70" y2="49" stroke="currentColor" stroke-width="1.2" opacity="0.45"/>
-      <text x="27.5" y="31" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.75" text-anchor="middle">1帖</text>
-      <text x="60.5" y="31" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">2帖</text>
+      <rect x="14" y="10" width="27" height="36" rx="1.5" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.35"/>
+      <rect x="47" y="10" width="27" height="36" rx="1.5" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.35"/>
+      <rect x="41" y="9" width="6" height="38" rx="1" fill="currentColor" fill-opacity="0.16" stroke="currentColor" stroke-width="1.4"/>
+      <path d="M41 18 H47 M41 28 H47 M41 38 H47" stroke="currentColor" stroke-width="1.3"/>
+      <line x1="18" y1="49" x2="40" y2="49" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
+      <line x1="48" y1="49" x2="70" y2="49" stroke="currentColor" stroke-width="1.2" opacity="0.35"/>
+      <text x="27.5" y="31" font-size="7.5" font-weight="600" fill="currentColor" opacity="0.55" text-anchor="middle">1帖</text>
+      <text x="60.5" y="31" font-size="7.5" font-weight="700" fill="currentColor" text-anchor="middle">2帖</text>
     </svg>`,
 
     spread2up: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="11" y="13" width="66" height="33" rx="2" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.4"/>
-      <rect x="14" y="10" width="30" height="33" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.5"/>
-      <rect x="44" y="10" width="30" height="33" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.5"/>
-      <line x1="44" y1="10" x2="44" y2="43" stroke="#2383e2" stroke-width="1.8"/>
-      <path d="M35 26 H53" stroke="#2383e2" stroke-width="1.3" stroke-dasharray="2 2"/>
-      <text x="29" y="29" font-size="8.5" font-weight="700" fill="currentColor" opacity="0.72" text-anchor="middle">P2</text>
-      <text x="59" y="29" font-size="8.5" font-weight="700" fill="#2383e2" text-anchor="middle">P3</text>
+      <rect x="11" y="13" width="66" height="33" rx="2" fill="currentColor" fill-opacity="0.06" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.3"/>
+      <rect x="14" y="10" width="30" height="33" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.4"/>
+      <rect x="44" y="10" width="30" height="33" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.4"/>
+      <line x1="44" y1="10" x2="44" y2="43" stroke="currentColor" stroke-width="1.7"/>
+      <path d="M35 26 H53" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="2 2"/>
+      <text x="29" y="29" font-size="8.5" font-weight="600" fill="currentColor" opacity="0.52" text-anchor="middle">P2</text>
+      <text x="59" y="29" font-size="8.5" font-weight="700" fill="currentColor" text-anchor="middle">P3</text>
     </svg>`,
 
     fold: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="12,13 33,9 33,43 12,47" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-      <polygon points="33,9 55,15 55,49 33,43" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
-      <polygon points="55,15 76,10 76,44 55,49" fill="var(--bg-surface, #fff)" stroke="#2383e2" stroke-width="1.6" stroke-linejoin="round"/>
-      <line x1="33" y1="9" x2="33" y2="43" stroke="#2383e2" stroke-width="1.3" stroke-dasharray="2.5 2"/>
-      <line x1="55" y1="15" x2="55" y2="49" stroke="#2383e2" stroke-width="1.3" stroke-dasharray="2.5 2"/>
-      <text x="22.5" y="31" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.7" text-anchor="middle">P5</text>
-      <text x="44" y="32" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.7" text-anchor="middle">P6</text>
-      <text x="65.5" y="30" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
+      <polygon points="12,13 33,9 33,43 12,47" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
+      <polygon points="33,9 55,15 55,49 33,43" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round"/>
+      <polygon points="55,15 76,10 76,44 55,49" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <line x1="33" y1="9" x2="33" y2="43" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="2.5 2"/>
+      <line x1="55" y1="15" x2="55" y2="49" stroke="currentColor" stroke-opacity="0.5" stroke-width="1.2" stroke-dasharray="2.5 2"/>
+      <text x="22.5" y="31" font-size="7.5" font-weight="600" fill="currentColor" opacity="0.52" text-anchor="middle">P5</text>
+      <text x="44" y="32" font-size="7.5" font-weight="600" fill="currentColor" opacity="0.52" text-anchor="middle">P6</text>
+      <text x="65.5" y="30" font-size="7.5" font-weight="700" fill="currentColor" text-anchor="middle">P1</text>
     </svg>`,
 
     nup: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="15" y="8" width="58" height="40" rx="2" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.4"/>
-      <rect x="20" y="12" width="22" height="14" rx="1" fill="#2383e2" fill-opacity="0.10" stroke="#2383e2" stroke-width="1.3"/>
-      <rect x="46" y="12" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.2"/>
-      <rect x="20" y="30" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.2"/>
-      <rect x="46" y="30" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.2"/>
-      <text x="31" y="21.5" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
-      <text x="57" y="21.5" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.72" text-anchor="middle">P2</text>
-      <text x="31" y="39.5" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.72" text-anchor="middle">P3</text>
-      <text x="57" y="39.5" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.72" text-anchor="middle">P4</text>
+      <rect x="15" y="8" width="58" height="40" rx="2" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.35"/>
+      <rect x="20" y="12" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.12" stroke="currentColor" stroke-width="1.3"/>
+      <rect x="46" y="12" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.15"/>
+      <rect x="20" y="30" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.15"/>
+      <rect x="46" y="30" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.04" stroke="currentColor" stroke-opacity="0.6" stroke-width="1.15"/>
+      <text x="31" y="21.5" font-size="7.5" font-weight="700" fill="currentColor" text-anchor="middle">P1</text>
+      <text x="57" y="21.5" font-size="7.5" font-weight="600" fill="currentColor" opacity="0.55" text-anchor="middle">P2</text>
+      <text x="31" y="39.5" font-size="7.5" font-weight="600" fill="currentColor" opacity="0.55" text-anchor="middle">P3</text>
+      <text x="57" y="39.5" font-size="7.5" font-weight="600" fill="currentColor" opacity="0.55" text-anchor="middle">P4</text>
     </svg>`,
 
     steprepeat: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <rect x="15" y="8" width="58" height="40" rx="2" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.4"/>
-      <rect x="20" y="12" width="22" height="14" rx="1" fill="#2383e2" fill-opacity="0.13" stroke="#2383e2" stroke-width="1.3"/>
-      <rect x="46" y="12" width="22" height="14" rx="1" fill="#2383e2" fill-opacity="0.13" stroke="#2383e2" stroke-width="1.3"/>
-      <rect x="20" y="30" width="22" height="14" rx="1" fill="#2383e2" fill-opacity="0.13" stroke="#2383e2" stroke-width="1.3"/>
-      <rect x="46" y="30" width="22" height="14" rx="1" fill="#2383e2" fill-opacity="0.13" stroke="#2383e2" stroke-width="1.3"/>
-      <text x="31" y="21.5" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
-      <text x="57" y="21.5" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
-      <text x="31" y="39.5" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
-      <text x="57" y="39.5" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
+      <rect x="15" y="8" width="58" height="40" rx="2" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.35"/>
+      <rect x="20" y="12" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.10" stroke="currentColor" stroke-width="1.2"/>
+      <rect x="46" y="12" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.10" stroke="currentColor" stroke-width="1.2"/>
+      <rect x="20" y="30" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.10" stroke="currentColor" stroke-width="1.2"/>
+      <rect x="46" y="30" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.10" stroke="currentColor" stroke-width="1.2"/>
+      <text x="31" y="21.5" font-size="7.5" font-weight="700" fill="currentColor" text-anchor="middle">P1</text>
+      <text x="57" y="21.5" font-size="7.5" font-weight="700" fill="currentColor" text-anchor="middle">P1</text>
+      <text x="31" y="39.5" font-size="7.5" font-weight="700" fill="currentColor" text-anchor="middle">P1</text>
+      <text x="57" y="39.5" font-size="7.5" font-weight="700" fill="currentColor" text-anchor="middle">P1</text>
     </svg>`
   };
 
