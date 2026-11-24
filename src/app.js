@@ -321,7 +321,7 @@
     imgDeleteNodeBtn: document.getElementById("imgDeleteNodeBtn"),
     imgCancelSelBtn: document.getElementById("imgCancelSelBtn"),
 
-    // Bottom Pager
+    // Bottom Pager & Fixed Left/Right Status Bars
     bottomPager: document.getElementById("bottomPager"),
     prevSpreadBtn: document.getElementById("prevSpreadBtn"),
     nextSpreadBtn: document.getElementById("nextSpreadBtn"),
@@ -329,7 +329,11 @@
     zoomOutBtn: document.getElementById("zoomOutBtn"),
     zoomFitBtn: document.getElementById("zoomFitBtn"),
     zoomInBtn: document.getElementById("zoomInBtn"),
-    zoomLabel: document.getElementById("zoomLabel")
+    zoomLabel: document.getElementById("zoomLabel"),
+    leftStatusText: document.getElementById("leftStatusText"),
+    rightStatusBadge: document.getElementById("rightStatusBadge"),
+    rightStatusMain: document.getElementById("rightStatusMain"),
+    rightStatusMeta: document.getElementById("rightStatusMeta")
   };
 
   function t(key, vars) {
@@ -433,15 +437,18 @@
   function updateZoomReadout() {
     if (isAnnotateMode()) {
       el.zoomLabel.textContent = `${Math.round(state.annScale * 100)}%`;
+      updateStatusBars();
       return;
     }
     if (isOrganizeMode()) {
       el.zoomLabel.textContent =
         Math.abs(state.orgGridScale - 1.0) < 0.02 ? "100%" : `${Math.round(state.orgGridScale * 100)}%`;
+      updateStatusBars();
       return;
     }
     el.zoomLabel.textContent =
       Math.abs(state.zoomFactor - 1.0) < 0.01 ? t("fitZoom") : `${Math.round(state.zoomFactor * 100)}%`;
+    updateStatusBars();
   }
 
   function setOrgGridZoom(newScale) {
@@ -916,6 +923,7 @@
       `${info.wMm.toFixed(0)}×${info.hMm.toFixed(0)}mm · ${docName}`,
       (sIdx) => getSlotPreviewCanvas(sIdx)
     );
+    updateStatusBars();
   }
 
   async function renderOrganizeGrid() {
@@ -1196,6 +1204,7 @@
     const top = r.top > 56 ? r.top - 46 : r.bottom + 10;
     el.textFmtBar.style.left = `${left}px`;
     el.textFmtBar.style.top = `${top}px`;
+    updateStatusBars();
   }
 
   function getSelectedImgEditObj() {
@@ -2828,6 +2837,7 @@
       el.textFmtBar.classList.add("hidden");
       el.imgFmtBar.classList.add("hidden");
       el.stageViewport.classList.remove("align-top", "freeform-mode");
+      updateStatusBars();
       return;
     }
 
@@ -2947,6 +2957,271 @@
     } else {
       el.dimSummaryText.textContent = `${curInfo.wMm.toFixed(0)}×${curInfo.hMm.toFixed(0)}mm · ${state.pages.length}${t("pagesUnit")}`;
       el.exportBtnText.textContent = state.busy ? t("exportingBtn") : t("exportKeepBtn");
+    }
+
+    updateStatusBars();
+  }
+
+  function getCurrentModuleLabel() {
+    if (state.pillar === "pages") {
+      if (state.pagesSub === "organize") return t("navSubOrg");
+      if (state.pagesSub === "text") return t("navSubEdit");
+      return t("navSubAnnotate");
+    }
+    if (state.pillar === "prepress") {
+      if (state.prepressSub === "impose") return t("navSubImpose");
+      if (state.prepressSub === "split") return t("navSubSplit");
+      return t("navSubK100");
+    }
+    if (state.pillar === "preflight") return t("pillarPreflight");
+    if (state.convertSub === "compress") return t("navSubCompress");
+    if (state.convertSub === "img") return t("navSubExportImg");
+    return t("navSubImgPdf");
+  }
+
+  function getTotalLoadedBytes() {
+    let sum = 0;
+    state.docOrder.forEach((docId) => {
+      const d = state.sourceDocs.get(docId);
+      if (d && d.size) sum += d.size;
+    });
+    return sum;
+  }
+
+  function updateStatusBars() {
+    if (!el.leftStatusText || !el.rightStatusBadge || !el.rightStatusMain || !el.rightStatusMeta) return;
+
+    // 1. Left Column Fixed Status Bar (GitHub + Wonvy on left, local offline / loaded files summary on right)
+    if (!state.docOrder.length || !hasPages()) {
+      el.leftStatusText.textContent = t("stLeftIdle");
+    } else {
+      const mbStr = Math.max(0.01, getTotalLoadedBytes() / (1024 * 1024)).toFixed(2);
+      el.leftStatusText.textContent = t("stLeftLoaded", { f: state.docOrder.length, mb: mbStr });
+    }
+
+    // 2. Right Column Fixed Contextual Status Bar
+    el.rightStatusBadge.className = "right-status-badge";
+    const modLabel = getCurrentModuleLabel();
+
+    if (state.busy) {
+      el.rightStatusBadge.classList.add("busy");
+      el.rightStatusBadge.textContent = t("stBadgeBusy");
+      el.rightStatusMain.textContent = t("stBusyMsg");
+      el.rightStatusMeta.textContent = hasPages() ? `${state.pages.length}${t("pagesUnit")}` : "";
+      return;
+    }
+
+    if (!hasPages()) {
+      el.rightStatusBadge.textContent = t("stBadgeReady");
+      el.rightStatusMain.textContent = t("stEmptyMsg");
+      el.rightStatusMeta.textContent = t("stEmptyRight", { m: modLabel });
+      return;
+    }
+
+    clampActiveIndices();
+    const curSlot = state.pages[state.activeSlotIdx] || state.pages[0];
+    const curInfo = getSlotSizeInfo(curSlot);
+    const zoomDisp =
+      Math.abs(state.zoomFactor - 1.0) < 0.01 ? t("fitZoom") : `${Math.round(state.zoomFactor * 100)}%`;
+    const rotSuffix = curInfo.totalRot ? ` · ${curInfo.totalRot}°` : "";
+    const stdPageRight = t("stPageRight", {
+      p: state.activeSlotIdx + 1,
+      total: state.pages.length,
+      w: curInfo.wMm.toFixed(0),
+      h: curInfo.hMm.toFixed(0),
+      rot: rotSuffix,
+      z: zoomDisp
+    });
+
+    if (state.pillar === "pages" && state.pagesSub === "organize") {
+      const selCount = getSelectedSlots().length;
+      const pIdx = Math.max(0, Math.min(state.pages.length - 1, state.previewSlotIdx || state.activeSlotIdx));
+      const pInfo = getSlotSizeInfo(state.pages[pIdx]);
+      el.rightStatusBadge.textContent = modLabel;
+      if (selCount > 0) {
+        el.rightStatusBadge.classList.add("ok");
+        el.rightStatusMain.textContent = t("stOrgSel", { sel: selCount, total: state.pages.length });
+      } else {
+        el.rightStatusMain.textContent = t("stOrgIdle", {
+          total: state.pages.length,
+          docs: Math.max(1, state.docOrder.length)
+        });
+      }
+      el.rightStatusMeta.textContent = t("stOrgRight", {
+        p: pIdx + 1,
+        w: pInfo.wMm.toFixed(0),
+        h: pInfo.hMm.toFixed(0),
+        z: Math.round(state.orgGridScale * 100)
+      });
+      return;
+    }
+
+    if (state.pillar === "pages" && state.pagesSub === "text") {
+      el.rightStatusBadge.textContent = modLabel;
+      if (state.placingNewText) {
+        el.rightStatusBadge.classList.add("warn");
+        el.rightStatusMain.textContent = t("stEditPlace");
+      } else if (state.selectedTextId) {
+        const ed = getSelectedEditObj();
+        el.rightStatusBadge.classList.add("ok");
+        el.rightStatusMain.textContent = t("stEditTextSel", { pt: ed ? Math.round(ed.fontPt) : 14 });
+      } else if (state.selectedOrigImgId || state.selectedImgEditId) {
+        el.rightStatusBadge.classList.add("ok");
+        el.rightStatusMain.textContent = t("stEditImgSel");
+      } else {
+        const pageEdits = (curSlot.edits ? curSlot.edits.length : 0) + (curSlot.imgEdits ? curSlot.imgEdits.length : 0);
+        let totalEdits = 0;
+        state.pages.forEach((s) => {
+          totalEdits += (s.edits ? s.edits.length : 0) + (s.imgEdits ? s.imgEdits.length : 0);
+        });
+        el.rightStatusMain.textContent = t("stEditIdle", { pe: pageEdits, te: totalEdits });
+      }
+      el.rightStatusMeta.textContent = stdPageRight;
+      return;
+    }
+
+    if (state.pillar === "pages" && state.pagesSub === "annotate") {
+      const toolKeyMap = {
+        pan: "annPan",
+        select: "annSelect",
+        rect: "annRect",
+        ellipse: "annEllipse",
+        arrow: "annArrow",
+        pen: "annPen",
+        note: "annNote"
+      };
+      const toolLabel = t(toolKeyMap[state.annTool] || "annRect");
+      el.rightStatusBadge.textContent = modLabel;
+      if (state.selectedAnnId) {
+        el.rightStatusBadge.classList.add("ok");
+        el.rightStatusMain.textContent = t("stAnnSelected");
+      } else {
+        el.rightStatusMain.textContent = t("stAnnIdle", { tool: toolLabel, n: state.annotations.length });
+      }
+      el.rightStatusMeta.textContent = t("stAnnRight", {
+        total: state.pages.length,
+        z: Math.round(state.annScale * 100)
+      });
+      return;
+    }
+
+    if (state.pillar === "prepress" && state.prepressSub === "impose") {
+      const impPlan = getCurrentImpositionPlan();
+      const modeName =
+        state.imposeType === "booklet"
+          ? t("imposeBooklet")
+          : state.imposeType === "spread2up"
+          ? t("imposeSpread2Up")
+          : `${t("imposeNUp")} (${state.imposeNup})`;
+      const sTotal = Math.max(1, impPlan.sheets.length);
+      const sCur = Math.min(sTotal, Math.max(1, state.activeSheetIdx + 1));
+      el.rightStatusBadge.textContent = modLabel;
+      el.rightStatusMain.textContent = t("stImpMsg", {
+        mode: modeName,
+        s: impPlan.sheets.length,
+        crop: state.cropMarks ? t("stImpCropOn") : t("stImpCropOff"),
+        k100: state.imposeK100 ? t("stImpK100On") : t("stImpK100Off")
+      });
+      el.rightStatusMeta.textContent = t("stImpRight", {
+        i: sCur,
+        s: sTotal,
+        w: impPlan.sheetWMm.toFixed(0),
+        h: impPlan.sheetHMm.toFixed(0),
+        z: zoomDisp
+      });
+      return;
+    }
+
+    if (state.pillar === "prepress" && state.prepressSub === "split") {
+      const spPlan = computeSplitPlanForSlots(state.pages);
+      const s0 = spPlan[0] || { outWMm: curInfo.wMm, outHMm: curInfo.hMm };
+      const bleedVal = state.bleed.top;
+      const actLabel = state.bleedAction === "trim" ? t("actionTrimShort") : t("actionKeepShort");
+      const viewLabel =
+        state.splitTab === "spread"
+          ? `P${state.activeSlotIdx + 1} / ${state.pages.length}`
+          : t("tabSequence");
+      el.rightStatusBadge.textContent = modLabel;
+      el.rightStatusMain.textContent = t("stSplitMsg", {
+        orig: state.pages.length,
+        out: spPlan.length,
+        b: bleedVal,
+        act: actLabel
+      });
+      el.rightStatusMeta.textContent = t("stSplitRight", {
+        view: viewLabel,
+        w: s0.outWMm.toFixed(0),
+        h: s0.outHMm.toFixed(0)
+      });
+      return;
+    }
+
+    if (state.pillar === "prepress" && state.prepressSub === "k100") {
+      el.rightStatusBadge.textContent = modLabel;
+      el.rightStatusMain.textContent = t("stK100Msg");
+      el.rightStatusMeta.textContent = stdPageRight;
+      return;
+    }
+
+    if (state.pillar === "preflight") {
+      const items = buildAggregatedPreflightItems();
+      const errCount = items.filter((i) => i.status === "err").length;
+      const warnCount = items.filter((i) => i.status === "warn").length;
+      const okCount = items.filter((i) => i.status === "ok").length;
+      el.rightStatusBadge.textContent = modLabel;
+      if (errCount === 0 && warnCount === 0) {
+        el.rightStatusBadge.classList.add("ok");
+        el.rightStatusMain.textContent = t("stPfAllOk");
+      } else {
+        el.rightStatusBadge.classList.add(errCount > 0 ? "err" : "warn");
+        const stepTxt =
+          state.flatPfSteps.length > 0 && state.pfStepCursor >= 0
+            ? t("stPfStep", { c: state.pfStepCursor + 1, t: state.flatPfSteps.length })
+            : "";
+        el.rightStatusMain.textContent = t("stPfIssues", {
+          err: errCount,
+          warn: warnCount,
+          ok: okCount,
+          step: stepTxt
+        });
+      }
+      el.rightStatusMeta.textContent = stdPageRight;
+      return;
+    }
+
+    const totalMb = Math.max(0.01, getTotalLoadedBytes() / (1024 * 1024)).toFixed(2);
+    el.rightStatusBadge.textContent = modLabel;
+    if (state.convertSub === "compress") {
+      const presetKey =
+        state.compPreset === "high"
+          ? "compPresetHigh"
+          : state.compPreset === "max"
+          ? "compPresetMax"
+          : "compPresetBalanced";
+      el.rightStatusMain.textContent = t("stCompMsg", {
+        preset: t(presetKey),
+        vec: state.compKeepVec ? t("stCompVecOn") : t("stCompVecOff")
+      });
+      el.rightStatusMeta.textContent = t("stConvRight", { total: state.pages.length, mb: totalMb });
+    } else if (state.convertSub === "img") {
+      const selCount = getSelectedSlots().length;
+      const useSel = state.imgScope === "selected" && selCount > 0;
+      const targetN = useSel ? selCount : state.pages.length;
+      const scopeLabel = useSel
+        ? t("imgScopeSel", { n: selCount })
+        : t("imgScopeAll", { n: state.pages.length });
+      el.rightStatusMain.textContent = t("stImgMsg", {
+        fmt: state.imgFmt.toUpperCase(),
+        dpi: state.imgDpi,
+        scope: scopeLabel
+      });
+      el.rightStatusMeta.textContent = t("stImgRight", {
+        n: targetN,
+        zip: targetN > 1 ? t("stImgZip") : ""
+      });
+    } else {
+      el.rightStatusMain.textContent = t("stImgPdfMsg", { dpi: state.imgPdfDpi });
+      el.rightStatusMeta.textContent = t("stConvRight", { total: state.pages.length, mb: totalMb });
     }
   }
 
@@ -4081,6 +4356,7 @@
 
   el.imposeK100Check.addEventListener("change", () => {
     state.imposeK100 = el.imposeK100Check.checked;
+    updateStatusBars();
   });
 
   // Split Spreads Sub-controls
@@ -4203,11 +4479,13 @@
     card.addEventListener("click", () => {
       state.compPreset = card.dataset.preset || "balanced";
       el.compCards.forEach((c) => c.classList.toggle("active", c === card));
+      updateStatusBars();
     });
   });
 
   el.compKeepVecCheck.addEventListener("change", () => {
     state.compKeepVec = el.compKeepVecCheck.checked;
+    updateStatusBars();
   });
 
   el.runCompressBtn.addEventListener("click", async () => {
@@ -4215,6 +4493,7 @@
     state.busy = true;
     el.runCompressBtn.disabled = true;
     el.compResultBox.classList.add("hidden");
+    updateStatusBars();
 
     try {
       const prepDoc = await assembleSlotsPdfDoc(state.pages, false);
@@ -4259,6 +4538,7 @@
     ch.addEventListener("click", () => {
       state.imgFmt = ch.dataset.fmt || "png";
       el.imgFmtChips.forEach((x) => x.classList.toggle("active", x === ch));
+      updateStatusBars();
     });
   });
 
@@ -4266,6 +4546,7 @@
     ch.addEventListener("click", () => {
       state.imgDpi = Number(ch.dataset.dpi) || 300;
       el.imgDpiChips.forEach((x) => x.classList.toggle("active", x === ch));
+      updateStatusBars();
     });
   });
 
@@ -4286,6 +4567,7 @@
     const targetSlots = state.imgScope === "selected" && getSelectedSlots().length ? getSelectedSlots() : state.pages;
     state.busy = true;
     el.runExportImgBtn.disabled = true;
+    updateStatusBars();
 
     try {
       const res = await window.ShibaConvert.exportSlotsAsImages(
@@ -4313,6 +4595,7 @@
     ch.addEventListener("click", () => {
       state.imgPdfDpi = Number(ch.dataset.dpi) || 220;
       el.imgPdfDpiChips.forEach((x) => x.classList.toggle("active", x === ch));
+      updateStatusBars();
     });
   });
 
@@ -4320,6 +4603,7 @@
     if (!hasPages() || state.busy) return;
     state.busy = true;
     el.runImgPdfBtn.disabled = true;
+    updateStatusBars();
 
     try {
       const bytes = await window.ShibaConvert.buildRasterizedPdfBytes(

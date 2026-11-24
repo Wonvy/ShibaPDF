@@ -44,6 +44,7 @@
 
   --scroll-thumb: rgba(24, 24, 23, 0.14);
   --scroll-thumb-hover: rgba(24, 24, 23, 0.30);
+  --status-border: rgba(24, 24, 23, 0.065);
 }
 
 [data-theme="dark"] {
@@ -82,6 +83,7 @@
 
   --scroll-thumb: rgba(237, 237, 236, 0.16);
   --scroll-thumb-hover: rgba(237, 237, 236, 0.34);
+  --status-border: rgba(237, 237, 236, 0.075);
 }
 
 * {
@@ -184,7 +186,7 @@ svg.lucide {
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  padding: 16px 13px;
+  padding: 16px 0 0;
   z-index: 30;
 }
 
@@ -246,7 +248,7 @@ svg.lucide {
 
 .rail-header {
   height: 38px;
-  padding: 0 6px;
+  padding: 0 19px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -308,6 +310,7 @@ svg.lucide {
 .rail-tools {
   flex: 1;
   overflow-y: auto;
+  padding: 0 13px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -402,11 +405,125 @@ svg.lucide {
 
 /* Rail Footer */
 .rail-footer {
-  padding-top: 12px;
+  padding: 12px 13px 10px;
   display: flex;
   flex-direction: column;
   gap: 6px;
   flex-shrink: 0;
+}
+
+/* Fixed Bottom Status Bars (Left & Right Aligned) */
+.left-status-bar {
+  height: 32px;
+  padding: 0 15px;
+  border-top: 1px solid var(--status-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.status-author-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 22px;
+  padding: 0 7px;
+  margin-left: -5px;
+  border-radius: 6px;
+  color: var(--text-2);
+  text-decoration: none;
+  font-size: 11.5px;
+  font-weight: 600;
+  transition: background-color 0.14s, color 0.14s;
+  flex-shrink: 0;
+}
+
+.status-author-link:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
+
+.left-status-info {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  font-size: 11px;
+  color: var(--text-3);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ok);
+  flex-shrink: 0;
+}
+
+.right-status-bar {
+  height: 32px;
+  padding: 0 16px;
+  background: var(--bg-rail);
+  border-top: 1px solid var(--status-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-shrink: 0;
+  z-index: 30;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.right-status-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.right-status-badge {
+  height: 20px;
+  padding: 0 7px;
+  border-radius: 5px;
+  background: var(--bg-pill);
+  color: var(--text-1);
+  font-size: 10.5px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.right-status-badge.ok { background: var(--ok-bg); color: var(--ok); }
+.right-status-badge.warn { background: var(--warn-bg); color: var(--warn); }
+.right-status-badge.err { background: var(--err-bg); color: var(--err); }
+.right-status-badge.busy { background: var(--btn-bg); color: var(--btn-fg); }
+
+.right-status-main {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-2);
+}
+
+.right-status-meta {
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 
 .rail-files-box {
@@ -1444,7 +1561,7 @@ svg.lucide {
 /* Floating Bottom Pager */
 .floating-pager {
   position: absolute;
-  bottom: 18px;
+  bottom: 46px;
   left: 50%;
   transform: translateX(-50%);
   height: 36px;
@@ -1866,7 +1983,15 @@ svg.lucide {
     padding: 10px 12px 16px;
   }
   .floating-pager {
-    bottom: 12px;
+    bottom: 42px;
+  }
+  .right-status-bar {
+    height: 30px;
+    padding: 0 12px;
+    gap: 8px;
+  }
+  .right-status-meta {
+    font-size: 10.5px;
   }
   .text-fmt-bar {
     max-width: calc(100vw - 16px);
@@ -1884,12 +2009,9 @@ svg.lucide {
         <div class="brand-mark">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /> </svg>
           <span>ShibaPDF</span>
-          <span class="version-pill">v1.6.0</span>
+          <span class="version-pill">v1.6.1</span>
         </div>
         <div class="header-mini-btns">
-          <a id="githubLinkBtn" class="ghost-btn icon-only-btn" href="https://github.com/Wonvy/ShibaPDF" target="_blank" rel="noopener noreferrer" title="GitHub: Wonvy/ShibaPDF" aria-label="GitHub Repository">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.07 11.07 0 0 1 5.8 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
-          </a>
           <button id="langBtn" class="ghost-btn" type="button" title="Switch Language">
             <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-languages" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m5 8 6 6" /> <path d="m4 14 6-6 2-3" /> <path d="M2 5h12" /> <path d="M7 2h1" /> <path d="m22 22-5-10-5 10" /> <path d="M14 18h6" /> </svg>
             <span id="langLabel">EN</span>
@@ -2019,6 +2141,18 @@ svg.lucide {
           <span data-i18n="downloadOfflineBtn">下载单文件离线版</span>
         </button>
       </div>
+
+      <!-- Fixed Left Column Status Bar (GitHub + Author Wonvy + Local File Status) -->
+      <footer id="leftStatusBar" class="left-status-bar">
+        <a id="githubLinkBtn" class="status-author-link" href="https://github.com/Wonvy/ShibaPDF" target="_blank" rel="noopener noreferrer" title="GitHub · Wonvy/ShibaPDF" aria-label="GitHub Repository by Wonvy">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.07 11.07 0 0 1 5.8 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+          <span>Wonvy</span>
+        </a>
+        <span id="leftStatusInfo" class="left-status-info">
+          <span class="status-dot"></span>
+          <span id="leftStatusText" data-i18n="stLeftIdle">本地离线</span>
+        </span>
+      </footer>
     </aside>
 
     <!-- Mobile Drawer Backdrop -->
@@ -2034,12 +2168,9 @@ svg.lucide {
         <button id="mobileMenuBtn" class="ghost-btn" type="button">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /> </svg>
           <span style="font-weight:700;">ShibaPDF</span>
-          <span class="version-pill">v1.6.0</span>
+          <span class="version-pill">v1.6.1</span>
         </button>
         <div style="display:flex;align-items:center;gap:4px;">
-          <a class="ghost-btn icon-only-btn" href="https://github.com/Wonvy/ShibaPDF" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.07 11.07 0 0 1 5.8 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
-          </a>
           <button id="mobileQuickOpenBtn" class="ghost-btn" type="button">
             <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-upload" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> </svg>
           </button>
@@ -2542,6 +2673,15 @@ svg.lucide {
           <div id="loadProgressStep" class="load-progress-step"></div>
         </div>
       </div>
+
+      <!-- Fixed Right Workspace Contextual Status Bar -->
+      <footer id="rightStatusBar" class="right-status-bar">
+        <div class="right-status-left">
+          <span id="rightStatusBadge" class="right-status-badge">就绪</span>
+          <span id="rightStatusMain" class="right-status-main"></span>
+        </div>
+        <div id="rightStatusMeta" class="right-status-meta"></div>
+      </footer>
     </main>
   </div>
 
@@ -2847,7 +2987,47 @@ window.SHIBA_I18N = {
     keepBadge: "P{p} · {w}×{h}mm · 单色黑 K100",
     newTextDefault: "输入文字",
     errLoadPdf: "读取 PDF 失败：",
-    errExportPdf: "处理失败："
+    errExportPdf: "处理失败：",
+
+    // Fixed Bottom Status Bars (Left & Right)
+    stLeftIdle: "本地离线",
+    stLeftLoaded: "{f} 份 · {mb} MB",
+    stBadgeReady: "就绪",
+    stBadgeBusy: "处理中",
+    stEmptyMsg: "拖入一个或多个 PDF 开始处理 · 100% 浏览器本地运算，零服务器上传",
+    stEmptyRight: "当前模块：{m}",
+    stBusyMsg: "正在本地处理文档数据，请稍候…",
+    stOrgIdle: "共 {total} 页（{docs} 份文档）· 单击勾选提取，拖拽排序，双击改字，Ctrl+滚轮缩放",
+    stOrgSel: "已勾选 {sel} / {total} 页 · 可批量旋转、删除、导图片或单独提取 PDF（Esc 取消勾选）",
+    stOrgRight: "预览 P{p} · {w}×{h}mm · 网格 {z}%",
+    stEditPlace: "请在页面任意位置单击放置新文字 · 按 Esc 取消",
+    stEditTextSel: "编辑文字（{pt}pt）· 拖边框移动，拖角点调宽，点空白处完成或按 Esc 放弃",
+    stEditImgSel: "已选中图片 · 直接拖入新图片原位替换，或拖拽控制点调整位置大小（Esc 取消）",
+    stEditIdle: "点选文字或图片即可原位修改/拖入替换 · 本页已改 {pe} 处（全文共 {te} 处）",
+    stPageRight: "P{p} / {total} · {w}×{h}mm{rot} · 缩放 {z}",
+    stAnnSelected: "已选中 1 处批注 · 按 Delete 删除，拖拽调整位置，按 Esc 取消选中",
+    stAnnIdle: "当前工具：{tool} · 已标注 {n} 处修改意见 · 滚轮或按住空格拖拽漫游画板",
+    stAnnRight: "共 {total} 页同屏审稿 · 画板 {z}%",
+    stImpMsg: "{mode} · 生成 {s} 个大版印张 · {crop} · {k100}",
+    stImpCropOn: "含裁切角线",
+    stImpCropOff: "无裁切角线",
+    stImpK100On: "转单黑 K100",
+    stImpK100Off: "保持原色彩",
+    stImpRight: "印张 {i} / {s} · {w}×{h}mm · 缩放 {z}",
+    stSplitMsg: "原稿 {orig} 页 ➜ 拆分为 {out} 个单页 · 四周出血 {b}mm（{act}）",
+    stSplitRight: "{view} · 单页成品 {w}×{h}mm",
+    stK100Msg: "保持原页面尺寸与矢量透明度 · 自动将 RGB 黑灰文字与线条转为纯单黑通道 K100",
+    stPfAllOk: "8 项印刷规范体检全部通过，可放心送印",
+    stPfIssues: "发现 {err} 项风险、{warn} 项留意（{ok} 项通过）{step}",
+    stPfStep: " · 当前定位第 {c}/{t} 处",
+    stCompMsg: "预设：{preset} · {vec}",
+    stCompVecOn: "保留矢量文字清晰度",
+    stCompVecOff: "整页栅格极限压缩",
+    stConvRight: "共 {total} 页 · 原始体积 {mb} MB",
+    stImgMsg: "格式：{fmt} · 分辨率：{dpi} DPI · 范围：{scope}",
+    stImgRight: "预计输出 {n} 张图片{zip}",
+    stImgZip: "（自动打包 ZIP）",
+    stImgPdfMsg: "输出清晰度：{dpi} DPI · 全页栅格化防复制篡改、彻底锁死字体"
   },
 
   en: {
@@ -3068,7 +3248,46 @@ window.SHIBA_I18N = {
     keepBadge: "P{p} · {w}×{h}mm · Pure K100",
     newTextDefault: "Type text",
     errLoadPdf: "Failed to read PDF: ",
-    errExportPdf: "Operation failed: "
+    errExportPdf: "Operation failed: ",
+
+    stLeftIdle: "Local Offline",
+    stLeftLoaded: "{f} file(s) · {mb} MB",
+    stBadgeReady: "Ready",
+    stBadgeBusy: "Working",
+    stEmptyMsg: "Drop one or more PDFs to start · 100% local in browser, zero server upload",
+    stEmptyRight: "Module: {m}",
+    stBusyMsg: "Processing PDF locally, please wait…",
+    stOrgIdle: "{total} page(s) across {docs} file(s) · Click to select, drag to sort, double-click to edit, Ctrl+Wheel to zoom",
+    stOrgSel: "Selected {sel} / {total} page(s) · Rotate, delete, export images or extract PDF (Esc to clear)",
+    stOrgRight: "Preview P{p} · {w}×{h}mm · Grid {z}%",
+    stEditPlace: "Click anywhere on the page to place new text · Esc to cancel",
+    stEditTextSel: "Editing text ({pt}pt) · Drag border to move, handle to resize, Esc to discard",
+    stEditImgSel: "Image selected · Drop new image to replace in-place, or drag handles (Esc to cancel)",
+    stEditIdle: "Click text or image to edit/replace · {pe} edit(s) on page ({te} total)",
+    stPageRight: "P{p} / {total} · {w}×{h}mm{rot} · Zoom {z}",
+    stAnnSelected: "1 markup selected · Press Delete to remove, drag to move, Esc to deselect",
+    stAnnIdle: "Tool: {tool} · {n} markup(s) · Scroll or Space+Drag to pan board",
+    stAnnRight: "{total} page(s) on board · Zoom {z}%",
+    stImpMsg: "{mode} · {s} press sheet(s) · {crop} · {k100}",
+    stImpCropOn: "Crop marks ON",
+    stImpCropOff: "No crop marks",
+    stImpK100On: "Pure K100",
+    stImpK100Off: "Original color",
+    stImpRight: "Sheet {i} / {s} · {w}×{h}mm · Zoom {z}",
+    stSplitMsg: "{orig} source page(s) ➜ {out} single page(s) · {b}mm bleed ({act})",
+    stSplitRight: "{view} · Output {w}×{h}mm",
+    stK100Msg: "Keep original page size & vector transparency · Convert RGB black/gray text & lines to Pure K100",
+    stPfAllOk: "All 8 prepress checks passed — ready for press",
+    stPfIssues: "{err} error(s), {warn} warning(s) ({ok} passed){step}",
+    stPfStep: " · Locating {c}/{t}",
+    stCompMsg: "Preset: {preset} · {vec}",
+    stCompVecOn: "Keep vector text sharp",
+    stCompVecOff: "Full-page raster shrink",
+    stConvRight: "{total} page(s) · Source {mb} MB",
+    stImgMsg: "Format: {fmt} · {dpi} DPI · Scope: {scope}",
+    stImgRight: "Output {n} image(s){zip}",
+    stImgZip: " (Auto-ZIP)",
+    stImgPdfMsg: "Resolution: {dpi} DPI · Full-page rasterized PDF to lock fonts & prevent text copy"
   }
 };
 
@@ -5699,7 +5918,7 @@ window.ShibaUX = (function () {
     imgDeleteNodeBtn: document.getElementById("imgDeleteNodeBtn"),
     imgCancelSelBtn: document.getElementById("imgCancelSelBtn"),
 
-    // Bottom Pager
+    // Bottom Pager & Fixed Left/Right Status Bars
     bottomPager: document.getElementById("bottomPager"),
     prevSpreadBtn: document.getElementById("prevSpreadBtn"),
     nextSpreadBtn: document.getElementById("nextSpreadBtn"),
@@ -5707,7 +5926,11 @@ window.ShibaUX = (function () {
     zoomOutBtn: document.getElementById("zoomOutBtn"),
     zoomFitBtn: document.getElementById("zoomFitBtn"),
     zoomInBtn: document.getElementById("zoomInBtn"),
-    zoomLabel: document.getElementById("zoomLabel")
+    zoomLabel: document.getElementById("zoomLabel"),
+    leftStatusText: document.getElementById("leftStatusText"),
+    rightStatusBadge: document.getElementById("rightStatusBadge"),
+    rightStatusMain: document.getElementById("rightStatusMain"),
+    rightStatusMeta: document.getElementById("rightStatusMeta")
   };
 
   function t(key, vars) {
@@ -5811,15 +6034,18 @@ window.ShibaUX = (function () {
   function updateZoomReadout() {
     if (isAnnotateMode()) {
       el.zoomLabel.textContent = `${Math.round(state.annScale * 100)}%`;
+      updateStatusBars();
       return;
     }
     if (isOrganizeMode()) {
       el.zoomLabel.textContent =
         Math.abs(state.orgGridScale - 1.0) < 0.02 ? "100%" : `${Math.round(state.orgGridScale * 100)}%`;
+      updateStatusBars();
       return;
     }
     el.zoomLabel.textContent =
       Math.abs(state.zoomFactor - 1.0) < 0.01 ? t("fitZoom") : `${Math.round(state.zoomFactor * 100)}%`;
+    updateStatusBars();
   }
 
   function setOrgGridZoom(newScale) {
@@ -6294,6 +6520,7 @@ window.ShibaUX = (function () {
       `${info.wMm.toFixed(0)}×${info.hMm.toFixed(0)}mm · ${docName}`,
       (sIdx) => getSlotPreviewCanvas(sIdx)
     );
+    updateStatusBars();
   }
 
   async function renderOrganizeGrid() {
@@ -6574,6 +6801,7 @@ window.ShibaUX = (function () {
     const top = r.top > 56 ? r.top - 46 : r.bottom + 10;
     el.textFmtBar.style.left = `${left}px`;
     el.textFmtBar.style.top = `${top}px`;
+    updateStatusBars();
   }
 
   function getSelectedImgEditObj() {
@@ -8206,6 +8434,7 @@ window.ShibaUX = (function () {
       el.textFmtBar.classList.add("hidden");
       el.imgFmtBar.classList.add("hidden");
       el.stageViewport.classList.remove("align-top", "freeform-mode");
+      updateStatusBars();
       return;
     }
 
@@ -8325,6 +8554,271 @@ window.ShibaUX = (function () {
     } else {
       el.dimSummaryText.textContent = `${curInfo.wMm.toFixed(0)}×${curInfo.hMm.toFixed(0)}mm · ${state.pages.length}${t("pagesUnit")}`;
       el.exportBtnText.textContent = state.busy ? t("exportingBtn") : t("exportKeepBtn");
+    }
+
+    updateStatusBars();
+  }
+
+  function getCurrentModuleLabel() {
+    if (state.pillar === "pages") {
+      if (state.pagesSub === "organize") return t("navSubOrg");
+      if (state.pagesSub === "text") return t("navSubEdit");
+      return t("navSubAnnotate");
+    }
+    if (state.pillar === "prepress") {
+      if (state.prepressSub === "impose") return t("navSubImpose");
+      if (state.prepressSub === "split") return t("navSubSplit");
+      return t("navSubK100");
+    }
+    if (state.pillar === "preflight") return t("pillarPreflight");
+    if (state.convertSub === "compress") return t("navSubCompress");
+    if (state.convertSub === "img") return t("navSubExportImg");
+    return t("navSubImgPdf");
+  }
+
+  function getTotalLoadedBytes() {
+    let sum = 0;
+    state.docOrder.forEach((docId) => {
+      const d = state.sourceDocs.get(docId);
+      if (d && d.size) sum += d.size;
+    });
+    return sum;
+  }
+
+  function updateStatusBars() {
+    if (!el.leftStatusText || !el.rightStatusBadge || !el.rightStatusMain || !el.rightStatusMeta) return;
+
+    // 1. Left Column Fixed Status Bar (GitHub + Wonvy on left, local offline / loaded files summary on right)
+    if (!state.docOrder.length || !hasPages()) {
+      el.leftStatusText.textContent = t("stLeftIdle");
+    } else {
+      const mbStr = Math.max(0.01, getTotalLoadedBytes() / (1024 * 1024)).toFixed(2);
+      el.leftStatusText.textContent = t("stLeftLoaded", { f: state.docOrder.length, mb: mbStr });
+    }
+
+    // 2. Right Column Fixed Contextual Status Bar
+    el.rightStatusBadge.className = "right-status-badge";
+    const modLabel = getCurrentModuleLabel();
+
+    if (state.busy) {
+      el.rightStatusBadge.classList.add("busy");
+      el.rightStatusBadge.textContent = t("stBadgeBusy");
+      el.rightStatusMain.textContent = t("stBusyMsg");
+      el.rightStatusMeta.textContent = hasPages() ? `${state.pages.length}${t("pagesUnit")}` : "";
+      return;
+    }
+
+    if (!hasPages()) {
+      el.rightStatusBadge.textContent = t("stBadgeReady");
+      el.rightStatusMain.textContent = t("stEmptyMsg");
+      el.rightStatusMeta.textContent = t("stEmptyRight", { m: modLabel });
+      return;
+    }
+
+    clampActiveIndices();
+    const curSlot = state.pages[state.activeSlotIdx] || state.pages[0];
+    const curInfo = getSlotSizeInfo(curSlot);
+    const zoomDisp =
+      Math.abs(state.zoomFactor - 1.0) < 0.01 ? t("fitZoom") : `${Math.round(state.zoomFactor * 100)}%`;
+    const rotSuffix = curInfo.totalRot ? ` · ${curInfo.totalRot}°` : "";
+    const stdPageRight = t("stPageRight", {
+      p: state.activeSlotIdx + 1,
+      total: state.pages.length,
+      w: curInfo.wMm.toFixed(0),
+      h: curInfo.hMm.toFixed(0),
+      rot: rotSuffix,
+      z: zoomDisp
+    });
+
+    if (state.pillar === "pages" && state.pagesSub === "organize") {
+      const selCount = getSelectedSlots().length;
+      const pIdx = Math.max(0, Math.min(state.pages.length - 1, state.previewSlotIdx || state.activeSlotIdx));
+      const pInfo = getSlotSizeInfo(state.pages[pIdx]);
+      el.rightStatusBadge.textContent = modLabel;
+      if (selCount > 0) {
+        el.rightStatusBadge.classList.add("ok");
+        el.rightStatusMain.textContent = t("stOrgSel", { sel: selCount, total: state.pages.length });
+      } else {
+        el.rightStatusMain.textContent = t("stOrgIdle", {
+          total: state.pages.length,
+          docs: Math.max(1, state.docOrder.length)
+        });
+      }
+      el.rightStatusMeta.textContent = t("stOrgRight", {
+        p: pIdx + 1,
+        w: pInfo.wMm.toFixed(0),
+        h: pInfo.hMm.toFixed(0),
+        z: Math.round(state.orgGridScale * 100)
+      });
+      return;
+    }
+
+    if (state.pillar === "pages" && state.pagesSub === "text") {
+      el.rightStatusBadge.textContent = modLabel;
+      if (state.placingNewText) {
+        el.rightStatusBadge.classList.add("warn");
+        el.rightStatusMain.textContent = t("stEditPlace");
+      } else if (state.selectedTextId) {
+        const ed = getSelectedEditObj();
+        el.rightStatusBadge.classList.add("ok");
+        el.rightStatusMain.textContent = t("stEditTextSel", { pt: ed ? Math.round(ed.fontPt) : 14 });
+      } else if (state.selectedOrigImgId || state.selectedImgEditId) {
+        el.rightStatusBadge.classList.add("ok");
+        el.rightStatusMain.textContent = t("stEditImgSel");
+      } else {
+        const pageEdits = (curSlot.edits ? curSlot.edits.length : 0) + (curSlot.imgEdits ? curSlot.imgEdits.length : 0);
+        let totalEdits = 0;
+        state.pages.forEach((s) => {
+          totalEdits += (s.edits ? s.edits.length : 0) + (s.imgEdits ? s.imgEdits.length : 0);
+        });
+        el.rightStatusMain.textContent = t("stEditIdle", { pe: pageEdits, te: totalEdits });
+      }
+      el.rightStatusMeta.textContent = stdPageRight;
+      return;
+    }
+
+    if (state.pillar === "pages" && state.pagesSub === "annotate") {
+      const toolKeyMap = {
+        pan: "annPan",
+        select: "annSelect",
+        rect: "annRect",
+        ellipse: "annEllipse",
+        arrow: "annArrow",
+        pen: "annPen",
+        note: "annNote"
+      };
+      const toolLabel = t(toolKeyMap[state.annTool] || "annRect");
+      el.rightStatusBadge.textContent = modLabel;
+      if (state.selectedAnnId) {
+        el.rightStatusBadge.classList.add("ok");
+        el.rightStatusMain.textContent = t("stAnnSelected");
+      } else {
+        el.rightStatusMain.textContent = t("stAnnIdle", { tool: toolLabel, n: state.annotations.length });
+      }
+      el.rightStatusMeta.textContent = t("stAnnRight", {
+        total: state.pages.length,
+        z: Math.round(state.annScale * 100)
+      });
+      return;
+    }
+
+    if (state.pillar === "prepress" && state.prepressSub === "impose") {
+      const impPlan = getCurrentImpositionPlan();
+      const modeName =
+        state.imposeType === "booklet"
+          ? t("imposeBooklet")
+          : state.imposeType === "spread2up"
+          ? t("imposeSpread2Up")
+          : `${t("imposeNUp")} (${state.imposeNup})`;
+      const sTotal = Math.max(1, impPlan.sheets.length);
+      const sCur = Math.min(sTotal, Math.max(1, state.activeSheetIdx + 1));
+      el.rightStatusBadge.textContent = modLabel;
+      el.rightStatusMain.textContent = t("stImpMsg", {
+        mode: modeName,
+        s: impPlan.sheets.length,
+        crop: state.cropMarks ? t("stImpCropOn") : t("stImpCropOff"),
+        k100: state.imposeK100 ? t("stImpK100On") : t("stImpK100Off")
+      });
+      el.rightStatusMeta.textContent = t("stImpRight", {
+        i: sCur,
+        s: sTotal,
+        w: impPlan.sheetWMm.toFixed(0),
+        h: impPlan.sheetHMm.toFixed(0),
+        z: zoomDisp
+      });
+      return;
+    }
+
+    if (state.pillar === "prepress" && state.prepressSub === "split") {
+      const spPlan = computeSplitPlanForSlots(state.pages);
+      const s0 = spPlan[0] || { outWMm: curInfo.wMm, outHMm: curInfo.hMm };
+      const bleedVal = state.bleed.top;
+      const actLabel = state.bleedAction === "trim" ? t("actionTrimShort") : t("actionKeepShort");
+      const viewLabel =
+        state.splitTab === "spread"
+          ? `P${state.activeSlotIdx + 1} / ${state.pages.length}`
+          : t("tabSequence");
+      el.rightStatusBadge.textContent = modLabel;
+      el.rightStatusMain.textContent = t("stSplitMsg", {
+        orig: state.pages.length,
+        out: spPlan.length,
+        b: bleedVal,
+        act: actLabel
+      });
+      el.rightStatusMeta.textContent = t("stSplitRight", {
+        view: viewLabel,
+        w: s0.outWMm.toFixed(0),
+        h: s0.outHMm.toFixed(0)
+      });
+      return;
+    }
+
+    if (state.pillar === "prepress" && state.prepressSub === "k100") {
+      el.rightStatusBadge.textContent = modLabel;
+      el.rightStatusMain.textContent = t("stK100Msg");
+      el.rightStatusMeta.textContent = stdPageRight;
+      return;
+    }
+
+    if (state.pillar === "preflight") {
+      const items = buildAggregatedPreflightItems();
+      const errCount = items.filter((i) => i.status === "err").length;
+      const warnCount = items.filter((i) => i.status === "warn").length;
+      const okCount = items.filter((i) => i.status === "ok").length;
+      el.rightStatusBadge.textContent = modLabel;
+      if (errCount === 0 && warnCount === 0) {
+        el.rightStatusBadge.classList.add("ok");
+        el.rightStatusMain.textContent = t("stPfAllOk");
+      } else {
+        el.rightStatusBadge.classList.add(errCount > 0 ? "err" : "warn");
+        const stepTxt =
+          state.flatPfSteps.length > 0 && state.pfStepCursor >= 0
+            ? t("stPfStep", { c: state.pfStepCursor + 1, t: state.flatPfSteps.length })
+            : "";
+        el.rightStatusMain.textContent = t("stPfIssues", {
+          err: errCount,
+          warn: warnCount,
+          ok: okCount,
+          step: stepTxt
+        });
+      }
+      el.rightStatusMeta.textContent = stdPageRight;
+      return;
+    }
+
+    const totalMb = Math.max(0.01, getTotalLoadedBytes() / (1024 * 1024)).toFixed(2);
+    el.rightStatusBadge.textContent = modLabel;
+    if (state.convertSub === "compress") {
+      const presetKey =
+        state.compPreset === "high"
+          ? "compPresetHigh"
+          : state.compPreset === "max"
+          ? "compPresetMax"
+          : "compPresetBalanced";
+      el.rightStatusMain.textContent = t("stCompMsg", {
+        preset: t(presetKey),
+        vec: state.compKeepVec ? t("stCompVecOn") : t("stCompVecOff")
+      });
+      el.rightStatusMeta.textContent = t("stConvRight", { total: state.pages.length, mb: totalMb });
+    } else if (state.convertSub === "img") {
+      const selCount = getSelectedSlots().length;
+      const useSel = state.imgScope === "selected" && selCount > 0;
+      const targetN = useSel ? selCount : state.pages.length;
+      const scopeLabel = useSel
+        ? t("imgScopeSel", { n: selCount })
+        : t("imgScopeAll", { n: state.pages.length });
+      el.rightStatusMain.textContent = t("stImgMsg", {
+        fmt: state.imgFmt.toUpperCase(),
+        dpi: state.imgDpi,
+        scope: scopeLabel
+      });
+      el.rightStatusMeta.textContent = t("stImgRight", {
+        n: targetN,
+        zip: targetN > 1 ? t("stImgZip") : ""
+      });
+    } else {
+      el.rightStatusMain.textContent = t("stImgPdfMsg", { dpi: state.imgPdfDpi });
+      el.rightStatusMeta.textContent = t("stConvRight", { total: state.pages.length, mb: totalMb });
     }
   }
 
@@ -9459,6 +9953,7 @@ window.ShibaUX = (function () {
 
   el.imposeK100Check.addEventListener("change", () => {
     state.imposeK100 = el.imposeK100Check.checked;
+    updateStatusBars();
   });
 
   // Split Spreads Sub-controls
@@ -9581,11 +10076,13 @@ window.ShibaUX = (function () {
     card.addEventListener("click", () => {
       state.compPreset = card.dataset.preset || "balanced";
       el.compCards.forEach((c) => c.classList.toggle("active", c === card));
+      updateStatusBars();
     });
   });
 
   el.compKeepVecCheck.addEventListener("change", () => {
     state.compKeepVec = el.compKeepVecCheck.checked;
+    updateStatusBars();
   });
 
   el.runCompressBtn.addEventListener("click", async () => {
@@ -9593,6 +10090,7 @@ window.ShibaUX = (function () {
     state.busy = true;
     el.runCompressBtn.disabled = true;
     el.compResultBox.classList.add("hidden");
+    updateStatusBars();
 
     try {
       const prepDoc = await assembleSlotsPdfDoc(state.pages, false);
@@ -9637,6 +10135,7 @@ window.ShibaUX = (function () {
     ch.addEventListener("click", () => {
       state.imgFmt = ch.dataset.fmt || "png";
       el.imgFmtChips.forEach((x) => x.classList.toggle("active", x === ch));
+      updateStatusBars();
     });
   });
 
@@ -9644,6 +10143,7 @@ window.ShibaUX = (function () {
     ch.addEventListener("click", () => {
       state.imgDpi = Number(ch.dataset.dpi) || 300;
       el.imgDpiChips.forEach((x) => x.classList.toggle("active", x === ch));
+      updateStatusBars();
     });
   });
 
@@ -9664,6 +10164,7 @@ window.ShibaUX = (function () {
     const targetSlots = state.imgScope === "selected" && getSelectedSlots().length ? getSelectedSlots() : state.pages;
     state.busy = true;
     el.runExportImgBtn.disabled = true;
+    updateStatusBars();
 
     try {
       const res = await window.ShibaConvert.exportSlotsAsImages(
@@ -9691,6 +10192,7 @@ window.ShibaUX = (function () {
     ch.addEventListener("click", () => {
       state.imgPdfDpi = Number(ch.dataset.dpi) || 220;
       el.imgPdfDpiChips.forEach((x) => x.classList.toggle("active", x === ch));
+      updateStatusBars();
     });
   });
 
@@ -9698,6 +10200,7 @@ window.ShibaUX = (function () {
     if (!hasPages() || state.busy) return;
     state.busy = true;
     el.runImgPdfBtn.disabled = true;
+    updateStatusBars();
 
     try {
       const bytes = await window.ShibaConvert.buildRasterizedPdfBytes(
