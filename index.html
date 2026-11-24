@@ -19,80 +19,94 @@
 :root,
 [data-theme="light"] {
   color-scheme: light;
-  --bg-rail: #f4f4f1;
-  --bg-canvas: #fafaf9;
+  --bg-rail: #f7f8fa;
+  --bg-canvas: #eceef2;
   --bg-surface: #ffffff;
-  --bg-pill: #eaeae5;
-  --bg-hover: #e8e8e2;
+  --bg-pill: #eaedf2;
+  --bg-hover: #e4e7ee;
   --bg-active-card: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.86);
 
-  --text-1: #181817;
-  --text-2: #63625e;
-  --text-3: #989792;
+  --border-subtle: rgba(15, 23, 42, 0.085);
+  --border-strong: rgba(15, 23, 42, 0.145);
+  --stage-dot: rgba(15, 23, 42, 0.09);
 
-  --btn-bg: #181817;
+  --text-1: #111827;
+  --text-2: #4b5563;
+  --text-3: #8a93a2;
+
+  --btn-bg: #111827;
   --btn-fg: #ffffff;
-  --btn-hover: #30302e;
+  --btn-hover: #1f2937;
 
-  --ok: #0f7b6c;
-  --ok-bg: rgba(15, 123, 108, 0.10);
-  --warn: #c97512;
-  --warn-bg: rgba(201, 117, 18, 0.11);
-  --err: #e03e3e;
-  --err-bg: rgba(224, 62, 62, 0.11);
-  --accent: #2383e2;
+  --ok: #059669;
+  --ok-bg: rgba(5, 150, 105, 0.11);
+  --warn: #d97706;
+  --warn-bg: rgba(217, 119, 6, 0.12);
+  --err: #dc2626;
+  --err-bg: rgba(220, 38, 38, 0.11);
+  --accent: #2563eb;
+  --accent-soft: rgba(37, 99, 235, 0.09);
+  --accent-ring: rgba(37, 99, 235, 0.22);
 
-  --bleed-mask: rgba(224, 62, 62, 0.14);
-  --bleed-stroke: #e03e3e;
-  --split-stroke: #2383e2;
+  --bleed-mask: rgba(220, 38, 38, 0.14);
+  --bleed-stroke: #dc2626;
+  --split-stroke: #2563eb;
 
-  --shadow-active: 0 2px 10px rgba(0, 0, 0, 0.05);
-  --shadow-paper: 0 12px 36px rgba(15, 15, 15, 0.08), 0 2px 6px rgba(15, 15, 15, 0.04);
-  --shadow-float: 0 8px 28px rgba(15, 15, 15, 0.09);
-  --shadow-popover: 0 16px 42px rgba(15, 15, 15, 0.12);
+  --shadow-active: 0 1px 3px rgba(15, 23, 42, 0.07), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --shadow-paper: 0 14px 38px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.06);
+  --shadow-float: 0 8px 26px rgba(15, 23, 42, 0.11), 0 1px 3px rgba(15, 23, 42, 0.06);
+  --shadow-popover: 0 18px 46px rgba(15, 23, 42, 0.15), 0 2px 6px rgba(15, 23, 42, 0.06);
 
-  --scroll-thumb: rgba(24, 24, 23, 0.14);
-  --scroll-thumb-hover: rgba(24, 24, 23, 0.30);
-  --status-border: rgba(24, 24, 23, 0.065);
+  --scroll-thumb: rgba(15, 23, 42, 0.15);
+  --scroll-thumb-hover: rgba(15, 23, 42, 0.30);
+  --status-border: rgba(15, 23, 42, 0.085);
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
-  --bg-rail: #161616;
-  --bg-canvas: #101010;
-  --bg-surface: #1d1d1d;
-  --bg-pill: #252525;
-  --bg-hover: #242424;
-  --bg-active-card: #252525;
+  --bg-rail: #14171c;
+  --bg-canvas: #0d0f13;
+  --bg-surface: #1b1f27;
+  --bg-pill: #232833;
+  --bg-hover: #242a35;
+  --bg-active-card: #212630;
+  --glass-bg: rgba(24, 28, 36, 0.84);
 
-  --text-1: #ededec;
-  --text-2: #9d9d9a;
-  --text-3: #686865;
+  --border-subtle: rgba(255, 255, 255, 0.075);
+  --border-strong: rgba(255, 255, 255, 0.135);
+  --stage-dot: rgba(255, 255, 255, 0.055);
 
-  --btn-bg: #ededec;
-  --btn-fg: #161616;
+  --text-1: #eef1f6;
+  --text-2: #9ba3b0;
+  --text-3: #646c7a;
+
+  --btn-bg: #eef1f6;
+  --btn-fg: #0f1115;
   --btn-hover: #ffffff;
 
-  --ok: #2eab99;
-  --ok-bg: rgba(46, 171, 153, 0.15);
-  --warn: #eb9e3e;
-  --warn-bg: rgba(235, 158, 62, 0.15);
-  --err: #eb5757;
-  --err-bg: rgba(235, 87, 87, 0.16);
-  --accent: #529cca;
+  --ok: #34d399;
+  --ok-bg: rgba(52, 211, 153, 0.14);
+  --warn: #f59e0b;
+  --warn-bg: rgba(245, 158, 11, 0.15);
+  --err: #f87171;
+  --err-bg: rgba(248, 113, 113, 0.15);
+  --accent: #3b82f6;
+  --accent-soft: rgba(59, 130, 246, 0.14);
+  --accent-ring: rgba(59, 130, 246, 0.28);
 
-  --bleed-mask: rgba(235, 87, 87, 0.24);
-  --bleed-stroke: #eb5757;
-  --split-stroke: #529cca;
+  --bleed-mask: rgba(248, 113, 113, 0.24);
+  --bleed-stroke: #f87171;
+  --split-stroke: #3b82f6;
 
-  --shadow-active: 0 4px 14px rgba(0, 0, 0, 0.35);
-  --shadow-paper: 0 18px 52px rgba(0, 0, 0, 0.65);
-  --shadow-float: 0 10px 30px rgba(0, 0, 0, 0.58);
-  --shadow-popover: 0 20px 48px rgba(0, 0, 0, 0.72);
+  --shadow-active: 0 2px 10px rgba(0, 0, 0, 0.34);
+  --shadow-paper: 0 22px 58px rgba(0, 0, 0, 0.68), 0 2px 10px rgba(0, 0, 0, 0.45);
+  --shadow-float: 0 12px 32px rgba(0, 0, 0, 0.56);
+  --shadow-popover: 0 22px 52px rgba(0, 0, 0, 0.72);
 
-  --scroll-thumb: rgba(237, 237, 236, 0.16);
-  --scroll-thumb-hover: rgba(237, 237, 236, 0.34);
-  --status-border: rgba(237, 237, 236, 0.075);
+  --scroll-thumb: rgba(255, 255, 255, 0.14);
+  --scroll-thumb-hover: rgba(255, 255, 255, 0.28);
+  --status-border: rgba(255, 255, 255, 0.075);
 }
 
 * {
@@ -178,12 +192,12 @@ svg.lucide {
   flex-shrink: 0;
 }
 
-/* Pure Borderless Resizable Workbench */
+/* Precision Desktop Studio Workbench */
 .workbench {
-  --rail-w: 272px;
-  --right-w: 352px;
+  --rail-w: 248px;
+  --right-w: 336px;
   display: grid;
-  grid-template-columns: var(--rail-w) 6px 1fr;
+  grid-template-columns: var(--rail-w) 5px 1fr;
   height: 100vh;
   height: 100dvh;
   width: 100vw;
@@ -191,22 +205,24 @@ svg.lucide {
 
 .left-rail {
   background: var(--bg-rail);
+  border-right: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
   min-height: 0;
   min-width: 0;
-  padding: 16px 0 0;
+  padding: 0;
   z-index: 30;
 }
 
 .version-pill {
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 600;
-  padding: 1px 6px;
-  border-radius: 999px;
+  padding: 1.5px 6px;
+  border-radius: 5px;
   background: var(--bg-pill);
+  border: 1px solid var(--border-subtle);
   color: var(--text-2);
-  letter-spacing: 0;
+  letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
 }
 
@@ -217,7 +233,8 @@ svg.lucide {
 }
 
 .col-splitter {
-  width: 6px;
+  width: 5px;
+  margin-left: -1px;
   cursor: col-resize;
   background: transparent;
   position: relative;
@@ -231,7 +248,7 @@ svg.lucide {
   position: absolute;
   top: 0;
   bottom: 0;
-  left: 2px;
+  left: 1.5px;
   width: 2px;
   border-radius: 2px;
   background: transparent;
@@ -250,34 +267,37 @@ svg.lucide {
 .mobile-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.42);
-  backdrop-filter: blur(2px);
+  background: rgba(0, 0, 0, 0.48);
+  backdrop-filter: blur(3px);
   z-index: 185;
 }
 
+/* Flush 48px Rail Header Matching Top Action Bar */
 .rail-header {
-  height: 38px;
-  padding: 0 19px;
+  height: 48px;
+  padding: 0 12px 0 14px;
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   flex-shrink: 0;
 }
 
 .brand-mark {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 15px;
+  gap: 7px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.02em;
   color: var(--text-1);
 }
 
 .brand-mark svg.lucide {
-  width: 18px;
-  height: 18px;
+  width: 17px;
+  height: 17px;
+  color: var(--accent);
 }
 
 .header-mini-btns {
@@ -291,16 +311,16 @@ svg.lucide {
   align-items: center;
   justify-content: center;
   gap: 5px;
-  height: 30px;
-  padding: 0 9px;
-  border: none;
-  border-radius: 8px;
+  height: 28px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 7px;
   background: transparent;
   color: var(--text-2);
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.14s, color 0.14s;
+  transition: background-color 0.14s, color 0.14s, border-color 0.14s;
   white-space: nowrap;
 }
 
@@ -311,33 +331,47 @@ svg.lucide {
 
 .ghost-btn.active {
   background: var(--bg-pill);
+  border-color: var(--border-subtle);
   color: var(--text-1);
   font-weight: 600;
 }
 
-/* 4 Large Feature Pillars */
+#openFlipbookBtn {
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid rgba(59, 130, 246, 0.22);
+  font-weight: 600;
+}
+
+#openFlipbookBtn:hover {
+  background: var(--accent);
+  color: #ffffff;
+  border-color: var(--accent);
+}
+
+/* High-Density Pro Navigation Pillars */
 .rail-tools {
   flex: 1;
   overflow-y: auto;
-  padding: 0 13px;
+  padding: 0 10px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .big-tool-btn {
   width: 100%;
-  padding: 13px 12px;
-  border-radius: 14px;
-  border: none;
+  padding: 8px 9px;
+  border-radius: 9px;
+  border: 1px solid transparent;
   background: transparent;
   color: var(--text-1);
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   text-align: left;
-  transition: background-color 0.16s ease, box-shadow 0.16s ease;
+  transition: background-color 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
 }
 
 .big-tool-btn:hover {
@@ -346,30 +380,33 @@ svg.lucide {
 
 .big-tool-btn.active {
   background: var(--bg-active-card);
+  border-color: var(--border-subtle);
   box-shadow: var(--shadow-active);
 }
 
 .tool-icon-box {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 28px;
+  height: 28px;
+  border-radius: 7px;
   background: var(--bg-pill);
-  color: var(--text-1);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-2);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: background-color 0.16s, color 0.16s;
+  transition: background-color 0.14s, color 0.14s, border-color 0.14s;
 }
 
 .tool-icon-box svg.lucide {
-  width: 18px;
-  height: 18px;
+  width: 14.5px;
+  height: 14.5px;
 }
 
 .big-tool-btn.active .tool-icon-box {
-  background: var(--btn-bg);
-  color: var(--btn-fg);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
 }
 
 .tool-btn-copy {
@@ -385,16 +422,17 @@ svg.lucide {
 }
 
 .tool-btn-title {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--text-1);
+  letter-spacing: -0.01em;
 }
 
 .tool-btn-desc {
   display: block;
-  font-size: 11.5px;
+  font-size: 10.5px;
   color: var(--text-3);
-  margin-top: 2px;
+  margin-top: 1px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -414,24 +452,25 @@ svg.lucide {
 
 /* Rail Footer */
 .rail-footer {
-  padding: 12px 13px 10px;
+  padding: 10px 10px 8px;
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
   flex-shrink: 0;
 }
 
-/* Fixed Bottom Status Bars (Left & Right Aligned) */
+/* Fixed Bottom Status Bars (28px Desktop Workstation Standard) */
 .left-status-bar {
-  height: 32px;
-  padding: 0 15px;
-  border-top: 1px solid var(--status-border);
+  height: 28px;
+  padding: 0 12px;
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
   flex-shrink: 0;
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--text-2);
 }
 
@@ -478,17 +517,17 @@ svg.lucide {
 }
 
 .right-status-bar {
-  height: 32px;
-  padding: 0 16px;
+  height: 28px;
+  padding: 0 14px;
   background: var(--bg-rail);
-  border-top: 1px solid var(--status-border);
+  border-top: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 14px;
   flex-shrink: 0;
   z-index: 30;
-  font-size: 11.5px;
+  font-size: 11px;
   color: var(--text-2);
 }
 
@@ -536,21 +575,24 @@ svg.lucide {
 }
 
 .rail-files-box {
-  background: var(--bg-active-card);
-  border-radius: 12px;
-  padding: 10px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 9px;
+  padding: 8px 9px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .rail-files-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 6px;
   font-size: 11px;
   font-weight: 600;
   color: var(--text-3);
+  white-space: nowrap;
 }
 
 .rail-file-list {
@@ -637,8 +679,11 @@ svg.lucide {
 }
 
 .top-action-strip {
-  min-height: 54px;
-  padding: 8px 18px;
+  height: 48px;
+  min-height: 48px;
+  padding: 0 14px;
+  background: var(--bg-rail);
+  border-bottom: 1px solid var(--border-subtle);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -672,17 +717,23 @@ svg.lucide {
 .strip-right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   flex-wrap: nowrap;
   flex-shrink: 0;
+  white-space: nowrap;
+}
+
+#dimSummaryText {
+  white-space: nowrap;
 }
 
 .soft-pills {
   display: inline-flex;
   align-items: center;
-  background: var(--bg-rail);
-  padding: 3px;
-  border-radius: 9px;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  padding: 2px;
+  border-radius: 8px;
   gap: 2px;
 }
 
@@ -691,30 +742,35 @@ svg.lucide {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  height: 28px;
-  padding: 0 9px;
-  border: none;
-  border-radius: 7px;
+  height: 25px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
   background: transparent;
   color: var(--text-2);
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.14s;
   white-space: nowrap;
 }
 
+.soft-pill:hover:not(.active):not(:disabled) {
+  color: var(--text-1);
+}
+
 .soft-pill.active {
   background: var(--bg-surface);
+  border-color: var(--border-subtle);
   color: var(--text-1);
   font-weight: 600;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.07);
 }
 
 .strip-right .primary-btn {
-  height: 30px;
+  height: 28px;
   padding: 0 11px;
-  border-radius: 8px;
+  border-radius: 7px;
   font-size: 12px;
   gap: 5px;
 }
@@ -760,14 +816,15 @@ svg.lucide {
   top: calc(100% + 8px);
   left: 0;
   min-width: 288px;
-  padding: 16px;
-  border-radius: 14px;
+  padding: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border-strong);
   background: var(--bg-surface);
   box-shadow: var(--shadow-popover);
   z-index: 90;
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 10px;
 }
 
 .pop-label {
@@ -874,7 +931,7 @@ svg.lucide {
 }
 
 .switch-ctrl input:checked + .switch-track {
-  background: var(--text-1);
+  background: var(--accent);
 }
 
 .switch-ctrl input:checked + .switch-track::after {
@@ -894,7 +951,8 @@ svg.lucide {
 .preflight-drawer {
   width: var(--right-w);
   background: var(--bg-rail);
-  padding: 14px 16px 24px;
+  border-left: 1px solid var(--border-subtle);
+  padding: 12px 12px 20px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
@@ -905,7 +963,8 @@ svg.lucide {
 .org-preview-drawer {
   width: var(--right-w);
   background: var(--bg-rail);
-  padding: 14px 16px 18px;
+  border-left: 1px solid var(--border-subtle);
+  padding: 12px 12px 16px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -918,12 +977,15 @@ svg.lucide {
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
 }
 
 .org-preview-title {
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 650;
+  letter-spacing: -0.01em;
   color: var(--text-1);
 }
 
@@ -1009,15 +1071,16 @@ svg.lucide {
 
 .pf-card {
   background: var(--bg-surface);
-  border-radius: 12px;
-  padding: 13px 14px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
-  transition: transform 0.14s;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 11px 12px;
+  box-shadow: var(--shadow-active);
+  transition: transform 0.14s, border-color 0.14s;
 }
 
 .pf-card.clickable { cursor: pointer; }
-.pf-card.clickable:hover { transform: translateY(-1px); box-shadow: var(--shadow-active); }
-.pf-card.selected { outline: 1.5px solid var(--text-1); }
+.pf-card.clickable:hover { transform: translateY(-1px); border-color: var(--border-strong); }
+.pf-card.selected { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 
 .pf-card-head {
   display: flex;
@@ -1062,15 +1125,18 @@ svg.lucide {
 
 .pf-jump-chip svg.lucide { width: 11px; height: 11px; }
 
-/* Stage Viewport */
+/* Stage Viewport (Precision Drafting Dot Matrix) */
 .stage-viewport {
   flex: 1;
   overflow: auto;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px 36px 76px;
+  padding: 20px 32px 72px;
   position: relative;
+  background-color: var(--bg-canvas);
+  background-image: radial-gradient(var(--stage-dot) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
 .stage-viewport.align-top {
@@ -1080,22 +1146,26 @@ svg.lucide {
 /* Empty Drop State */
 .center-placeholder {
   width: 100%;
-  max-width: 470px;
+  max-width: 460px;
   text-align: center;
 }
 
 .drop-surface {
-  border-radius: 20px;
-  padding: 52px 32px;
-  background: var(--bg-rail);
+  border-radius: 16px;
+  padding: 46px 30px;
+  background: var(--bg-surface);
+  border: 1.5px dashed var(--border-strong);
+  box-shadow: var(--shadow-float);
   cursor: pointer;
-  transition: background-color 0.18s, transform 0.18s;
+  transition: background-color 0.18s, border-color 0.18s, transform 0.18s, box-shadow 0.18s;
 }
 
 .drop-surface:hover,
 .drop-surface.dragover {
-  background: var(--bg-hover);
-  transform: scale(1.01);
+  border-color: var(--accent);
+  background: var(--bg-surface);
+  box-shadow: 0 0 0 4px var(--accent-soft), var(--shadow-float);
+  transform: translateY(-2px);
 }
 
 .drop-surface h2 { font-size: 20px; font-weight: 650; letter-spacing: -0.02em; margin-bottom: 8px; }
@@ -1474,19 +1544,22 @@ svg.lucide {
 }
 
 .impose-sheet-card {
-  border-radius: 14px;
-  padding: 14px 14px 12px;
-  background: transparent;
+  border-radius: 12px;
+  border: 1px solid var(--border-subtle);
+  padding: 13px 13px 11px;
+  background: var(--bg-rail);
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   cursor: zoom-in;
-  transition: background-color 0.14s, transform 0.14s;
+  transition: background-color 0.14s, border-color 0.14s, transform 0.14s, box-shadow 0.14s;
 }
 
 .impose-sheet-card:hover {
-  background: var(--bg-rail);
+  background: var(--bg-surface);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-float);
   transform: translateY(-2px);
 }
 
@@ -1509,20 +1582,21 @@ svg.lucide {
 
 .org-card {
   position: relative;
-  border-radius: 14px;
-  padding: 12px 10px 10px;
+  border-radius: 11px;
+  border: 1px solid transparent;
+  padding: 11px 10px 9px;
   background: transparent;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
   cursor: grab;
-  transition: background-color 0.14s, transform 0.14s;
+  transition: background-color 0.14s, border-color 0.14s, transform 0.14s;
 }
 
 .org-card:active { cursor: grabbing; }
-.org-card:hover { background: var(--bg-rail); }
-.org-card.selected { background: var(--bg-rail); outline: 2px solid var(--text-1); }
+.org-card:hover { background: var(--bg-surface); border-color: var(--border-subtle); }
+.org-card.selected { background: var(--accent-soft); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 .org-card.dragging { opacity: 0.4; cursor: grabbing; }
 .org-card.drag-over { outline: 2px dashed var(--accent); background: var(--bg-hover); }
 
@@ -1545,8 +1619,8 @@ svg.lucide {
 }
 
 .org-card.selected .org-check {
-  background: var(--btn-bg);
-  color: var(--btn-fg);
+  background: var(--accent);
+  color: #ffffff;
 }
 
 .org-check svg.lucide { width: 13px; height: 13px; stroke-width: 2.5; }
@@ -1617,14 +1691,15 @@ svg.lucide {
 /* Convert & Compress Clean Center Card */
 .convert-panel {
   width: 100%;
-  max-width: 560px;
+  max-width: 540px;
   background: var(--bg-surface);
-  border-radius: 18px;
-  padding: 28px 30px;
-  box-shadow: var(--shadow-active);
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  padding: 24px 26px;
+  box-shadow: var(--shadow-float);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   margin-top: 16px;
 }
 
@@ -1663,20 +1738,23 @@ svg.lucide {
   font-weight: 600;
 }
 
-/* Floating Bottom Pager */
+/* Floating Bottom Pager (Frosted Glass Pill HUD) */
 .floating-pager {
   position: absolute;
-  bottom: 46px;
+  bottom: 42px;
   left: 50%;
   transform: translateX(-50%);
-  height: 36px;
-  padding: 0 10px;
-  border-radius: 10px;
-  background: var(--bg-surface);
+  height: 34px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid var(--border-strong);
   box-shadow: var(--shadow-float);
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   z-index: 20;
 }
 
@@ -1725,12 +1803,12 @@ svg.lucide {
 .rail-sub-list {
   display: none;
   flex-direction: column;
-  gap: 4px;
-  margin-left: 20px;
-  padding-left: 11px;
-  border-left: 1.5px solid var(--bg-pill);
+  gap: 2px;
+  margin-left: 18px;
+  padding-left: 9px;
+  border-left: 1px solid var(--border-subtle);
   margin-top: 2px;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 
 .rail-group.open .rail-sub-list {
@@ -1738,27 +1816,28 @@ svg.lucide {
 }
 
 .rail-sub-btn {
-  height: 38px;
-  padding: 0 12px;
-  border: none;
-  border-radius: 10px;
+  position: relative;
+  height: 32px;
+  padding: 0 10px;
+  border: 1px solid transparent;
+  border-radius: 7px;
   background: transparent;
   color: var(--text-2);
-  font-size: 13.5px;
+  font-size: 12.5px;
   font-weight: 500;
   text-align: left;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 9px;
-  transition: background-color 0.14s, color 0.14s;
+  gap: 8px;
+  transition: background-color 0.14s, color 0.14s, border-color 0.14s;
 }
 
 .rail-sub-btn svg.lucide {
-  width: 15.5px;
-  height: 15.5px;
-  opacity: 0.78;
-  transition: opacity 0.14s;
+  width: 14px;
+  height: 14px;
+  opacity: 0.72;
+  transition: opacity 0.14s, color 0.14s;
 }
 
 .rail-sub-btn:hover {
@@ -1771,14 +1850,26 @@ svg.lucide {
 }
 
 .rail-sub-btn.active {
-  background: var(--bg-active-card);
-  color: var(--text-1);
+  background: var(--accent-soft);
+  border-color: rgba(59, 130, 246, 0.18);
+  color: var(--accent);
   font-weight: 600;
-  box-shadow: var(--shadow-active);
+}
+
+.rail-sub-btn.active::before {
+  content: "";
+  position: absolute;
+  left: -10.5px;
+  top: 7px;
+  bottom: 7px;
+  width: 2.5px;
+  border-radius: 2px;
+  background: var(--accent);
 }
 
 .rail-sub-btn.active svg.lucide {
   opacity: 1;
+  color: var(--accent);
 }
 
 /* Freeform Infinite Designer Annotation Board */
@@ -1947,10 +2038,11 @@ svg.lucide {
 }
 
 .load-progress-card {
-  width: 360px;
+  width: 356px;
   max-width: 90%;
-  padding: 22px 24px;
-  border-radius: 16px;
+  padding: 20px 22px;
+  border-radius: 14px;
+  border: 1px solid var(--border-strong);
   background: var(--bg-surface);
   box-shadow: var(--shadow-popover);
   display: flex;
@@ -2110,11 +2202,12 @@ svg.lucide {
 .edit-props-drawer {
   width: var(--right-w);
   background: var(--bg-rail);
-  padding: 14px 15px 22px;
+  border-left: 1px solid var(--border-subtle);
+  padding: 12px 12px 20px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 10px;
   flex-shrink: 0;
   min-height: 0;
 }
@@ -2122,26 +2215,28 @@ svg.lucide {
 .prop-stack {
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 10px;
 }
 
 .prop-card {
   background: var(--bg-surface);
-  border-radius: 13px;
-  padding: 13px 14px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  padding: 11px 12px;
+  box-shadow: var(--shadow-active);
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 9px;
 }
 
 .prop-sec-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 650;
-  color: var(--text-2);
+  letter-spacing: 0.03em;
+  color: var(--text-3);
 }
 
 .prop-empty-copy {
@@ -2152,20 +2247,26 @@ svg.lucide {
 
 .prop-select {
   width: 100%;
-  height: 36px;
-  padding: 0 10px;
-  border-radius: 9px;
-  border: none;
+  height: 32px;
+  padding: 0 9px;
+  border-radius: 7px;
+  border: 1px solid var(--border-subtle);
   background: var(--bg-rail);
   color: var(--text-1);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 550;
   cursor: pointer;
   outline: none;
+  transition: border-color 0.14s, box-shadow 0.14s;
 }
 
 .prop-select:hover {
-  background: var(--bg-hover);
+  border-color: var(--border-strong);
+}
+
+.prop-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring);
 }
 
 .prop-size-row {
@@ -2178,11 +2279,17 @@ svg.lucide {
 .prop-stepper {
   display: inline-flex;
   align-items: center;
-  height: 34px;
-  border-radius: 9px;
+  height: 30px;
+  border-radius: 7px;
+  border: 1px solid var(--border-subtle);
   background: var(--bg-rail);
-  padding: 0 4px;
+  padding: 0 3px;
   gap: 2px;
+}
+
+.prop-stepper:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring);
 }
 
 .prop-stepper button {
@@ -2304,9 +2411,10 @@ svg.lucide {
 }
 
 .prop-mini-field {
-  height: 32px;
+  height: 30px;
   padding: 0 8px;
-  border-radius: 8px;
+  border-radius: 7px;
+  border: 1px solid var(--border-subtle);
   background: var(--bg-rail);
   display: flex;
   align-items: center;
@@ -2314,6 +2422,11 @@ svg.lucide {
   gap: 4px;
   font-size: 11.5px;
   color: var(--text-2);
+}
+
+.prop-mini-field:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-ring);
 }
 
 .prop-mini-field input {
@@ -2495,7 +2608,8 @@ svg.lucide {
   max-width: 100%;
   max-height: min(84vh, 720px);
   background: var(--bg-surface);
-  border-radius: 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 14px;
   box-shadow: var(--shadow-popover);
   display: flex;
   flex-direction: column;
@@ -2722,11 +2836,12 @@ svg.lucide {
 .impose-drawer {
   width: var(--right-w);
   background: var(--bg-rail);
-  padding: 14px 15px 22px;
+  border-left: 1px solid var(--border-subtle);
+  padding: 12px 12px 20px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 11px;
+  gap: 10px;
   flex-shrink: 0;
   min-height: 0;
 }
@@ -2734,14 +2849,15 @@ svg.lucide {
 @media (min-width: 901px) {
   .workspace-body.impose-dock-left #imposeDrawer {
     order: -2;
-    border-right: 1px solid var(--status-border);
+    border-left: none;
+    border-right: 1px solid var(--border-subtle);
   }
 }
 
 .impose-method-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
+  gap: 7px;
 }
 
 .impose-method-card {
@@ -2749,25 +2865,25 @@ svg.lucide {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  padding: 9px 7px 9px;
-  border-radius: 10px;
-  border: 1.5px solid transparent;
+  padding: 8px 6px 8px;
+  border-radius: 9px;
+  border: 1px solid var(--border-subtle);
   background: var(--bg-rail);
   color: var(--text-1);
   cursor: pointer;
-  transition: background-color 0.14s, border-color 0.14s, transform 0.12s, box-shadow 0.14s;
-  gap: 4px;
+  transition: background-color 0.14s, border-color 0.14s, box-shadow 0.14s;
+  gap: 3px;
 }
 
 .impose-method-card:hover {
   background: var(--bg-hover);
-  border-color: rgba(35, 131, 226, 0.35);
+  border-color: var(--border-strong);
 }
 
 .impose-method-card.active {
-  background: rgba(35, 131, 226, 0.08);
-  border-color: #2383e2;
-  box-shadow: 0 2px 10px rgba(35, 131, 226, 0.12);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 1px var(--accent);
 }
 
 .impose-svg-slot {
@@ -3347,7 +3463,7 @@ svg.lucide {
         <div class="brand-mark">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /> </svg>
           <span>ShibaPDF</span>
-          <span class="version-pill">v2.0.1</span>
+          <span class="version-pill">v2.1.0</span>
         </div>
         <div class="header-mini-btns">
           <button id="langBtn" class="ghost-btn" type="button" title="Switch Language">
@@ -3510,7 +3626,7 @@ svg.lucide {
         <button id="mobileMenuBtn" class="ghost-btn" type="button">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /> </svg>
           <span style="font-weight:700;">ShibaPDF</span>
-          <span class="version-pill">v2.0.1</span>
+          <span class="version-pill">v2.1.0</span>
         </button>
         <div style="display:flex;align-items:center;gap:4px;">
           <button id="mobileQuickOpenBtn" class="ghost-btn" type="button">
@@ -4701,8 +4817,8 @@ window.SHIBA_I18N = {
     annHint: "滚轮或空格+拖拽自由漫游画板 · 支持从页外空白拉箭头标注修改意见",
 
     // Sidebar Footer
-    secFiles: "已加载文档（可拖入多个合并）",
-    addBtn: "添加合并",
+    secFiles: "文档",
+    addBtn: "合并",
     clearAll: "清空",
     addPdfBtn: "打开或合并 PDF",
     downloadOfflineBtn: "下载单文件离线版",
@@ -4770,7 +4886,7 @@ window.SHIBA_I18N = {
     alignBottomTip: "底对齐",
     distHTip: "水平等距分布 (需≥3项)",
     distVTip: "垂直等距分布 (需≥3项)",
-    propPosW: "宽 W",
+    propPosW: "W",
     propSecFont: "字体与字号",
     propSecPara: "文本与段落对齐",
     taLeft: "左对齐",
@@ -5121,7 +5237,7 @@ window.SHIBA_I18N = {
     annNoteDefault: "Revision note",
     annHint: "Scroll or Space+Drag to pan board freely · Draw arrows & notes anywhere in margins",
 
-    secFiles: "Loaded PDFs (Drop more to merge)",
+    secFiles: "Files",
     addBtn: "Merge",
     clearAll: "Clear",
     addPdfBtn: "Open or Merge PDFs",
@@ -10127,15 +10243,15 @@ window.ShibaUX = (function () {
     const rightSplitter = document.getElementById("rightSplitter");
     if (!workbench) return;
 
-    const savedRail = parseInt(localStorage.getItem("shibapdf_rail_w") || "272", 10);
-    const savedRight = parseInt(localStorage.getItem("shibapdf_right_w") || "352", 10);
+    const savedRail = parseInt(localStorage.getItem("shibapdf_rail_w") || "248", 10);
+    const savedRight = parseInt(localStorage.getItem("shibapdf_right_w") || "336", 10);
     if (savedRail >= 200 && savedRail <= 460) workbench.style.setProperty("--rail-w", `${savedRail}px`);
     if (savedRight >= 240 && savedRight <= 580) workbench.style.setProperty("--right-w", `${savedRight}px`);
 
     if (leftSplitter) {
       leftSplitter.addEventListener("dblclick", () => {
-        workbench.style.setProperty("--rail-w", "272px");
-        localStorage.setItem("shibapdf_rail_w", "272");
+        workbench.style.setProperty("--rail-w", "248px");
+        localStorage.setItem("shibapdf_rail_w", "248");
         if (onLayoutResize) onLayoutResize();
       });
 

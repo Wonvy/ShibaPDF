@@ -48,8 +48,8 @@ window.SHIBA_I18N = {
     annHint: "滚轮或空格+拖拽自由漫游画板 · 支持从页外空白拉箭头标注修改意见",
 
     // Sidebar Footer
-    secFiles: "已加载文档（可拖入多个合并）",
-    addBtn: "添加合并",
+    secFiles: "文档",
+    addBtn: "合并",
     clearAll: "清空",
     addPdfBtn: "打开或合并 PDF",
     downloadOfflineBtn: "下载单文件离线版",
@@ -117,7 +117,7 @@ window.SHIBA_I18N = {
     alignBottomTip: "底对齐",
     distHTip: "水平等距分布 (需≥3项)",
     distVTip: "垂直等距分布 (需≥3项)",
-    propPosW: "宽 W",
+    propPosW: "W",
     propSecFont: "字体与字号",
     propSecPara: "文本与段落对齐",
     taLeft: "左对齐",
@@ -468,7 +468,7 @@ window.SHIBA_I18N = {
     annNoteDefault: "Revision note",
     annHint: "Scroll or Space+Drag to pan board freely · Draw arrows & notes anywhere in margins",
 
-    secFiles: "Loaded PDFs (Drop more to merge)",
+    secFiles: "Files",
     addBtn: "Merge",
     clearAll: "Clear",
     addPdfBtn: "Open or Merge PDFs",

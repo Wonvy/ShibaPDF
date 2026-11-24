@@ -75,15 +75,15 @@ window.ShibaUX = (function () {
     const rightSplitter = document.getElementById("rightSplitter");
     if (!workbench) return;
 
-    const savedRail = parseInt(localStorage.getItem("shibapdf_rail_w") || "272", 10);
-    const savedRight = parseInt(localStorage.getItem("shibapdf_right_w") || "352", 10);
+    const savedRail = parseInt(localStorage.getItem("shibapdf_rail_w") || "248", 10);
+    const savedRight = parseInt(localStorage.getItem("shibapdf_right_w") || "336", 10);
     if (savedRail >= 200 && savedRail <= 460) workbench.style.setProperty("--rail-w", `${savedRail}px`);
     if (savedRight >= 240 && savedRight <= 580) workbench.style.setProperty("--right-w", `${savedRight}px`);
 
     if (leftSplitter) {
       leftSplitter.addEventListener("dblclick", () => {
-        workbench.style.setProperty("--rail-w", "272px");
-        localStorage.setItem("shibapdf_rail_w", "272");
+        workbench.style.setProperty("--rail-w", "248px");
+        localStorage.setItem("shibapdf_rail_w", "248");
         if (onLayoutResize) onLayoutResize();
       });
 
