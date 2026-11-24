@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -16,22 +16,22 @@ concurrency:
 
 jobs:
   deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload static site artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: "."
-
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Publish clean static bundle to gh-pages branch
+        run: |
+          mkdir -p /tmp/ghp_site
+          cp index.html /tmp/ghp_site/index.html
+          touch /tmp/ghp_site/.nojekyll
+          if [ -d docs ]; then cp -r docs /tmp/ghp_site/docs; fi
+          cd /tmp/ghp_site
+          git init
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b gh-pages
+          git add -A
+          git commit -m "deploy: publish ShibaPDF static site"
+          git push -f "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
