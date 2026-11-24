@@ -4,7 +4,19 @@ const path = require("path");
 const root = path.resolve(__dirname, "..");
 let tpl = fs.readFileSync(path.join(root, "src/template.html"), "utf8");
 const css = fs.readFileSync(path.join(root, "src/styles.css"), "utf8");
-const appJs = fs.readFileSync(path.join(root, "src/app.js"), "utf8");
+
+const jsModules = [
+  "src/i18n.js",
+  "src/zip.js",
+  "src/prepress-k100.js",
+  "src/imposition.js",
+  "src/convert-compress.js",
+  "src/app.js"
+];
+const combinedAppJs = jsModules
+  .map((rel) => fs.readFileSync(path.join(root, rel), "utf8"))
+  .join("\n;\n");
+
 const pdfLibJs = fs.readFileSync(path.join(root, "node_modules/pdf-lib/dist/pdf-lib.min.js"), "utf8");
 const pdfJs = fs.readFileSync(path.join(root, "node_modules/pdfjs-dist/build/pdf.min.js"), "utf8");
 const pdfWorkerJs = fs.readFileSync(path.join(root, "node_modules/pdfjs-dist/build/pdf.worker.min.js"), "utf8");
@@ -33,7 +45,11 @@ const dynamicIconNames = [
   "shield-check",
   "shield-alert",
   "wrench",
-  "crosshair"
+  "crosshair",
+  "check",
+  "rotate-cw",
+  "move",
+  "square-pen"
 ];
 const iconMap = {};
 for (const name of dynamicIconNames) {
@@ -51,8 +67,8 @@ html = html.replace("/*__INLINE_LUCIDE_MAP__*/", () => escapeScriptClose(lucideM
 html = html.replace("/*__INLINE_PDF_WORKER__*/", () => escapeScriptClose(pdfWorkerJs));
 html = html.replace("/*__INLINE_PDF_LIB__*/", () => escapeScriptClose(pdfLibJs));
 html = html.replace("/*__INLINE_PDF_JS__*/", () => escapeScriptClose(pdfJs));
-html = html.replace("/*__INLINE_APP_JS__*/", () => escapeScriptClose(appJs));
+html = html.replace("/*__INLINE_APP_JS__*/", () => escapeScriptClose(combinedAppJs));
 
 const outPath = path.join(root, "index.html");
 fs.writeFileSync(outPath, html, "utf8");
-console.log("Built ShibaPDF ->", outPath, "(" + Math.round(fs.statSync(outPath).size / 1024) + " KB)");
+console.log("Built ShibaPDF v4 ->", outPath, "(" + Math.round(fs.statSync(outPath).size / 1024) + " KB)");

@@ -2,7 +2,7 @@
 
 # ShibaPDF
 
-**Minimalist Client-Side PDF Studio: Page & Text Editor, Visual Prepress Preflight, Pure K100 Fixer & Spread Splitter**
+**Minimalist Client-Side PDF Studio: Merge & Extract, Zero-Shift Text Editor, Print Imposition, Visual Preflight, Image/ZIP Export & Smart Compression**
 
 *100% Local in Your Browser · Zero Server Uploads · Preserves Vectors, Gradients & Live Transparency*
 
@@ -12,43 +12,37 @@
 
 ---
 
-![ShibaPDF Interactive Preflight Locator](./docs/images/preflight-report-light.png)
+![ShibaPDF Multi-PDF Organize & Extract](./docs/images/hero-light.png)
 
 ## Overview
 
-**ShibaPDF** is a borderless, progressive single-file PDF workbench built for designers and print production workflows. Everything runs 100% locally in browser memory with smooth **`Ctrl + Scroll Wheel`** canvas zooming:
+**ShibaPDF** is a borderless, progressive single-file PDF workbench built for designers, editors, and print production workflows. Everything runs 100% locally in browser memory with minimalist Light/Dark custom scrollbars and smooth **`Ctrl + Scroll Wheel`** canvas zooming across four focused pillars:
 
-1. **Edit Page (`Edit Page`)** — Click any existing text on the PDF to edit in-place (with automatic background & ink color sampling), add new CJK/Latin text boxes anywhere, drag to reposition, or rotate & delete pages with multi-step Undo.
-2. **Visual Prepress Preflight (`Preflight Check`)** — Runs an 8-point print-ready inspection (4-color rich black, bleed margins, font embedding, effective printed image DPI, RGB/CMYK color spaces, transparency, 4P saddle-stitch rule, encryption) and **jumps directly to offending text, images, or edges with live spotlight highlights on the canvas**.
-3. **Pure K100 Prepress Fix (`Pure K100 Fix`)** — Keeps original spread dimensions and bleed intact while converting black/gray text & strokes to **single-channel Pure CMYK Black (`C0 M0 Y0 K100`)** and switching blending space to `/DeviceCMYK` (`PDF/X-4` standard) without flattening shadows.
-4. **Spread Splitter (`Split Spreads`)** — Losslessly slices double-page spreads into single pages, trims outer bleed margins, and reorders `[Back Cover | Front Cover]` spreads automatically.
-
----
-
-## Key Features
-
-- **8-Point Prepress Preflight Inspector**:
-  - **4-Color Rich Black Detection**: Identifies `/DeviceRGB` transparency blending groups (common in PowerPoint/Office PDFs) and non-K100 black text that cause press registration blur, with **1-click K100 auto-fix**.
-  - **Bleed & Page Size Uniformity**: Detects mixed page sizes and distinguishes net trim sizes (`0mm` bleed) from bleed-included spreads (`+3mm` / `+5mm`).
-  - **Font Embedding Integrity**: Inspects Type0/CID and standard font descriptors across all pages to flag unembedded fonts before sending to RIP.
-  - **Effective Print Image DPI**: Tracks PDF Current Transformation Matrices (`CTM`) to compute the **actual printed DPI** of every placed bitmap against the `300 DPI` print benchmark.
-  - **Color Space, Live Transparency, Saddle-Stitch `4P` Rule & Encryption Checks**.
-- **Flexible Bleed Geometry**: Quick presets (`0mm`, `3mm`, `5mm`), uniform 4-side or independent `Top / Bottom / Left / Right` margins, and optional `TrimBox` metadata retention.
-- **Zero File-Size Bloat**: Shares underlying XObject images, fonts, and color profiles across split pages.
-- **Minimalist Two-Column Studio UI**: Built with open-source [Lucide Icons](https://lucide.dev/), supporting **Light / Dark** themes and instant **English / 中文** switching.
+1. **Pages & Edit (`Pages & Edit`)**
+   - **Merge, Multi-Select & Extract**: Drop multiple PDFs to merge into one workspace, drag-and-drop thumbnails to reorder, rotate/delete selected pages, or **extract selected pages** directly as a new PDF or PNG/ZIP archive.
+   - **Zero-Shift In-Place Text Editor**: Click any existing PDF text to edit in-place with exact font ascent/baseline matching, automatic ink & background mask color sampling, font family picker (`Sans / Serif / Kai / Mono`), and dynamic pointer feedback (`grab`, `grabbing`, `text`, `nwse-resize`, `ew-resize`, `crosshair`).
+2. **Prepress & Impose (`Prepress & Impose`)**
+   - **Print Imposition (`Imposition`)**: Build **Saddle-Stitch Booklets** (auto `4P` signature padding & front/back pairing), **2-Up Reader Spreads**, or **N-Up Press Sheets (`2/4/8-Up`)** on Auto, `SRA3`, `A3`, `4-Kai Large`, or `4-Kai Standard` sheets with vector **Pure `K100` crop marks**.
+   - **Spread Splitter (`Split Spreads`) & Pure `K100` Fix**: Losslessly slice double-page spreads into single pages with outer bleed trimming and automatic `[Back Cover | Front Cover]` reordering, or convert 4-color rich black text to **Pure CMYK Black (`C0 M0 Y0 K100`)** while keeping live soft-mask shadows.
+3. **Visual Prepress Preflight (`Preflight Check`)**
+   - Runs an 8-point print-ready audit (4-color black, bleed margins, font embedding, effective printed image DPI, RGB/CMYK color spaces, transparency, 4P booklet multiple, encryption) and **jumps directly to offending text, images, or edges with pulsing red spotlight highlights on the canvas**.
+4. **Convert & Compress (`Convert & Compress`)**
+   - **Smart PDF Size Reducer**: Downsamples oversized embedded bitmaps (`220 / 150 / 100 DPI`) while preserving sharp vector text, or performs extreme full-page compression.
+   - **Export High-Res Images & ZIP**: Render all or selected pages at `150 / 300 / 600 DPI` (`PNG` or `JPG`), automatically bundling multi-page exports into a zero-dependency `.zip` archive.
+   - **Image-Only PDF (Anti-Copy / Font Lock)**: Rasterizes pages into a tamper-resistant, font-locked PDF so layouts never break on any device.
 
 ---
 
 ## Screenshots
 
-### In-Place Page & Text Editor
-![Edit Page & Text](./docs/images/edit-page-light.png)
+### Saddle-Stitch & N-Up Press Sheet Imposition (Dark Theme)
+![Print Imposition Dark Mode](./docs/images/impose-dark.png)
 
-### Progressive Spread Splitter & Cut Guides
-![Spread Cut Preview](./docs/images/split-view-light.png)
+### Interactive Prepress Preflight & Canvas Spotlight Locator
+![Preflight Issue Locator](./docs/images/preflight-highlight.png)
 
-### Dark Theme & All-Pages Overview
-![Dark Mode Pages Gallery](./docs/images/pages-gallery-dark-zh.png)
+### Progressive Spread Splitter & Bleed Cut Guides
+![Spread Cut Preview](./docs/images/split-preview.png)
 
 ---
 
@@ -56,7 +50,7 @@
 
 ### Option 1: Use Online or Download Standalone Offline HTML (Zero Install)
 - **Online**: Visit **[wonvy.github.io/ShibaPDF](https://wonvy.github.io/ShibaPDF/)** directly in your browser.
-- **Offline Single-File**: Click **"Download Offline App (.html)"** at the bottom-left of the app (or download **[`index.html`](https://raw.githubusercontent.com/Wonvy/ShibaPDF/main/index.html)**) to save `ShibaPDF.html` to your computer — works 100% offline on Windows, macOS, and Linux with a simple double-click.
+- **Offline Single-File**: Click **"Download Offline App"** at the bottom-left of the app (or download **[`index.html`](https://raw.githubusercontent.com/Wonvy/ShibaPDF/main/index.html)**) to save `ShibaPDF_Offline_Studio.html` — works 100% offline on Windows, macOS, and Linux with a simple double-click.
 
 ### Option 2: Build from Source
 If you modify files under `src/`, rebuild the standalone single-file `index.html`:
@@ -72,14 +66,19 @@ npm run build
 
 ```text
 ShibaPDF/
-├── index.html                        # Standalone bundled web app (offline & GitHub Pages ready)
+├── index.html                        # Standalone single-file web app (offline & GitHub Pages ready)
 ├── src/
-│   ├── template.html                 # Two-column layout & Lucide icon bindings
-│   ├── styles.css                    # Minimalist Light & Dark theme system
-│   └── app.js                        # Spread splitter, K100 stream rewriter & Preflight engine
+│   ├── template.html                 # 4-pillar borderless layout & Lucide icon bindings
+│   ├── styles.css                    # Minimalist Light/Dark theme, custom scrollbars & cursor states
+│   ├── i18n.js                       # Bilingual English / 简体中文 dictionary
+│   ├── zip.js                        # Zero-dependency CRC32 .zip archive builder
+│   ├── prepress-k100.js              # Pure K100 stream rewriter, font baseline analyzer & 8-point preflight
+│   ├── imposition.js                 # Saddle-stitch booklet, 2-Up & N-Up vector imposition + K100 crop marks
+│   ├── convert-compress.js           # PNG/JPG/ZIP exporter, image-only PDF & vector-safe size reducer
+│   └── app.js                        # Unified multi-PDF workspace & progressive UI controller
 ├── scripts/
 │   └── build.js                      # Single-file compiler (inlines CSS, Lucide SVGs & PDF engines)
-├── docs/images/                      # UI documentation screenshots
+├── docs/images/                      # Retina UI documentation screenshots
 └── .github/workflows/deploy-pages.yml # Automated GitHub Pages deployment
 ```
 

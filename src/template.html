@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>ShibaPDF — PDF 编辑与印前工作台</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23181817' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z'/%3E%3Cpath d='M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z'/%3E%3C/svg%3E" />
+  <title>ShibaPDF — PDF 编辑、拼版与印前工作台</title>
   <style>
 /*__INLINE_CSS__*/
   </style>
 </head>
 <body>
   <div class="workbench">
-    <!-- Left Column: Borderless Large Feature Buttons -->
+    <!-- Left Column: 4 Clean Borderless Pillars -->
     <aside class="left-rail">
       <header class="rail-header">
         <div class="brand-mark">
@@ -29,53 +30,49 @@
         </div>
       </header>
 
-      <nav class="rail-tools" aria-label="PDF Tools">
-        <button id="navEditBtn" class="big-tool-btn active" type="button">
-          <span class="tool-icon-box">
-            <i data-lucide="square-pen"></i>
-          </span>
+      <nav class="rail-tools" aria-label="PDF Studio Pillars">
+        <!-- Pillar 1: Pages & Edit -->
+        <button id="navPagesBtn" class="big-tool-btn active" type="button">
+          <span class="tool-icon-box"><i data-lucide="square-pen"></i></span>
           <span class="tool-btn-copy">
             <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="modeEdit">编辑页面</span>
+              <span class="tool-btn-title" data-i18n="pillarPages">页面与编辑</span>
             </span>
-            <span class="tool-btn-desc" data-i18n="modeEditSub">修改或添加文字 · 旋转与删页</span>
+            <span class="tool-btn-desc" data-i18n="pillarPagesSub">合并提取 · 排序旋转 · 原位改字</span>
           </span>
         </button>
 
-        <button id="navPreflightBtn" class="big-tool-btn" type="button">
-          <span class="tool-icon-box">
-            <i data-lucide="shield-check"></i>
-          </span>
+        <!-- Pillar 2: Prepress & Impose -->
+        <button id="navPrepressBtn" class="big-tool-btn" type="button">
+          <span class="tool-icon-box"><i data-lucide="layers"></i></span>
           <span class="tool-btn-copy">
             <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="modePreflight">印前检查</span>
+              <span class="tool-btn-title" data-i18n="pillarPrepress">印前与拼版</span>
+            </span>
+            <span class="tool-btn-desc" data-i18n="pillarPrepressSub">骑马钉/多联拼版 · 拆单页 · 单黑</span>
+          </span>
+        </button>
+
+        <!-- Pillar 3: Preflight Check -->
+        <button id="navPreflightBtn" class="big-tool-btn" type="button">
+          <span class="tool-icon-box"><i data-lucide="shield-check"></i></span>
+          <span class="tool-btn-copy">
+            <span class="tool-btn-title-row">
+              <span class="tool-btn-title" data-i18n="pillarPreflight">印前检查</span>
               <span id="navPreflightBadge" class="status-pill hidden"></span>
             </span>
-            <span class="tool-btn-desc" data-i18n="modePreflightSub">8 项规范体检 · 点击定位高亮</span>
+            <span class="tool-btn-desc" data-i18n="pillarPreflightSub">8 项规范体检 · 点击定位高亮</span>
           </span>
         </button>
 
-        <button id="navKeepBtn" class="big-tool-btn" type="button">
-          <span class="tool-icon-box">
-            <i data-lucide="printer"></i>
-          </span>
+        <!-- Pillar 4: Convert & Compress -->
+        <button id="navConvertBtn" class="big-tool-btn" type="button">
+          <span class="tool-icon-box"><i data-lucide="sparkles"></i></span>
           <span class="tool-btn-copy">
             <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="modeKeepK100">印前单黑</span>
+              <span class="tool-btn-title" data-i18n="pillarConvert">转换与压缩</span>
             </span>
-            <span class="tool-btn-desc" data-i18n="modeKeepSub">原尺寸直出 · 四色黑转 K100</span>
-          </span>
-        </button>
-
-        <button id="navSplitBtn" class="big-tool-btn" type="button">
-          <span class="tool-icon-box">
-            <i data-lucide="columns-2"></i>
-          </span>
-          <span class="tool-btn-copy">
-            <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="modeSplit">跨页拆单页</span>
-            </span>
-            <span class="tool-btn-desc" data-i18n="modeSplitSub">双页切单页 · 出血与封底归位</span>
+            <span class="tool-btn-desc" data-i18n="pillarConvertSub">减小体积 · 导出图片 · 转图版PDF</span>
           </span>
         </button>
       </nav>
@@ -85,11 +82,11 @@
 
         <div id="railFilesBox" class="rail-files-box hidden">
           <div class="rail-files-head">
-            <span data-i18n="secFiles">当前文档</span>
+            <span data-i18n="secFiles">已加载文档</span>
             <div style="display:flex;gap:4px;">
               <button id="addMoreBtn" class="ghost-btn" style="height:22px;padding:0 6px;font-size:11px;" type="button">
                 <i data-lucide="plus" style="width:11px;height:11px;"></i>
-                <span data-i18n="addBtn">添加</span>
+                <span data-i18n="addBtn">添加合并</span>
               </button>
               <button id="clearAllBtn" class="ghost-btn" style="height:22px;padding:0 6px;font-size:11px;" type="button">
                 <span data-i18n="clearAll">清空</span>
@@ -101,10 +98,10 @@
 
         <button id="sidebarUploadBtn" class="rail-soft-btn" type="button">
           <i data-lucide="upload"></i>
-          <span data-i18n="addPdfBtn">打开 PDF 文件</span>
+          <span data-i18n="addPdfBtn">打开或合并 PDF</span>
         </button>
 
-        <button id="downloadOfflineBtn" class="rail-soft-btn" type="button" title="Save standalone ShibaPDF.html to use offline on your computer">
+        <button id="downloadOfflineBtn" class="rail-soft-btn" type="button">
           <i data-lucide="hard-drive-download"></i>
           <span data-i18n="downloadOfflineBtn">下载单文件离线版</span>
         </button>
@@ -113,115 +110,194 @@
 
     <!-- Right Column: Progressive Workspace -->
     <main class="right-workspace">
-      <!-- Quiet Progressive Top Action Strip (Hidden when no PDF is loaded) -->
+      <!-- Progressive Top Action Strip -->
       <header id="topStrip" class="top-action-strip hidden">
         <div class="strip-left">
-          <!-- Mode: Edit Page Controls -->
-          <div id="stripEditTools" class="strip-left">
-            <button id="addTextBtn" class="ghost-btn" type="button">
-              <i data-lucide="type"></i>
-              <span data-i18n="addTextBtn">添加文字</span>
-            </button>
-            <button id="rotatePageBtn" class="ghost-btn" type="button">
-              <i data-lucide="rotate-cw"></i>
-              <span data-i18n="rotatePageBtn">旋转本页</span>
-            </button>
-            <button id="deletePageBtn" class="ghost-btn" type="button">
-              <i data-lucide="trash-2"></i>
-              <span data-i18n="deletePageBtn">删除本页</span>
-            </button>
-            <button id="undoEditBtn" class="ghost-btn hidden" type="button">
-              <i data-lucide="undo-2"></i>
-              <span data-i18n="undoBtn">撤销</span>
-            </button>
-            <span id="editHintLabel" style="font-size:12px;color:var(--text-3);margin-left:4px;" data-i18n="editClickHint">点击页面已有文字可直接修改</span>
+          <!-- Pillar 1: Pages & Edit Sub-controls -->
+          <div id="stripPages" class="strip-left">
+            <div class="soft-pills">
+              <button id="subOrgBtn" class="soft-pill active" type="button" data-i18n="subOrganize">页面管理 (合并/提取)</button>
+              <button id="subTextBtn" class="soft-pill" type="button" data-i18n="subTextEdit">文字编辑</button>
+            </div>
+
+            <!-- Organize sub-controls -->
+            <div id="orgControls" class="strip-left">
+              <button id="selAllBtn" class="ghost-btn" type="button" data-i18n="selAll">全选</button>
+              <button id="selNoneBtn" class="ghost-btn hidden" type="button" data-i18n="selNone">取消选择</button>
+              <!-- Progressive Selection Actions (Only appear when >=1 page selected!) -->
+              <div id="selActionGroup" class="strip-left hidden">
+                <button id="rotSelBtn" class="ghost-btn" type="button">
+                  <i data-lucide="rotate-cw"></i><span data-i18n="rotSelBtn">旋转所选</span>
+                </button>
+                <button id="delSelBtn" class="ghost-btn" type="button">
+                  <i data-lucide="trash-2"></i><span data-i18n="delSelBtn">删除所选</span>
+                </button>
+                <button id="imgSelBtn" class="ghost-btn" type="button">
+                  <i data-lucide="image"></i><span data-i18n="imgSelBtn">所选导图片</span>
+                </button>
+                <button id="extractSelBtn" class="primary-btn" type="button">
+                  <i data-lucide="download"></i><span id="extractSelText">单独导出所选</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Text Edit sub-controls -->
+            <div id="textEditControls" class="strip-left hidden">
+              <button id="addTextBtn" class="ghost-btn" type="button">
+                <i data-lucide="type"></i><span data-i18n="addTextBtn">添加文字</span>
+              </button>
+              <button id="rotatePageBtn" class="ghost-btn" type="button">
+                <i data-lucide="rotate-cw"></i><span data-i18n="rotatePageBtn">旋转本页</span>
+              </button>
+              <button id="deletePageBtn" class="ghost-btn" type="button">
+                <i data-lucide="trash-2"></i><span data-i18n="deletePageBtn">删除本页</span>
+              </button>
+              <button id="undoEditBtn" class="ghost-btn hidden" type="button">
+                <i data-lucide="undo-2"></i><span data-i18n="undoBtn">撤销</span>
+              </button>
+              <span id="editHintLabel" style="font-size:12px;color:var(--text-3);" data-i18n="editClickHint">点选原有文字直接修改</span>
+            </div>
           </div>
 
-          <!-- Mode: Preflight Summary -->
-          <div id="stripPreflightTools" class="strip-left hidden">
+          <!-- Pillar 2: Prepress & Impose Sub-controls -->
+          <div id="stripPrepress" class="strip-left hidden">
+            <div class="soft-pills">
+              <button id="subImposeBtn" class="soft-pill active" type="button" data-i18n="subImpose">印刷拼版</button>
+              <button id="subSplitBtn" class="soft-pill" type="button" data-i18n="subSplit">跨页拆单页</button>
+              <button id="subK100Btn" class="soft-pill" type="button" data-i18n="subK100">原尺寸转单黑</button>
+            </div>
+
+            <!-- Sub: Imposition Controls -->
+            <div id="imposeControls" class="strip-left">
+              <div class="soft-pills">
+                <button id="impBookletBtn" class="soft-pill active" type="button" data-i18n="imposeBooklet">骑马钉折手</button>
+                <button id="impSpreadBtn" class="soft-pill" type="button" data-i18n="imposeSpread2Up">单页合跨页</button>
+                <button id="impNupBtn" class="soft-pill" type="button" data-i18n="imposeNUp">多联拼版 (N拼)</button>
+              </div>
+
+              <div class="popover-anchor">
+                <button id="imposeParamsBtn" class="ghost-btn active" type="button">
+                  <i data-lucide="sliders-horizontal"></i>
+                  <span data-i18n="imposeParamsFmt">拼版参数 ▾</span>
+                </button>
+                <div id="imposePopover" class="popover-card hidden">
+                  <div id="nupOnlyRows" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
+                    <div class="pop-row">
+                      <span data-i18n="nupCountLabel">每张拼数</span>
+                      <div class="soft-pills">
+                        <button class="soft-pill nup-chip" data-nup="2" type="button">2拼</button>
+                        <button class="soft-pill nup-chip active" data-nup="4" type="button">4拼</button>
+                        <button class="soft-pill nup-chip" data-nup="8" type="button">8拼</button>
+                      </div>
+                    </div>
+                    <div class="pop-row">
+                      <span data-i18n="sheetSizeLabel">印张尺寸</span>
+                      <select id="sheetPresetSelect" class="pop-select">
+                        <option value="auto" data-i18n="sheetAuto">自动贴合原尺寸倍数</option>
+                        <option value="sra3" data-i18n="sheetSra3">SRA3 数码大纸 (450×320mm)</option>
+                        <option value="a3" data-i18n="sheetA3">A3 标准 (420×297mm)</option>
+                        <option value="dadu4" data-i18n="sheetDadu4">大度四开 (595×440mm)</option>
+                        <option value="zhengdu4" data-i18n="sheetZhengdu4">正度四开 (543×390mm)</option>
+                      </select>
+                    </div>
+                    <div class="pop-row">
+                      <span data-i18n="gutterLabel">拼版间距</span>
+                      <span class="num-pill"><input id="gutterInput" type="number" min="0" max="30" step="1" value="0" /><span class="unit-txt">mm</span></span>
+                    </div>
+                  </div>
+
+                  <label id="firstCoverRow" class="pop-row hidden" style="cursor:pointer;">
+                    <span data-i18n="firstCoverAloneLabel">首张封面单独占右半页</span>
+                    <span class="switch-ctrl"><input id="firstCoverCheck" type="checkbox" /><span class="switch-track"></span></span>
+                  </label>
+
+                  <label class="pop-row" style="cursor:pointer;">
+                    <span data-i18n="cropMarksLabel">绘制 K100 标准印刷裁切角线</span>
+                    <span class="switch-ctrl"><input id="cropMarksCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+                  </label>
+
+                  <label class="pop-row" style="cursor:pointer;">
+                    <span data-i18n="pureBlackShort">同步转为印刷单色黑 K100</span>
+                    <span class="switch-ctrl"><input id="imposeK100Check" type="checkbox" checked /><span class="switch-track"></span></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sub: Split Spreads Controls -->
+            <div id="splitControls" class="strip-left hidden">
+              <div class="soft-pills">
+                <button id="tabSpreadBtn" class="soft-pill active" type="button" data-i18n="tabSpread">裁切预览</button>
+                <button id="tabSeqBtn" class="soft-pill" type="button" data-i18n="tabSequence">拆后总览</button>
+              </div>
+              <div class="popover-anchor">
+                <button id="splitParamsBtn" class="ghost-btn active" type="button">
+                  <i data-lucide="sliders-horizontal"></i>
+                  <span id="splitParamsSummary">出血 3mm · 拆分设置</span>
+                </button>
+                <div id="splitParamsPopover" class="popover-card hidden">
+                  <div class="pop-label" data-i18n="secBleed">四周出血尺寸</div>
+                  <div class="soft-pills" style="width:100%;display:grid;grid-template-columns:repeat(3,1fr);">
+                    <button class="soft-pill preset-chip" data-bleed="0" type="button" data-i18n="preset0">无 0</button>
+                    <button class="soft-pill preset-chip active" data-bleed="3" type="button">3mm</button>
+                    <button class="soft-pill preset-chip" data-bleed="5" type="button">5mm</button>
+                  </div>
+                  <div class="pop-row">
+                    <span data-i18n="bleedUniformLabel">统一出血</span>
+                    <span class="num-pill"><input id="bleedUniformInput" type="number" min="0" max="50" step="0.5" value="3" /><span class="unit-txt">mm</span></span>
+                  </div>
+                  <button id="toggleQuadLink" class="ghost-btn" style="justify-content:flex-start;padding:0 4px;height:24px;font-size:11.5px;" type="button" data-i18n="toggleQuadText">展开上/下/左/右独立微调 ▾</button>
+                  <div id="quadGridPop" class="quad-grid-pop hidden">
+                    <label class="pop-row"><span data-i18n="sideTop">上</span><span class="num-pill"><input id="bleedTopInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                    <label class="pop-row"><span data-i18n="sideBottom">下</span><span class="num-pill"><input id="bleedBottomInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                    <label class="pop-row"><span data-i18n="sideLeft">左</span><span class="num-pill"><input id="bleedLeftInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                    <label class="pop-row"><span data-i18n="sideRight">右</span><span class="num-pill"><input id="bleedRightInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
+                  </div>
+                  <label class="pop-row" style="cursor:pointer;">
+                    <span data-i18n="moveFirstShort">首张左页（封底）移至末页</span>
+                    <span class="switch-ctrl"><input id="moveFirstCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+                  </label>
+                  <label class="pop-row" style="cursor:pointer;">
+                    <span data-i18n="pureBlackShort">同步转为印刷单色黑 K100</span>
+                    <span class="switch-ctrl"><input id="pureBlackCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+                  </label>
+                  <label class="pop-row" style="cursor:pointer;">
+                    <span data-i18n="onlyLandscapeShort">仅拆分横向跨页</span>
+                    <span class="switch-ctrl"><input id="onlyLandscapeCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+                  </label>
+                  <div class="soft-pills" style="width:100%;display:grid;grid-template-columns:1fr 1fr;">
+                    <button id="bleedTrimBtn" class="soft-pill active" type="button" data-i18n="actionTrimShort">裁除出血</button>
+                    <button id="bleedKeepBtn" class="soft-pill" type="button" data-i18n="actionKeepShort">保留外出血</button>
+                  </div>
+                  <div class="soft-pills" style="width:100%;display:grid;grid-template-columns:1fr 1fr;">
+                    <button id="dirLtrBtn" class="soft-pill active" type="button" data-i18n="dirLtrShort">左 → 右</button>
+                    <button id="dirRtlBtn" class="soft-pill" type="button" data-i18n="dirRtlShort">右 → 左</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sub: Pure K100 Inline Hint -->
+            <span id="k100InlineHint" class="hidden" style="font-size:12px;color:var(--text-2);" data-i18n="keepDescInline">保持原跨页尺寸与出血 · 自动转单色黑 K100 并保留透明度</span>
+          </div>
+
+          <!-- Pillar 3: Preflight Summary -->
+          <div id="stripPreflight" class="strip-left hidden">
             <span style="font-size:13.5px;font-weight:600;" data-i18n="preflightReportTitle">印前规范检查</span>
             <div id="pfScorePills" style="display:flex;gap:6px;"></div>
           </div>
 
-          <!-- Mode: Keep K100 Summary -->
-          <div id="stripKeepTools" class="strip-left hidden">
+          <!-- Pillar 4: Convert & Compress Sub-tabs -->
+          <div id="stripConvert" class="strip-left hidden">
             <div class="soft-pills">
-              <button id="keepTabSingle" class="soft-pill active" type="button" data-i18n="viewSingle">单张查看</button>
-              <button id="keepTabAll" class="soft-pill" type="button" data-i18n="tabSequence">全部页面</button>
-            </div>
-            <span style="font-size:12px;color:var(--text-2);margin-left:6px;" data-i18n="keepDescInline">保持原跨页尺寸与出血 · 自动转单色黑 K100 并保留透明度</span>
-          </div>
-
-          <!-- Mode: Split Spreads Progressive Controls (Parameters tucked inside popover!) -->
-          <div id="stripSplitTools" class="strip-left hidden">
-            <div class="soft-pills">
-              <button id="tabSpreadBtn" class="soft-pill active" type="button" data-i18n="tabSpread">裁切预览</button>
-              <button id="tabSeqBtn" class="soft-pill" type="button" data-i18n="tabSequence">拆后总览</button>
-            </div>
-
-            <div class="popover-anchor">
-              <button id="splitParamsBtn" class="ghost-btn active" type="button">
-                <i data-lucide="sliders-horizontal"></i>
-                <span id="splitParamsSummary">出血 3mm · 拆分设置</span>
-                <i data-lucide="chevron-down" style="width:13px;height:13px;"></i>
-              </button>
-
-              <!-- Progressive Disclosure Settings Popover -->
-              <div id="splitParamsPopover" class="popover-card hidden">
-                <div class="pop-label" data-i18n="secBleed">四周出血尺寸</div>
-                <div class="soft-pills" style="width:100%;display:grid;grid-template-columns:repeat(3,1fr);">
-                  <button class="soft-pill preset-chip" data-bleed="0" type="button" data-i18n="preset0">无 0</button>
-                  <button class="soft-pill preset-chip active" data-bleed="3" type="button">3mm</button>
-                  <button class="soft-pill preset-chip" data-bleed="5" type="button">5mm</button>
-                </div>
-
-                <div class="pop-row">
-                  <span data-i18n="bleedUniformLabel">统一出血</span>
-                  <span class="num-pill">
-                    <input id="bleedUniformInput" type="number" min="0" max="50" step="0.5" value="3" />
-                    <span class="unit-txt">mm</span>
-                  </span>
-                </div>
-
-                <button id="toggleQuadLink" class="ghost-btn" style="justify-content:flex-start;padding:0 4px;height:24px;font-size:11.5px;" type="button" data-i18n="toggleQuadText">展开上/下/左/右独立微调 ▾</button>
-
-                <div id="quadGridPop" class="quad-grid-pop hidden">
-                  <label class="pop-row"><span data-i18n="sideTop">上</span><span class="num-pill"><input id="bleedTopInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
-                  <label class="pop-row"><span data-i18n="sideBottom">下</span><span class="num-pill"><input id="bleedBottomInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
-                  <label class="pop-row"><span data-i18n="sideLeft">左</span><span class="num-pill"><input id="bleedLeftInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
-                  <label class="pop-row"><span data-i18n="sideRight">右</span><span class="num-pill"><input id="bleedRightInput" type="number" min="0" max="50" step="0.5" value="3" /></span></label>
-                </div>
-
-                <label class="pop-row" style="cursor:pointer;">
-                  <span data-i18n="moveFirstShort">首张左页（封底）移至末页</span>
-                  <span class="switch-ctrl"><input id="moveFirstCheck" type="checkbox" checked /><span class="switch-track"></span></span>
-                </label>
-
-                <label class="pop-row" style="cursor:pointer;">
-                  <span data-i18n="pureBlackShort">同步转为印刷单色黑 K100</span>
-                  <span class="switch-ctrl"><input id="pureBlackCheck" type="checkbox" checked /><span class="switch-track"></span></span>
-                </label>
-
-                <label class="pop-row" style="cursor:pointer;">
-                  <span data-i18n="onlyLandscapeShort">仅拆分横向跨页</span>
-                  <span class="switch-ctrl"><input id="onlyLandscapeCheck" type="checkbox" checked /><span class="switch-track"></span></span>
-                </label>
-
-                <div class="soft-pills" style="width:100%;display:grid;grid-template-columns:1fr 1fr;">
-                  <button id="bleedTrimBtn" class="soft-pill active" type="button" data-i18n="actionTrimShort">裁除出血</button>
-                  <button id="bleedKeepBtn" class="soft-pill" type="button" data-i18n="actionKeepShort">保留外出血</button>
-                </div>
-
-                <div class="soft-pills" style="width:100%;display:grid;grid-template-columns:1fr 1fr;">
-                  <button id="dirLtrBtn" class="soft-pill active" type="button" data-i18n="dirLtrShort">左 → 右</button>
-                  <button id="dirRtlBtn" class="soft-pill" type="button" data-i18n="dirRtlShort">右 → 左</button>
-                </div>
-              </div>
+              <button id="subCompBtn" class="soft-pill active" type="button" data-i18n="subCompress">减小 PDF 体积</button>
+              <button id="subImgBtn" class="soft-pill" type="button" data-i18n="subExportImg">导出为图片</button>
+              <button id="subImgPdfBtn" class="soft-pill" type="button" data-i18n="subImgPdf">转为图片版 PDF</button>
             </div>
           </div>
         </div>
 
-        <div class="strip-right">
+        <div id="stripRightGroup" class="strip-right">
           <span id="dimSummaryText" style="font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;"></span>
           <button id="exportBtn" class="primary-btn" type="button" disabled>
             <i data-lucide="download"></i>
@@ -230,9 +306,8 @@
         </div>
       </header>
 
-      <!-- Workspace Main Body (Optional Left Preflight Drawer + Live Canvas Stage) -->
+      <!-- Workspace Main Body -->
       <div class="workspace-body">
-        <!-- Interactive Preflight List (Click any issue to jump & highlight on the live canvas!) -->
         <aside id="preflightDrawer" class="preflight-drawer hidden"></aside>
 
         <div id="stageViewport" class="stage-viewport">
@@ -240,20 +315,18 @@
           <div id="emptyStage" class="center-placeholder">
             <div id="dropzone" class="drop-surface" role="button" tabindex="0">
               <h2 data-i18n="emptyHeading">打开或拖入 PDF 文件</h2>
-              <p data-i18n="emptySub">左侧选择工具，即可在本地完成页面文字编辑、印前规范定位体检、四色黑修复或跨页拆分</p>
+              <p data-i18n="emptySub">支持多 PDF 拖入合并、拼版印刷、印前检查高亮定位、原位改字、导图片与体积压缩</p>
               <div class="drop-cta">
                 <i data-lucide="upload"></i>
                 <span data-i18n="chooseBtn">选择 PDF 文件</span>
               </div>
             </div>
-            <div class="empty-foot" data-i18n="localFootnote">100% 浏览器本地处理 · 支持 Ctrl + 滚轮无级缩放画布</div>
+            <div class="empty-foot" data-i18n="localFootnote">100% 浏览器本地处理 · 支持 Ctrl + 滚轮丝滑缩放画布</div>
           </div>
 
-          <!-- Paper Canvas + Multi-Mode Interactive Overlays -->
+          <!-- Paper Canvas + Overlays (Used by Text Edit, Split Preview, Imposition Sheet Preview, K100, Preflight) -->
           <div id="spreadViewContainer" class="paper-frame hidden">
             <canvas id="spreadCanvas"></canvas>
-
-            <!-- Layer 1: Split Cut Guides -->
             <div id="guidesOverlay" class="overlay-layer hidden">
               <div id="shadeTop" class="bleed-bar"></div>
               <div id="shadeBottom" class="bleed-bar"></div>
@@ -264,54 +337,131 @@
               <div id="leftBadge" class="minimal-badge"></div>
               <div id="rightBadge" class="minimal-badge"></div>
             </div>
-
-            <!-- Layer 2: Preflight Issue Spotlight Highlights -->
             <div id="pfHighlightOverlay" class="overlay-layer hidden"></div>
-
-            <!-- Layer 3: Interactive Page Text Editor -->
             <div id="textEditOverlay" class="overlay-layer interactive hidden"></div>
           </div>
 
-          <!-- All-Pages Grid View -->
+          <!-- Grid View (Used by Organize/Merge/Select & Split Overview) -->
           <div id="sequenceGrid" class="clean-grid hidden"></div>
+
+          <!-- Convert & Compress Panel -->
+          <div id="convertViewPanel" class="convert-panel hidden">
+            <!-- Sub 1: Compress PDF -->
+            <div id="panelCompress" style="display:flex;flex-direction:column;gap:14px;">
+              <div>
+                <h3 data-i18n="compTitle">智能减小 PDF 文件体积</h3>
+                <p data-i18n="compDesc">对文档内超大尺寸图片按目标分辨率优化重编码，快速降低文件大小。</p>
+              </div>
+              <div class="preset-option-stack">
+                <div class="preset-radio-card comp-card" data-preset="high">
+                  <span data-i18n="compPresetHigh">轻度压缩 · 印刷清晰 (220 DPI)</span>
+                </div>
+                <div class="preset-radio-card comp-card active" data-preset="balanced">
+                  <span data-i18n="compPresetBalanced">推荐压缩 · 办公阅览 (150 DPI)</span>
+                </div>
+                <div class="preset-radio-card comp-card" data-preset="max">
+                  <span data-i18n="compPresetMax">极限瘦身 · 微信/邮件传输 (100 DPI)</span>
+                </div>
+              </div>
+              <label class="pop-row" style="cursor:pointer;font-size:12px;color:var(--text-2);">
+                <span data-i18n="compKeepVecLabel">优先保留矢量文字清晰度</span>
+                <span class="switch-ctrl"><input id="compKeepVecCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+              </label>
+              <div id="compResultBox" class="result-banner hidden"></div>
+              <button id="runCompressBtn" class="primary-btn" style="height:40px;justify-content:center;width:100%;" type="button">
+                <i data-lucide="minimize-2"></i>
+                <span id="runCompressText" data-i18n="compRunBtn">开始压缩并下载 PDF</span>
+              </button>
+            </div>
+
+            <!-- Sub 2: Export Images -->
+            <div id="panelExportImg" class="hidden" style="display:flex;flex-direction:column;gap:14px;">
+              <div>
+                <h3 data-i18n="imgExportTitle">导出高清图片（多页自动打包 ZIP）</h3>
+                <p data-i18n="imgExportDesc">将全部页面（或已勾选页面）渲染为高清 PNG / JPG 图片。</p>
+              </div>
+              <div class="pop-row">
+                <span data-i18n="imgFormatLabel">图片格式</span>
+                <div class="soft-pills">
+                  <button class="soft-pill img-fmt-chip active" data-fmt="png" type="button">PNG (无损)</button>
+                  <button class="soft-pill img-fmt-chip" data-fmt="jpg" type="button">JPG (体积小)</button>
+                </div>
+              </div>
+              <div class="pop-row">
+                <span data-i18n="imgDpiLabel">输出分辨率</span>
+                <div class="soft-pills">
+                  <button class="soft-pill img-dpi-chip" data-dpi="150" type="button">150 DPI</button>
+                  <button class="soft-pill img-dpi-chip active" data-dpi="300" type="button">300 DPI</button>
+                  <button class="soft-pill img-dpi-chip" data-dpi="600" type="button">600 DPI</button>
+                </div>
+              </div>
+              <div class="soft-pills" style="display:grid;grid-template-columns:1fr 1fr;">
+                <button id="imgScopeAllBtn" class="soft-pill active" type="button">导出全部页面</button>
+                <button id="imgScopeSelBtn" class="soft-pill" type="button">仅导出已勾选页</button>
+              </div>
+              <button id="runExportImgBtn" class="primary-btn" style="height:40px;justify-content:center;width:100%;" type="button">
+                <i data-lucide="image"></i>
+                <span id="runExportImgText" data-i18n="imgRunBtn">导出图片</span>
+              </button>
+            </div>
+
+            <!-- Sub 3: Convert to Image-Only PDF -->
+            <div id="panelImgPdf" class="hidden" style="display:flex;flex-direction:column;gap:14px;">
+              <div>
+                <h3 data-i18n="imgPdfTitle">转换为纯图片版 PDF（防篡改 / 锁死字体）</h3>
+                <p data-i18n="imgPdfDesc">将每一页栅格化为等尺寸高清图像并封装为新 PDF，彻底防止文字被复制修改，杜绝缺字乱码。</p>
+              </div>
+              <div class="pop-row">
+                <span data-i18n="imgDpiLabel">输出清晰度</span>
+                <div class="soft-pills">
+                  <button class="soft-pill imgpdf-dpi-chip" data-dpi="150" type="button">150 DPI</button>
+                  <button class="soft-pill imgpdf-dpi-chip active" data-dpi="220" type="button">220 DPI</button>
+                  <button class="soft-pill imgpdf-dpi-chip" data-dpi="300" type="button">300 DPI</button>
+                </div>
+              </div>
+              <button id="runImgPdfBtn" class="primary-btn" style="height:40px;justify-content:center;width:100%;" type="button">
+                <i data-lucide="book-open-check"></i>
+                <span id="runImgPdfText" data-i18n="imgPdfRunBtn">生成图片版 PDF</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Floating Mini Text Formatting Toolbar (Appears only when editing a text node) -->
+      <!-- Floating Mini Text Formatting Bar -->
       <div id="textFmtBar" class="text-fmt-bar hidden">
-        <button id="fmtSmallerBtn" class="pager-btn" type="button" title="减小字号">A−</button>
-        <span id="fmtSizeLabel" style="font-size:11.5px;font-weight:600;min-width:30px;text-align:center;">14</span>
-        <button id="fmtLargerBtn" class="pager-btn" type="button" title="增大字号">A+</button>
-        <button id="fmtBoldBtn" class="pager-btn" type="button" style="font-weight:700;" title="加粗">B</button>
-        <input id="fmtColorInput" class="fmt-color-input" type="color" value="#181817" title="文字颜色" />
-        <label style="display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--text-2);cursor:pointer;" title="遮盖底部原文字">
+        <select id="fmtFontSelect" class="fmt-font-select" title="Font Style">
+          <option value="sans" data-i18n="fontSans">黑体</option>
+          <option value="serif" data-i18n="fontSerif">宋体</option>
+          <option value="kai" data-i18n="fontKai">楷体</option>
+          <option value="mono" data-i18n="fontMono">等宽</option>
+        </select>
+        <button id="fmtSmallerBtn" class="pager-btn" type="button" title="Smaller">A−</button>
+        <span id="fmtSizeLabel" style="font-size:11.5px;font-weight:600;min-width:26px;text-align:center;">14</span>
+        <button id="fmtLargerBtn" class="pager-btn" type="button" title="Larger">A+</button>
+        <button id="fmtBoldBtn" class="pager-btn" type="button" style="font-weight:700;" title="Bold">B</button>
+        <button id="fmtItalicBtn" class="pager-btn" type="button" style="font-style:italic;font-family:Georgia,serif;" title="Italic">I</button>
+        <input id="fmtColorInput" class="fmt-color-input" type="color" value="#181817" title="Text Color" />
+        <label style="display:inline-flex;align-items:center;gap:3px;font-size:11px;color:var(--text-2);cursor:pointer;">
           <input id="fmtMaskCheck" type="checkbox" checked />
           <span data-i18n="maskBgLabel">遮底</span>
         </label>
-        <input id="fmtBgInput" class="fmt-color-input" type="color" value="#ffffff" title="背景遮盖色" />
-        <button id="fmtDeleteNodeBtn" class="del-icon-btn" type="button" title="删除此文字框">
+        <input id="fmtBgInput" class="fmt-color-input" type="color" value="#ffffff" title="Mask Color" />
+        <button id="fmtDeleteNodeBtn" class="del-icon-btn" type="button" title="Delete Text">
           <i data-lucide="trash-2"></i>
         </button>
       </div>
 
       <!-- Floating Bottom Pager & Zoom -->
       <div id="bottomPager" class="floating-pager hidden">
-        <button id="prevSpreadBtn" class="pager-btn" type="button" aria-label="Previous">
-          <i data-lucide="chevron-left"></i>
-        </button>
+        <button id="prevSpreadBtn" class="pager-btn" type="button"><i data-lucide="chevron-left"></i></button>
         <span id="pageIndicator" class="pager-text">1 / 1</span>
-        <button id="nextSpreadBtn" class="pager-btn" type="button" aria-label="Next">
-          <i data-lucide="chevron-right"></i>
-        </button>
-        <button id="zoomOutBtn" class="pager-btn" type="button" title="Zoom Out">
-          <i data-lucide="minus"></i>
-        </button>
+        <button id="nextSpreadBtn" class="pager-btn" type="button"><i data-lucide="chevron-right"></i></button>
+        <button id="zoomOutBtn" class="pager-btn" type="button"><i data-lucide="minus"></i></button>
         <button id="zoomFitBtn" class="pager-btn" type="button" style="width:auto;padding:0 7px;font-size:11.5px;font-weight:500;">
           <span id="zoomLabel">100%</span>
         </button>
-        <button id="zoomInBtn" class="pager-btn" type="button" title="Zoom In">
-          <i data-lucide="plus"></i>
-        </button>
+        <button id="zoomInBtn" class="pager-btn" type="button"><i data-lucide="plus"></i></button>
       </div>
     </main>
   </div>
