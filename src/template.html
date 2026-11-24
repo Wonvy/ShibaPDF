@@ -215,7 +215,7 @@
               </div>
             </div>
 
-            <!-- Content Edit (Text & Images) sub-controls -->
+            <!-- Content Edit (Text & Images) sub-controls (Centered in Top Strip) -->
             <div id="textEditControls" class="strip-left hidden">
               <input id="imgFileInput" type="file" accept="image/*" class="hidden" />
               <button id="addTextBtn" class="ghost-btn" type="button">
@@ -230,13 +230,45 @@
               <button id="deletePageBtn" class="ghost-btn" type="button">
                 <i data-lucide="trash-2"></i><span data-i18n="deletePageBtn">删除本页</span>
               </button>
+
+              <!-- Multi-Select Alignment & Distribution Bar (Appears when >= 2 elements selected) -->
+              <div id="multiAlignGroup" class="soft-pills hidden">
+                <button class="soft-pill align-op-btn" data-align-op="left" type="button" title="左对齐">
+                  <i data-lucide="align-start-vertical" style="width:14px;height:14px;"></i>
+                </button>
+                <button class="soft-pill align-op-btn" data-align-op="center-h" type="button" title="水平居中">
+                  <i data-lucide="align-center-vertical" style="width:14px;height:14px;"></i>
+                </button>
+                <button class="soft-pill align-op-btn" data-align-op="right" type="button" title="右对齐">
+                  <i data-lucide="align-end-vertical" style="width:14px;height:14px;"></i>
+                </button>
+                <button class="soft-pill align-op-btn" data-align-op="top" type="button" title="顶对齐">
+                  <i data-lucide="align-start-horizontal" style="width:14px;height:14px;"></i>
+                </button>
+                <button class="soft-pill align-op-btn" data-align-op="center-v" type="button" title="垂直居中">
+                  <i data-lucide="align-center-horizontal" style="width:14px;height:14px;"></i>
+                </button>
+                <button class="soft-pill align-op-btn" data-align-op="bottom" type="button" title="底对齐">
+                  <i data-lucide="align-end-horizontal" style="width:14px;height:14px;"></i>
+                </button>
+                <button class="soft-pill align-op-btn dist-op-btn" data-align-op="distribute-h" type="button" title="水平等距分布">
+                  <i data-lucide="align-horizontal-distribute-center" style="width:14px;height:14px;"></i>
+                </button>
+                <button class="soft-pill align-op-btn dist-op-btn" data-align-op="distribute-v" type="button" title="垂直等距分布">
+                  <i data-lucide="align-vertical-distribute-center" style="width:14px;height:14px;"></i>
+                </button>
+              </div>
+
               <button id="undoEditBtn" class="ghost-btn hidden" type="button">
                 <i data-lucide="undo-2"></i><span data-i18n="undoBtn">撤销</span>
+              </button>
+              <button id="toggleEditPropsBtn" class="ghost-btn active" type="button">
+                <i data-lucide="panel-right-open"></i><span data-i18n="editPropsBtn">属性栏</span>
               </button>
               <button id="cancelEditTaskBtn" class="ghost-btn active hidden" type="button">
                 <i data-lucide="x"></i><span data-i18n="cancelTaskBtn">退出当前选择 (Esc)</span>
               </button>
-              <span id="editHintLabel" style="font-size:12px;color:var(--text-3);" data-i18n="editClickHint">点选文字或图片即可修改/拖入替换</span>
+              <span id="editHintLabel" class="hidden" data-i18n="editClickHint"></span>
             </div>
 
             <!-- Designer Freeform Annotation Controls -->
@@ -586,6 +618,202 @@
           <div id="orgPreviewMeta" class="org-preview-meta"></div>
         </aside>
 
+        <!-- Right-Side Spacious Edit Property Inspector Drawer (Typography, Paragraph Align, Multi-Align) -->
+        <aside id="editPropsDrawer" class="edit-props-drawer hidden">
+          <div class="org-preview-head">
+            <span id="propDrawerTitle" class="org-preview-title" data-i18n="propDrawerTitle">属性检查器</span>
+            <button id="closeEditPropsBtn" class="ghost-btn icon-only-btn" type="button" title="Collapse Inspector">
+              <i data-lucide="panel-right-close"></i>
+            </button>
+          </div>
+
+          <!-- Empty Selection Guidance & Quick Page Tools -->
+          <div id="propEmptySection" class="prop-card">
+            <p class="prop-empty-copy" data-i18n="propEmptyHint">在画布上点选文字或图片即可在此精细调整字体、字号、两端对齐与颜色；按住 Shift 点击或在空白处拖拽框选多个元素可批量对齐与等距分布。</p>
+            <div class="prop-two-btns">
+              <button id="propQuickAddTextBtn" class="prop-action-btn" type="button">
+                <i data-lucide="type"></i><span data-i18n="addTextBtn">添加文字</span>
+              </button>
+              <button id="propQuickAddImgBtn" class="prop-action-btn" type="button">
+                <i data-lucide="image-plus"></i><span data-i18n="addImgBtn">添加图片</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Section 1: Alignment, Distribution & Exact Coordinates -->
+          <div id="propAlignSection" class="prop-card hidden">
+            <div class="prop-sec-head">
+              <span data-i18n="propSecAlign">对齐与分布</span>
+              <span id="propAlignTargetBadge" class="version-pill">相对页面</span>
+            </div>
+            <div class="prop-align-grid">
+              <button class="prop-icon-btn align-op-btn" data-align-op="left" type="button" title="左对齐">
+                <i data-lucide="align-start-vertical"></i>
+              </button>
+              <button class="prop-icon-btn align-op-btn" data-align-op="center-h" type="button" title="水平居中">
+                <i data-lucide="align-center-vertical"></i>
+              </button>
+              <button class="prop-icon-btn align-op-btn" data-align-op="right" type="button" title="右对齐">
+                <i data-lucide="align-end-vertical"></i>
+              </button>
+              <button class="prop-icon-btn align-op-btn" data-align-op="top" type="button" title="顶对齐">
+                <i data-lucide="align-start-horizontal"></i>
+              </button>
+              <button class="prop-icon-btn align-op-btn" data-align-op="center-v" type="button" title="垂直居中">
+                <i data-lucide="align-center-horizontal"></i>
+              </button>
+              <button class="prop-icon-btn align-op-btn" data-align-op="bottom" type="button" title="底对齐">
+                <i data-lucide="align-end-horizontal"></i>
+              </button>
+              <button class="prop-icon-btn align-op-btn dist-op-btn" data-align-op="distribute-h" type="button" title="水平等距分布">
+                <i data-lucide="align-horizontal-distribute-center"></i>
+              </button>
+              <button class="prop-icon-btn align-op-btn dist-op-btn" data-align-op="distribute-v" type="button" title="垂直等距分布">
+                <i data-lucide="align-vertical-distribute-center"></i>
+              </button>
+            </div>
+            <div id="propCoordRow" class="prop-coord-grid">
+              <label class="prop-mini-field"><span>X</span><input id="propPosXInput" type="number" step="0.5" /><em>mm</em></label>
+              <label class="prop-mini-field"><span>Y</span><input id="propPosYInput" type="number" step="0.5" /><em>mm</em></label>
+              <label class="prop-mini-field"><span data-i18n="propPosW">宽 W</span><input id="propWidthMmInput" type="number" min="5" step="1" /><em>mm</em></label>
+            </div>
+          </div>
+
+          <!-- Section 2: Font Family, Size, Styles, Paragraph Alignment (Left/Center/Right/Justify), Line & Letter Spacing -->
+          <div id="propTextSection" class="prop-stack hidden">
+            <div class="prop-card">
+              <div class="prop-sec-head"><span data-i18n="propSecFont">字体与字号</span></div>
+              <select id="propFontSelect" class="prop-select">
+                <option value="sans" data-i18n="fontSans">黑体 (思源/雅黑)</option>
+                <option value="serif" data-i18n="fontSerif">宋体 (书刊衬线)</option>
+                <option value="kai" data-i18n="fontKai">楷体 (手写书风)</option>
+                <option value="fangsong" data-i18n="fontFangsong">仿宋 (标准公文)</option>
+                <option value="round" data-i18n="fontRound">圆体 (柔和标题)</option>
+                <option value="helvetica" data-i18n="fontHelvetica">Helvetica / Arial</option>
+                <option value="times" data-i18n="fontTimes">Times New Roman</option>
+                <option value="mono" data-i18n="fontMono">等宽 (Consolas)</option>
+              </select>
+
+              <div class="prop-size-row">
+                <div class="prop-stepper">
+                  <button id="propSizeDecBtn" type="button">−</button>
+                  <input id="propSizeInput" type="number" min="6" max="160" step="0.5" value="14" />
+                  <span class="unit-txt">pt</span>
+                  <button id="propSizeIncBtn" type="button">+</button>
+                </div>
+                <div class="prop-style-toggles">
+                  <button id="propBoldBtn" class="prop-icon-btn" type="button" title="Bold"><i data-lucide="bold"></i></button>
+                  <button id="propItalicBtn" class="prop-icon-btn" type="button" title="Italic"><i data-lucide="italic"></i></button>
+                  <button id="propUnderlineBtn" class="prop-icon-btn" type="button" title="Underline"><i data-lucide="underline"></i></button>
+                  <button id="propStrikeBtn" class="prop-icon-btn" type="button" title="Strikethrough"><i data-lucide="strikethrough"></i></button>
+                </div>
+              </div>
+
+              <div class="prop-size-presets">
+                <button class="prop-chip-btn" data-pt="9" type="button">9</button>
+                <button class="prop-chip-btn" data-pt="10.5" type="button">10.5</button>
+                <button class="prop-chip-btn" data-pt="12" type="button">12</button>
+                <button class="prop-chip-btn" data-pt="14" type="button">14</button>
+                <button class="prop-chip-btn" data-pt="18" type="button">18</button>
+                <button class="prop-chip-btn" data-pt="24" type="button">24</button>
+                <button class="prop-chip-btn" data-pt="36" type="button">36</button>
+              </div>
+            </div>
+
+            <div class="prop-card">
+              <div class="prop-sec-head"><span data-i18n="propSecPara">文本与段落对齐</span></div>
+              <div class="prop-para-grid">
+                <button class="prop-para-btn active" data-text-align="left" type="button">
+                  <i data-lucide="align-left"></i><span data-i18n="taLeft">左对齐</span>
+                </button>
+                <button class="prop-para-btn" data-text-align="center" type="button">
+                  <i data-lucide="align-center"></i><span data-i18n="taCenter">居中</span>
+                </button>
+                <button class="prop-para-btn" data-text-align="right" type="button">
+                  <i data-lucide="align-right"></i><span data-i18n="taRight">右对齐</span>
+                </button>
+                <button class="prop-para-btn" data-text-align="justify" type="button">
+                  <i data-lucide="align-justify"></i><span data-i18n="taJustify">两端对齐</span>
+                </button>
+              </div>
+
+              <div class="prop-two-fields">
+                <label class="prop-mini-field">
+                  <span data-i18n="propLineHeight">行距</span>
+                  <input id="propLineHeightInput" type="number" min="0.85" max="3.0" step="0.05" value="1.16" />
+                  <em>×</em>
+                </label>
+                <label class="prop-mini-field">
+                  <span data-i18n="propLetterSpacing">字距</span>
+                  <input id="propLetterSpacingInput" type="number" min="-2" max="20" step="0.5" value="0" />
+                  <em>pt</em>
+                </label>
+              </div>
+            </div>
+
+            <div class="prop-card">
+              <div class="prop-sec-head"><span data-i18n="propSecColor">色彩与遮底</span></div>
+              <div class="prop-color-bar">
+                <input id="propTextColorInput" class="prop-color-well" type="color" value="#181817" />
+                <div class="prop-swatch-row">
+                  <button class="prop-swatch" data-col="#181817" style="background:#181817;" type="button"></button>
+                  <button class="prop-swatch" data-col="#e03e3e" style="background:#e03e3e;" type="button"></button>
+                  <button class="prop-swatch" data-col="#2383e2" style="background:#2383e2;" type="button"></button>
+                  <button class="prop-swatch" data-col="#0f7b6c" style="background:#0f7b6c;" type="button"></button>
+                  <button class="prop-swatch" data-col="#c97512" style="background:#c97512;" type="button"></button>
+                  <button class="prop-swatch" data-col="#ffffff" style="background:#ffffff;border:1px solid var(--scroll-thumb-hover);" type="button"></button>
+                </div>
+                <span id="propColorHex" class="prop-hex-txt">#181817</span>
+              </div>
+
+              <div class="pop-row" style="font-size:12px;">
+                <span data-i18n="propOpacity">不透明度</span>
+                <div style="display:flex;align-items:center;gap:8px;flex:1;max-width:168px;">
+                  <input id="propOpacityRange" type="range" min="10" max="100" step="5" value="100" style="flex:1;accent-color:var(--text-1);" />
+                  <span id="propOpacityVal" style="font-size:11.5px;font-variant-numeric:tabular-nums;min-width:34px;text-align:right;">100%</span>
+                </div>
+              </div>
+
+              <div class="pop-row" style="font-size:12px;">
+                <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
+                  <input id="propMaskCheck" type="checkbox" checked />
+                  <span data-i18n="propMaskFull">遮盖原底层文字</span>
+                </label>
+                <input id="propBgColorInput" class="prop-color-well" type="color" value="#ffffff" title="Mask Color" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Image Inspector -->
+          <div id="propImgSection" class="prop-card hidden">
+            <div class="prop-sec-head"><span data-i18n="propSecImg">图片属性</span></div>
+            <button id="propImgReplaceBtn" class="primary-btn" style="width:100%;justify-content:center;height:36px;" type="button">
+              <i data-lucide="replace"></i><span data-i18n="replaceImgBtn">替换图片...</span>
+            </button>
+            <div id="propImgFitWrap" style="display:flex;flex-direction:column;gap:6px;">
+              <span style="font-size:11.5px;color:var(--text-2);" data-i18n="propImgFitLabel">画面填充方式</span>
+              <div class="soft-pills" style="display:grid;grid-template-columns:repeat(3,1fr);">
+                <button class="soft-pill prop-img-fit-btn active" data-fit="cover" type="button" data-i18n="fitCover">铺满裁切</button>
+                <button class="soft-pill prop-img-fit-btn" data-fit="contain" type="button" data-i18n="fitContain">完整适应</button>
+                <button class="soft-pill prop-img-fit-btn" data-fit="fill" type="button" data-i18n="fitFill">拉伸填满</button>
+              </div>
+            </div>
+            <button id="propImgRestoreBtn" class="prop-action-btn hidden" type="button">
+              <i data-lucide="refresh-cw"></i><span data-i18n="restoreImgBtn">恢复原图</span>
+            </button>
+          </div>
+
+          <!-- Section 4: Common Object Actions (Duplicate / Delete) -->
+          <div id="propActionSection" class="prop-two-btns hidden">
+            <button id="propDuplicateBtn" class="prop-action-btn" type="button">
+              <i data-lucide="copy"></i><span data-i18n="propDupBtn">复制元素</span>
+            </button>
+            <button id="propDeleteSelBtn" class="prop-action-btn danger" type="button">
+              <i data-lucide="trash-2"></i><span data-i18n="propDelBtn">删除所选</span>
+            </button>
+          </div>
+        </aside>
+
         <!-- Floating Edge Reopen Tab When Organize Preview Drawer Is Collapsed -->
         <button id="reopenOrgPreviewTab" class="reopen-preview-tab hidden" type="button" title="Expand Preview Pane">
           <i data-lucide="panel-right-open"></i>
@@ -604,6 +832,10 @@
           <option value="sans" data-i18n="fontSans">黑体</option>
           <option value="serif" data-i18n="fontSerif">宋体</option>
           <option value="kai" data-i18n="fontKai">楷体</option>
+          <option value="fangsong" data-i18n="fontFangsong">仿宋</option>
+          <option value="round" data-i18n="fontRound">圆体</option>
+          <option value="helvetica" data-i18n="fontHelvetica">Helvetica</option>
+          <option value="times" data-i18n="fontTimes">Times</option>
           <option value="mono" data-i18n="fontMono">等宽</option>
         </select>
         <button id="fmtSmallerBtn" class="pager-btn" type="button" title="Smaller">A−</button>

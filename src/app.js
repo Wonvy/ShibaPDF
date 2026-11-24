@@ -47,14 +47,23 @@
     lastClickedOrgIdx: -1,
     draggingOrgIdx: -1,
 
-    // Content Editor State (Text & Images)
+    // Content Editor State (Text, Images, Multi-Selection & Right Inspector)
+    editPropsOpen: localStorage.getItem("shibapdf_edit_props") !== "0",
     placingNewText: false,
     selectedTextId: null,
     selectedOrigImgId: null,
     selectedImgEditId: null,
+    multiSelection: [], // [{ kind: 'text' | 'img', id }]
+    suppressNextOverlayClick: false,
     textSessionInitial: null,
     abortAnnDrawFn: null,
     imgInputMode: "replace",
+
+    // Browser IndexedDB Workspace Cache State
+    bootRestoreDone: false,
+    cacheSaved: false,
+    cacheRestoredMsg: false,
+    saveCacheTimer: null,
 
     // Freeform Designer Annotation Board State
     annotations: [],
@@ -161,9 +170,55 @@
     addImgBtn: document.getElementById("addImgBtn"),
     rotatePageBtn: document.getElementById("rotatePageBtn"),
     deletePageBtn: document.getElementById("deletePageBtn"),
+    multiAlignGroup: document.getElementById("multiAlignGroup"),
+    alignOpBtns: Array.from(document.querySelectorAll(".align-op-btn")),
+    distOpBtns: Array.from(document.querySelectorAll(".dist-op-btn")),
     undoEditBtn: document.getElementById("undoEditBtn"),
+    toggleEditPropsBtn: document.getElementById("toggleEditPropsBtn"),
     cancelEditTaskBtn: document.getElementById("cancelEditTaskBtn"),
     editHintLabel: document.getElementById("editHintLabel"),
+
+    // Right Edit Property Inspector Drawer
+    editPropsDrawer: document.getElementById("editPropsDrawer"),
+    closeEditPropsBtn: document.getElementById("closeEditPropsBtn"),
+    propDrawerTitle: document.getElementById("propDrawerTitle"),
+    propEmptySection: document.getElementById("propEmptySection"),
+    propQuickAddTextBtn: document.getElementById("propQuickAddTextBtn"),
+    propQuickAddImgBtn: document.getElementById("propQuickAddImgBtn"),
+    propAlignSection: document.getElementById("propAlignSection"),
+    propAlignTargetBadge: document.getElementById("propAlignTargetBadge"),
+    propCoordRow: document.getElementById("propCoordRow"),
+    propPosXInput: document.getElementById("propPosXInput"),
+    propPosYInput: document.getElementById("propPosYInput"),
+    propWidthMmInput: document.getElementById("propWidthMmInput"),
+    propTextSection: document.getElementById("propTextSection"),
+    propFontSelect: document.getElementById("propFontSelect"),
+    propSizeDecBtn: document.getElementById("propSizeDecBtn"),
+    propSizeIncBtn: document.getElementById("propSizeIncBtn"),
+    propSizeInput: document.getElementById("propSizeInput"),
+    propBoldBtn: document.getElementById("propBoldBtn"),
+    propItalicBtn: document.getElementById("propItalicBtn"),
+    propUnderlineBtn: document.getElementById("propUnderlineBtn"),
+    propStrikeBtn: document.getElementById("propStrikeBtn"),
+    propSizeChips: Array.from(document.querySelectorAll(".prop-chip-btn")),
+    propParaBtns: Array.from(document.querySelectorAll(".prop-para-btn")),
+    propLineHeightInput: document.getElementById("propLineHeightInput"),
+    propLetterSpacingInput: document.getElementById("propLetterSpacingInput"),
+    propTextColorInput: document.getElementById("propTextColorInput"),
+    propSwatches: Array.from(document.querySelectorAll(".prop-swatch")),
+    propColorHex: document.getElementById("propColorHex"),
+    propOpacityRange: document.getElementById("propOpacityRange"),
+    propOpacityVal: document.getElementById("propOpacityVal"),
+    propMaskCheck: document.getElementById("propMaskCheck"),
+    propBgColorInput: document.getElementById("propBgColorInput"),
+    propImgSection: document.getElementById("propImgSection"),
+    propImgReplaceBtn: document.getElementById("propImgReplaceBtn"),
+    propImgFitWrap: document.getElementById("propImgFitWrap"),
+    propImgFitBtns: Array.from(document.querySelectorAll(".prop-img-fit-btn")),
+    propImgRestoreBtn: document.getElementById("propImgRestoreBtn"),
+    propActionSection: document.getElementById("propActionSection"),
+    propDuplicateBtn: document.getElementById("propDuplicateBtn"),
+    propDeleteSelBtn: document.getElementById("propDeleteSelBtn"),
 
     annotateControls: document.getElementById("annotateControls"),
     annToolBtns: Array.from(document.querySelectorAll(".ann-tool-btn")),
@@ -388,8 +443,127 @@
   }
 
   function pushUndo() {
+    state.cacheRestoredMsg = false;
     state.undoStack.push(JSON.stringify(state.pages));
     if (state.undoStack.length > 25) state.undoStack.shift();
+    scheduleWorkspaceCacheSave();
+  }
+
+  function scheduleWorkspaceCacheSave() {
+    if (!window.ShibaStorage || !state.bootRestoreDone) return;
+    clearTimeout(state.saveCacheTimer);
+    state.saveCacheTimer = setTimeout(async () => {
+      if (!hasPages() || !state.docOrder.length) {
+        state.cacheSaved = false;
+        await window.ShibaStorage.clearWorkspaceSnapshot();
+        updateStatusBars();
+        return;
+      }
+      const docs = [];
+      state.docOrder.forEach((docId) => {
+        const d = state.sourceDocs.get(docId);
+        if (d) docs.push({ id: d.id, name: d.name, size: d.size, rawBytes: d.rawBytes });
+      });
+      const ok = await window.ShibaStorage.saveWorkspaceSnapshot({
+        savedAt: Date.now(),
+        pillar: state.pillar,
+        pagesSub: state.pagesSub,
+        prepressSub: state.prepressSub,
+        convertSub: state.convertSub,
+        activeSlotIdx: state.activeSlotIdx,
+        bleed: state.bleed,
+        bleedAction: state.bleedAction,
+        imposeType: state.imposeType,
+        imposeNup: state.imposeNup,
+        annotations: state.annotations,
+        docOrder: state.docOrder,
+        docs,
+        pages: state.pages
+      });
+      state.cacheSaved = Boolean(ok);
+      updateStatusBars();
+    }, 450);
+  }
+
+  async function restoreCachedProjectOnBoot() {
+    if (!window.ShibaStorage) {
+      state.bootRestoreDone = true;
+      return;
+    }
+    const snap = await window.ShibaStorage.loadWorkspaceSnapshot();
+    if (!snap || !snap.docs || !snap.docs.length || !snap.pages || !snap.pages.length || hasPages()) {
+      state.bootRestoreDone = true;
+      return;
+    }
+
+    try {
+      updateLoadModal(10, t("loadModalTitle", { c: 1, t: snap.docs.length }), snap.docs[0].name, t("loadStepRead"));
+      await nextUiFrame();
+
+      for (let i = 0; i < snap.docs.length; i++) {
+        const item = snap.docs[i];
+        const rawBytes = item.rawBytes instanceof Uint8Array ? item.rawBytes : new Uint8Array(item.rawBytes);
+        const pdfJsDoc = await pdfjsLib.getDocument({ data: rawBytes.slice() }).promise;
+        const origPages = [];
+        for (let p = 1; p <= pdfJsDoc.numPages; p++) {
+          const pg = await pdfJsDoc.getPage(p);
+          const vp = pg.getViewport({ scale: 1 });
+          const textSpans = await window.ShibaPrepress.extractPageTextSpans(pdfJsDoc, p);
+          origPages.push({
+            wPt: vp.width,
+            hPt: vp.height,
+            wMm: vp.width / MM_TO_PT,
+            hMm: vp.height / MM_TO_PT,
+            rot: pg.rotate || 0,
+            textSpans
+          });
+        }
+        const preflight = await window.ShibaPrepress.runPrepressPreflight(rawBytes, pdfJsDoc, origPages);
+        state.sourceDocs.set(item.id, {
+          id: item.id,
+          name: item.name,
+          size: item.size || rawBytes.byteLength,
+          rawBytes,
+          pdfJsDoc,
+          origPages,
+          preflight
+        });
+      }
+
+      state.docOrder = snap.docOrder.filter((id) => state.sourceDocs.has(id));
+      state.pages = snap.pages.filter((s) => state.sourceDocs.has(s.docId));
+      state.annotations = Array.isArray(snap.annotations) ? snap.annotations : [];
+      if (snap.pillar) state.pillar = snap.pillar;
+      if (snap.pagesSub) state.pagesSub = snap.pagesSub;
+      if (snap.prepressSub) state.prepressSub = snap.prepressSub;
+      if (snap.convertSub) state.convertSub = snap.convertSub;
+      if (typeof snap.activeSlotIdx === "number") state.activeSlotIdx = snap.activeSlotIdx;
+      if (snap.bleed) state.bleed = Object.assign({ top: 3, bottom: 3, left: 3, right: 3 }, snap.bleed);
+      if (snap.bleedAction) state.bleedAction = snap.bleedAction;
+      if (snap.imposeType) state.imposeType = snap.imposeType;
+      if (snap.imposeNup) state.imposeNup = snap.imposeNup;
+
+      if (window.ShibaImageEdit) {
+        const imgTasks = [];
+        state.pages.forEach((s) => {
+          (s.imgEdits || []).forEach((ie) => {
+            if (ie.dataUrl) imgTasks.push(window.ShibaImageEdit.ensureCachedImage(ie.dataUrl).catch(() => null));
+          });
+        });
+        await Promise.all(imgTasks);
+      }
+
+      state.cacheSaved = true;
+      state.cacheRestoredMsg = true;
+      clampActiveIndices();
+      renderFileList();
+      refreshWorkspace(true);
+    } catch (err) {
+      console.warn("[ShibaPDF] Failed to restore cached workspace:", err);
+    } finally {
+      state.bootRestoreDone = true;
+      el.loadProgressOverlay.classList.add("hidden");
+    }
   }
 
   function triggerDownloadBlob(blob, filename) {
@@ -589,6 +763,12 @@
         renderTextEditorOverlay();
         return;
       }
+      if (state.multiSelection.length > 0) {
+        clearAllContentSelections();
+        updateTopStripControls();
+        renderTextEditorOverlay();
+        return;
+      }
       if (state.selectedTextId) {
         discardActiveTextSession();
         return;
@@ -627,6 +807,14 @@
         syncAnnotateCursor();
       }
       return;
+    }
+
+    if ((e.key === "Delete" || e.key === "Backspace") && !inEditable && state.pillar === "pages" && state.pagesSub === "text") {
+      if (state.multiSelection.length > 0 || state.selectedTextId || state.selectedImgEditId || state.selectedOrigImgId) {
+        e.preventDefault();
+        deleteSelectedEditElements();
+        return;
+      }
     }
 
     if ((e.key === "Delete" || e.key === "Backspace") && !inEditable && isAnnotateMode() && state.selectedAnnId) {
@@ -782,9 +970,11 @@
     state.activePfHighlights = [];
     state.selectedPfCardIdx = -1;
     el.compResultBox.classList.add("hidden");
+    state.cacheRestoredMsg = false;
     updateZoomReadout();
     renderFileList();
     refreshWorkspace(true);
+    scheduleWorkspaceCacheSave();
   }
 
   function renderFileList() {
@@ -851,22 +1041,17 @@
         );
       }
       if (ed.text && ed.text.trim()) {
-        const fontPx = Math.max(7, ed.fontPt) * scale;
-        const lineH = fontPx * 1.14;
-        const asc = ed.ascent || 0.84;
-        ctx.font = `${ed.italic ? "italic " : ""}${ed.bold ? "700" : "400"} ${fontPx}px ${window.ShibaPrepress.getCssFontStack(ed.fontKey)}`;
-        const lines = ed.text.split("\n");
-        if (!ed.origRect && ed.maskBg) {
-          let mw = 8;
-          lines.forEach((l) => { mw = Math.max(mw, ctx.measureText(l).width); });
-          ctx.fillStyle = ed.bgColor || "#ffffff";
-          ctx.fillRect(ed.u * w - 1, ed.v * h - 1, mw + 3, lines.length * lineH + 2);
+        if (window.ShibaEditProps) {
+          window.ShibaEditProps.drawFormattedTextBlock(
+            ctx,
+            ed,
+            ed.u * w,
+            ed.v * h,
+            scale,
+            info.wPt,
+            window.ShibaPrepress.getCssFontStack
+          );
         }
-        ctx.fillStyle = ed.color || "#181817";
-        ctx.textBaseline = "alphabetic";
-        lines.forEach((ln, idx) => {
-          ctx.fillText(ln, ed.u * w, ed.v * h + fontPx * asc + idx * lineH);
-        });
       }
     });
   }
@@ -1184,9 +1369,11 @@
   }
 
   function positionTextFmtBar(targetWrapEl) {
+    syncEditPropsPanel();
     const ed = getSelectedEditObj();
-    if (!ed || !targetWrapEl || state.pillar !== "pages" || state.pagesSub !== "text") {
+    if (!ed || !targetWrapEl || state.pillar !== "pages" || state.pagesSub !== "text" || (state.editPropsOpen && window.innerWidth > 900)) {
       el.textFmtBar.classList.add("hidden");
+      updateStatusBars();
       return;
     }
     el.textFmtBar.classList.remove("hidden");
@@ -1217,7 +1404,292 @@
     state.selectedTextId = null;
     state.selectedOrigImgId = null;
     state.selectedImgEditId = null;
+    state.multiSelection = [];
     state.textSessionInitial = null;
+  }
+
+  function isInMultiSelection(kind, id) {
+    return state.multiSelection.some((m) => m.kind === kind && m.id === id);
+  }
+
+  function toggleMultiSelectItem(kind, id) {
+    // Seed multiSelection with any active single selection first
+    if (state.multiSelection.length === 0) {
+      if (state.selectedTextId) state.multiSelection.push({ kind: "text", id: state.selectedTextId });
+      else if (state.selectedImgEditId) state.multiSelection.push({ kind: "img", id: state.selectedImgEditId });
+    }
+    const idx = state.multiSelection.findIndex((m) => m.kind === kind && m.id === id);
+    if (idx >= 0) state.multiSelection.splice(idx, 1);
+    else state.multiSelection.push({ kind, id });
+
+    applyMultiSelectionNormalize();
+  }
+
+  function applyMultiSelectionNormalize() {
+    state.selectedOrigImgId = null;
+    state.textSessionInitial = null;
+    if (document.activeElement && typeof document.activeElement.blur === "function") {
+      document.activeElement.blur();
+    }
+    if (state.multiSelection.length === 1) {
+      const only = state.multiSelection[0];
+      state.multiSelection = [];
+      state.selectedTextId = only.kind === "text" ? only.id : null;
+      state.selectedImgEditId = only.kind === "img" ? only.id : null;
+    } else {
+      state.selectedTextId = null;
+      state.selectedImgEditId = null;
+    }
+    updateTopStripControls();
+    renderTextEditorOverlay();
+  }
+
+  function promoteOrigSpanToEdit(slot, sp) {
+    const sampled = sampleColorsAroundSpan(sp);
+    const newEd = {
+      id: `ed_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
+      origId: sp.id,
+      origRect: { u: sp.u, v: sp.v, uw: sp.uw, vh: sp.vh },
+      u: sp.u,
+      v: sp.v,
+      boxWidthU: null,
+      text: sp.str,
+      fontPt: sp.fontPt,
+      ascent: sp.ascent || 0.84,
+      bold: Boolean(sp.bold),
+      italic: Boolean(sp.italic),
+      underline: false,
+      strike: false,
+      textAlign: "left",
+      lineHeight: 1.16,
+      letterSpacing: 0,
+      opacity: 1,
+      fontKey: sp.fontKey || "sans",
+      color: sampled.fg,
+      maskBg: true,
+      bgColor: sampled.bg
+    };
+    slot.edits.push(newEd);
+    return newEd;
+  }
+
+  function getSelectedTextObjects() {
+    const slot = getActiveSlot();
+    if (!slot || !slot.edits) return [];
+    if (state.multiSelection.length >= 2) {
+      const ids = new Set(state.multiSelection.filter((m) => m.kind === "text").map((m) => m.id));
+      return slot.edits.filter((e) => ids.has(e.id));
+    }
+    const single = getSelectedEditObj();
+    return single ? [single] : [];
+  }
+
+  function measureItemBoxNorm(kind, obj) {
+    const cssW = parseFloat(el.spreadCanvas.style.width) || el.spreadCanvas.width || 600;
+    const cssH = parseFloat(el.spreadCanvas.style.height) || el.spreadCanvas.height || 800;
+    if (kind === "img") {
+      return { kind: "img", ref: obj, u: obj.u, v: obj.v, uw: obj.uw || 0.2, vh: obj.vh || 0.2 };
+    }
+    const domWrap = el.textEditOverlay.querySelector(`.text-box-wrap[data-edit-id="${obj.id}"]`);
+    let uw = obj.boxWidthU || (obj.origRect ? obj.origRect.uw : 0.14);
+    let vh = obj.origRect ? obj.origRect.vh : 0.035;
+    if (domWrap) {
+      const r = domWrap.getBoundingClientRect();
+      if (r.width > 2) uw = r.width / cssW;
+      if (r.height > 2) vh = r.height / cssH;
+    }
+    return { kind: "text", ref: obj, u: obj.u, v: obj.v, uw, vh };
+  }
+
+  function getAllSelectedBoxMetrics() {
+    const slot = getActiveSlot();
+    if (!slot) return [];
+    const out = [];
+    if (state.multiSelection.length >= 2) {
+      state.multiSelection.forEach((m) => {
+        if (m.kind === "text") {
+          const ed = (slot.edits || []).find((x) => x.id === m.id);
+          if (ed) out.push(measureItemBoxNorm("text", ed));
+        } else if (m.kind === "img") {
+          const im = (slot.imgEdits || []).find((x) => x.id === m.id && !x.deleted);
+          if (im) out.push(measureItemBoxNorm("img", im));
+        }
+      });
+      return out;
+    }
+    const ed = getSelectedEditObj();
+    if (ed) return [measureItemBoxNorm("text", ed)];
+    const im = getSelectedImgEditObj();
+    if (im) return [measureItemBoxNorm("img", im)];
+    return [];
+  }
+
+  function runAlignDistributeOp(op) {
+    if (!window.ShibaEditProps) return;
+    const items = getAllSelectedBoxMetrics();
+    if (!items.length) return;
+    if ((op === "distribute-h" || op === "distribute-v") && items.length < 3) return;
+    pushUndo();
+    const changed = window.ShibaEditProps.alignAndDistributeItems(items, op);
+    if (changed) {
+      renderTextEditorOverlay();
+      updateTopStripControls();
+      scheduleWorkspaceCacheSave();
+    }
+  }
+
+  function deleteSelectedEditElements() {
+    const slot = getActiveSlot();
+    if (!slot) return;
+    slot.imgEdits = slot.imgEdits || [];
+    if (state.multiSelection.length >= 2) {
+      pushUndo();
+      const txtIds = new Set(state.multiSelection.filter((m) => m.kind === "text").map((m) => m.id));
+      const imgIds = new Set(state.multiSelection.filter((m) => m.kind === "img").map((m) => m.id));
+      slot.edits = (slot.edits || []).filter((ed) => {
+        if (!txtIds.has(ed.id)) return true;
+        if (ed.origRect) {
+          ed.text = "";
+          ed.maskBg = true;
+          return true;
+        }
+        return false;
+      });
+      slot.imgEdits = slot.imgEdits.filter((im) => {
+        if (!imgIds.has(im.id)) return true;
+        if (im.origId) {
+          im.deleted = true;
+          return true;
+        }
+        return false;
+      });
+      clearAllContentSelections();
+      renderTextEditorOverlay();
+      updateTopStripControls();
+      return;
+    }
+    if (state.selectedTextId) {
+      el.fmtDeleteNodeBtn.click();
+    } else if (state.selectedImgEditId || state.selectedOrigImgId) {
+      el.imgDeleteNodeBtn.click();
+    }
+  }
+
+  function duplicateSelectedEditElements() {
+    const slot = getActiveSlot();
+    if (!slot) return;
+    const items = getAllSelectedBoxMetrics();
+    if (!items.length) return;
+    pushUndo();
+    const newMulti = [];
+    items.forEach((b, idx) => {
+      const copyObj = JSON.parse(JSON.stringify(b.ref));
+      copyObj.id = `${b.kind === "text" ? "ed" : "imed"}_${Date.now()}_${idx}_${Math.random().toString(36).slice(2, 5)}`;
+      copyObj.origId = null;
+      copyObj.origRect = null;
+      copyObj.u = Math.min(0.94, b.ref.u + 0.025);
+      copyObj.v = Math.min(0.94, b.ref.v + 0.025);
+      if (b.kind === "text") {
+        slot.edits.push(copyObj);
+        newMulti.push({ kind: "text", id: copyObj.id });
+      } else {
+        copyObj.xObjKey = null;
+        copyObj.moved = true;
+        slot.imgEdits.push(copyObj);
+        newMulti.push({ kind: "img", id: copyObj.id });
+      }
+    });
+    state.multiSelection = newMulti;
+    applyMultiSelectionNormalize();
+  }
+
+  function syncEditPropsPanel() {
+    if (!el.editPropsDrawer || state.pillar !== "pages" || state.pagesSub !== "text" || !hasPages()) return;
+    const slot = getActiveSlot();
+    const info = getSlotSizeInfo(slot);
+    const multiCnt = state.multiSelection.length;
+    const selTexts = getSelectedTextObjects();
+    const selImg = getSelectedImgEditObj();
+    const hasOrigImg = Boolean(state.selectedOrigImgId) && !selImg && multiCnt === 0;
+    const boxMetrics = getAllSelectedBoxMetrics();
+    const totalSel = hasOrigImg ? 1 : boxMetrics.length;
+
+    el.propDrawerTitle.textContent =
+      multiCnt >= 2 ? t("propMultiTitle", { n: multiCnt }) : t("propDrawerTitle");
+
+    el.propEmptySection.classList.toggle("hidden", totalSel > 0);
+    el.propAlignSection.classList.toggle("hidden", boxMetrics.length === 0);
+    el.propActionSection.classList.toggle("hidden", totalSel === 0);
+    el.propDuplicateBtn.classList.toggle("hidden", hasOrigImg);
+
+    if (boxMetrics.length > 0) {
+      el.propAlignTargetBadge.textContent =
+        boxMetrics.length >= 2 ? t("propRelSel", { n: boxMetrics.length }) : t("propRelPage");
+      el.distOpBtns.forEach((btn) => {
+        btn.disabled = boxMetrics.length < 3;
+      });
+      el.propCoordRow.classList.toggle("hidden", boxMetrics.length !== 1);
+      if (boxMetrics.length === 1) {
+        const b0 = boxMetrics[0];
+        if (document.activeElement !== el.propPosXInput) {
+          el.propPosXInput.value = (b0.u * info.wMm).toFixed(1);
+        }
+        if (document.activeElement !== el.propPosYInput) {
+          el.propPosYInput.value = (b0.v * info.hMm).toFixed(1);
+        }
+        if (document.activeElement !== el.propWidthMmInput) {
+          el.propWidthMmInput.value = (b0.uw * info.wMm).toFixed(1);
+        }
+      }
+    }
+
+    // Text Inspector Section
+    const showText = selTexts.length > 0;
+    el.propTextSection.classList.toggle("hidden", !showText);
+    if (showText) {
+      const t0 = selTexts[0];
+      el.propFontSelect.value = t0.fontKey || "sans";
+      if (document.activeElement !== el.propSizeInput) {
+        el.propSizeInput.value = String(Math.round(t0.fontPt * 10) / 10);
+      }
+      el.propSizeChips.forEach((ch) =>
+        ch.classList.toggle("active", Math.abs(parseFloat(ch.dataset.pt) - t0.fontPt) < 0.25)
+      );
+      el.propBoldBtn.classList.toggle("active", Boolean(t0.bold));
+      el.propItalicBtn.classList.toggle("active", Boolean(t0.italic));
+      el.propUnderlineBtn.classList.toggle("active", Boolean(t0.underline));
+      el.propStrikeBtn.classList.toggle("active", Boolean(t0.strike));
+
+      const alignVal = t0.textAlign || "left";
+      el.propParaBtns.forEach((pb) => pb.classList.toggle("active", pb.dataset.textAlign === alignVal));
+
+      if (document.activeElement !== el.propLineHeightInput) {
+        el.propLineHeightInput.value = String(typeof t0.lineHeight === "number" ? t0.lineHeight : 1.16);
+      }
+      if (document.activeElement !== el.propLetterSpacingInput) {
+        el.propLetterSpacingInput.value = String(t0.letterSpacing || 0);
+      }
+
+      const col = t0.color || "#181817";
+      el.propTextColorInput.value = col;
+      el.propColorHex.textContent = col.toUpperCase();
+      const opPct = Math.round((typeof t0.opacity === "number" ? t0.opacity : 1) * 100);
+      el.propOpacityRange.value = String(opPct);
+      el.propOpacityVal.textContent = `${opPct}%`;
+      el.propMaskCheck.checked = Boolean(t0.maskBg);
+      el.propBgColorInput.value = t0.bgColor || "#ffffff";
+    }
+
+    // Image Inspector Section
+    const showImg = (Boolean(selImg) || hasOrigImg) && multiCnt < 2;
+    el.propImgSection.classList.toggle("hidden", !showImg);
+    if (showImg) {
+      el.propImgFitWrap.classList.toggle("hidden", hasOrigImg);
+      el.propImgRestoreBtn.classList.toggle("hidden", !(selImg && selImg.origId));
+      if (selImg) {
+        el.propImgFitBtns.forEach((b) => b.classList.toggle("active", b.dataset.fit === (selImg.fitMode || "cover")));
+      }
+    }
   }
 
   function discardActiveTextSession() {
@@ -1246,7 +1718,7 @@
     const sess = state.textSessionInitial;
     if (slot && sess && sess.isNew && state.selectedTextId === sess.edId) {
       const ed = slot.edits.find((x) => x.id === sess.edId);
-      if (ed && JSON.stringify(ed) === sess.snapshot) {
+      if (ed && ed.origId && JSON.stringify(ed) === sess.snapshot) {
         // User clicked an original text span and didn't change anything -> clean up no-op box!
         slot.edits = slot.edits.filter((x) => x.id !== sess.edId);
         if (sess.pushedUndo && state.undoStack.length) state.undoStack.pop();
@@ -1360,8 +1832,10 @@
   }
 
   function positionImgFmtBar(targetEl) {
-    if (!targetEl || state.pillar !== "pages" || state.pagesSub !== "text") {
+    syncEditPropsPanel();
+    if (!targetEl || state.pillar !== "pages" || state.pagesSub !== "text" || (state.editPropsOpen && window.innerWidth > 900)) {
       el.imgFmtBar.classList.add("hidden");
+      updateStatusBars();
       return;
     }
     const imEd = getSelectedImgEditObj();
@@ -1505,8 +1979,9 @@
       if (imEd.deleted || !imEd.dataUrl) return;
 
       const isImgSel = state.selectedImgEditId === imEd.id;
+      const isImgMulti = isInMultiSelection("img", imEd.id);
       const iWrap = document.createElement("div");
-      iWrap.className = "img-box-wrap" + (isImgSel ? " selected" : "");
+      iWrap.className = "img-box-wrap" + (isImgSel ? " selected" : "") + (isImgMulti ? " multi-selected" : "");
       iWrap.dataset.imgEditId = imEd.id;
       const boxPxW = Math.max(20, imEd.uw * cssW);
       const boxPxH = Math.max(20, imEd.vh * cssH);
@@ -1545,10 +2020,27 @@
       function startMoveImg(downEv) {
         downEv.preventDefault();
         downEv.stopPropagation();
+        if (downEv.shiftKey || downEv.ctrlKey || downEv.metaKey) {
+          toggleMultiSelectItem("img", imEd.id);
+          return;
+        }
         const sx = downEv.clientX;
         const sy = downEv.clientY;
         const oU = imEd.u;
         const oV = imEd.v;
+        const groupMode = isImgMulti && state.multiSelection.length >= 2;
+        const groupSnap = groupMode
+          ? getAllSelectedBoxMetrics().map((b) => ({
+              ref: b.ref,
+              kind: b.kind,
+              u0: b.ref.u,
+              v0: b.ref.v,
+              el:
+                b.kind === "text"
+                  ? el.textEditOverlay.querySelector(`.text-box-wrap[data-edit-id="${b.ref.id}"]`)
+                  : el.textEditOverlay.querySelector(`.img-box-wrap[data-img-edit-id="${b.ref.id}"]`)
+            }))
+          : null;
         let didMove = false;
         document.body.classList.add("is-dragging-box");
 
@@ -1560,12 +2052,24 @@
             pushUndo();
           }
           if (didMove) {
-            imEd.u = Math.min(0.98, Math.max(-0.2, oU + dx / cssW));
-            imEd.v = Math.min(0.98, Math.max(-0.2, oV + dy / cssH));
-            imEd.moved = true;
-            iWrap.style.left = `${imEd.u * cssW}px`;
-            iWrap.style.top = `${imEd.v * cssH}px`;
-            if (isImgSel) positionImgFmtBar(iWrap);
+            if (groupSnap) {
+              groupSnap.forEach((g) => {
+                g.ref.u = Math.min(0.98, Math.max(-0.2, g.u0 + dx / cssW));
+                g.ref.v = Math.min(0.98, Math.max(-0.2, g.v0 + dy / cssH));
+                if (g.kind === "img") g.ref.moved = true;
+                if (g.el) {
+                  g.el.style.left = `${g.ref.u * cssW}px`;
+                  g.el.style.top = `${g.ref.v * cssH}px`;
+                }
+              });
+            } else {
+              imEd.u = Math.min(0.98, Math.max(-0.2, oU + dx / cssW));
+              imEd.v = Math.min(0.98, Math.max(-0.2, oV + dy / cssH));
+              imEd.moved = true;
+              iWrap.style.left = `${imEd.u * cssW}px`;
+              iWrap.style.top = `${imEd.v * cssH}px`;
+              if (isImgSel) positionImgFmtBar(iWrap);
+            }
           }
         }
 
@@ -1574,9 +2078,9 @@
           window.removeEventListener("pointerup", onUp);
           document.body.classList.remove("is-dragging-box");
           if (!didMove && !isImgSel) {
-            state.selectedTextId = null;
-            state.selectedOrigImgId = null;
+            clearAllContentSelections();
             state.selectedImgEditId = imEd.id;
+            updateTopStripControls();
             renderTextEditorOverlay();
           } else if (didMove) {
             renderTextEditorOverlay();
@@ -1681,29 +2185,24 @@
         hit.style.top = `${sp.v * cssH}px`;
         hit.style.width = `${Math.max(10, sp.uw * cssW)}px`;
         hit.style.height = `${Math.max(10, sp.vh * cssH)}px`;
+        hit.dataset.spanId = sp.id;
         hit.addEventListener("click", (ev) => {
           ev.stopPropagation();
+          if (ev.shiftKey || ev.ctrlKey || ev.metaKey) {
+            if (state.multiSelection.length === 0 && state.selectedTextId) {
+              state.multiSelection.push({ kind: "text", id: state.selectedTextId });
+            } else if (state.multiSelection.length === 0 && state.selectedImgEditId) {
+              state.multiSelection.push({ kind: "img", id: state.selectedImgEditId });
+            }
+            pushUndo();
+            const newEd = promoteOrigSpanToEdit(slot, sp);
+            state.multiSelection.push({ kind: "text", id: newEd.id });
+            applyMultiSelectionNormalize();
+            return;
+          }
           commitAndDeselectContent();
-          const sampled = sampleColorsAroundSpan(sp);
           pushUndo();
-          const newEd = {
-            id: `ed_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
-            origId: sp.id,
-            origRect: { u: sp.u, v: sp.v, uw: sp.uw, vh: sp.vh },
-            u: sp.u,
-            v: sp.v,
-            boxWidthU: null,
-            text: sp.str,
-            fontPt: sp.fontPt,
-            ascent: sp.ascent || 0.84,
-            bold: Boolean(sp.bold),
-            italic: Boolean(sp.italic),
-            fontKey: sp.fontKey || "sans",
-            color: sampled.fg,
-            maskBg: true,
-            bgColor: sampled.bg
-          };
-          slot.edits.push(newEd);
+          const newEd = promoteOrigSpanToEdit(slot, sp);
           state.selectedOrigImgId = null;
           state.selectedImgEditId = null;
           state.selectedTextId = newEd.id;
@@ -1743,8 +2242,9 @@
       if (!ed.text && ed.origRect && state.selectedTextId !== ed.id) return;
 
       const isSelected = state.selectedTextId === ed.id;
+      const isMulti = isInMultiSelection("text", ed.id);
       const wrap = document.createElement("div");
-      wrap.className = "text-box-wrap" + (isSelected ? " selected" : "");
+      wrap.className = "text-box-wrap" + (isSelected ? " selected" : "") + (isMulti ? " multi-selected" : "");
       wrap.dataset.editId = ed.id;
       wrap.style.left = `${ed.u * cssW}px`;
       wrap.style.top = `${ed.v * cssH}px`;
@@ -1762,8 +2262,9 @@
       wrap.appendChild(dragHandle);
 
       // Editable Text Node (zero padding so position matches PDF glyph box 1:1)
+      const isSingleJustify = ed.textAlign === "justify" && !String(ed.text || "").includes("\n");
       const textNode = document.createElement("div");
-      textNode.className = "editable-text-node";
+      textNode.className = "editable-text-node" + (isSingleJustify ? " single-line-justify" : "");
       textNode.contentEditable = isSelected ? "true" : "false";
       textNode.spellcheck = false;
       textNode.textContent = ed.text;
@@ -1771,6 +2272,14 @@
       textNode.style.fontSize = `${Math.max(7, ed.fontPt) * cssScale}px`;
       textNode.style.fontWeight = ed.bold ? "700" : "400";
       textNode.style.fontStyle = ed.italic ? "italic" : "normal";
+      textNode.style.lineHeight = String(typeof ed.lineHeight === "number" ? ed.lineHeight : 1.16);
+      textNode.style.letterSpacing = ed.letterSpacing ? `${ed.letterSpacing * cssScale}px` : "normal";
+      textNode.style.textAlign = ed.textAlign || "left";
+      const decs = [];
+      if (ed.underline) decs.push("underline");
+      if (ed.strike) decs.push("line-through");
+      textNode.style.textDecoration = decs.length ? decs.join(" ") : "none";
+      textNode.style.opacity = String(typeof ed.opacity === "number" ? ed.opacity : 1);
       textNode.style.color = ed.color || "#181817";
       wrap.appendChild(textNode);
 
@@ -1783,14 +2292,31 @@
       eHandle.className = "text-resize-handle e";
       wrap.appendChild(eHandle);
 
-      // --- Drag-Move Logic (from dragHandle OR unselected box body) ---
+      // --- Drag-Move Logic (Supports Both Single Box & Multi-Selection Group Move!) ---
       function startMoveBox(downEv) {
         downEv.preventDefault();
         downEv.stopPropagation();
+        if (downEv.shiftKey || downEv.ctrlKey || downEv.metaKey) {
+          toggleMultiSelectItem("text", ed.id);
+          return;
+        }
         const startX = downEv.clientX;
         const startY = downEv.clientY;
         const origU = ed.u;
         const origV = ed.v;
+        const groupMode = isMulti && state.multiSelection.length >= 2;
+        const groupSnap = groupMode
+          ? getAllSelectedBoxMetrics().map((b) => ({
+              ref: b.ref,
+              kind: b.kind,
+              u0: b.ref.u,
+              v0: b.ref.v,
+              el:
+                b.kind === "text"
+                  ? el.textEditOverlay.querySelector(`.text-box-wrap[data-edit-id="${b.ref.id}"]`)
+                  : el.textEditOverlay.querySelector(`.img-box-wrap[data-img-edit-id="${b.ref.id}"]`)
+            }))
+          : null;
         let moved = false;
 
         document.body.classList.add("is-dragging-box");
@@ -1803,11 +2329,23 @@
             pushUndo();
           }
           if (moved) {
-            ed.u = Math.min(0.97, Math.max(0, origU + dx / cssW));
-            ed.v = Math.min(0.97, Math.max(0, origV + dy / cssH));
-            wrap.style.left = `${ed.u * cssW}px`;
-            wrap.style.top = `${ed.v * cssH}px`;
-            if (isSelected) positionTextFmtBar(wrap);
+            if (groupSnap) {
+              groupSnap.forEach((g) => {
+                g.ref.u = Math.min(0.97, Math.max(0, g.u0 + dx / cssW));
+                g.ref.v = Math.min(0.97, Math.max(0, g.v0 + dy / cssH));
+                if (g.kind === "img") g.ref.moved = true;
+                if (g.el) {
+                  g.el.style.left = `${g.ref.u * cssW}px`;
+                  g.el.style.top = `${g.ref.v * cssH}px`;
+                }
+              });
+            } else {
+              ed.u = Math.min(0.97, Math.max(0, origU + dx / cssW));
+              ed.v = Math.min(0.97, Math.max(0, origV + dy / cssH));
+              wrap.style.left = `${ed.u * cssW}px`;
+              wrap.style.top = `${ed.v * cssH}px`;
+              if (isSelected) positionTextFmtBar(wrap);
+            }
           }
         }
 
@@ -1828,6 +2366,7 @@
             renderTextEditorOverlay();
             focusSelectedEditorNode();
           } else {
+            syncEditPropsPanel();
             updateTopStripControls();
           }
         }
@@ -1840,6 +2379,12 @@
 
       wrap.addEventListener("pointerdown", (ev) => {
         if (ev.target === dragHandle || ev.target === seHandle || ev.target === eHandle) return;
+        if (ev.shiftKey || ev.ctrlKey || ev.metaKey) {
+          ev.preventDefault();
+          ev.stopPropagation();
+          toggleMultiSelectItem("text", ed.id);
+          return;
+        }
         if (!isSelected) {
           startMoveBox(ev);
         } else {
@@ -1911,6 +2456,7 @@
       textNode.addEventListener("input", () => {
         ed.text = textNode.innerText;
         positionTextFmtBar(wrap);
+        scheduleWorkspaceCacheSave();
       });
 
       textNode.addEventListener("click", (ev) => ev.stopPropagation());
@@ -1919,6 +2465,7 @@
       if (isSelected) selectedWrapEl = wrap;
     });
 
+    syncEditPropsPanel();
     if (selectedWrapEl) {
       el.imgFmtBar.classList.add("hidden");
       requestAnimationFrame(() => positionTextFmtBar(selectedWrapEl));
@@ -2575,8 +3122,10 @@
   }
 
   function pushAnnUndo() {
+    state.cacheRestoredMsg = false;
     state.annUndoStack.push(JSON.stringify(state.annotations));
     if (state.annUndoStack.length > 35) state.annUndoStack.shift();
+    scheduleWorkspaceCacheSave();
   }
 
   function syncAnnotateCursor(isDraggingNow) {
@@ -2701,6 +3250,7 @@
         txt.textContent = ann.text;
         txt.addEventListener("input", () => {
           ann.text = txt.innerText;
+          scheduleWorkspaceCacheSave();
         });
         txt.addEventListener("pointerdown", (ev) => {
           state.selectedAnnId = ann.id;
@@ -2824,9 +3374,11 @@
 
     if (!loaded) {
       el.topStrip.classList.add("hidden");
+      el.topStrip.classList.remove("center-tools");
       el.rightSplitter.classList.add("hidden");
       el.preflightDrawer.classList.add("hidden");
       el.orgPreviewDrawer.classList.add("hidden");
+      el.editPropsDrawer.classList.add("hidden");
       el.reopenOrgPreviewTab.classList.add("hidden");
       el.emptyStage.classList.remove("hidden");
       el.spreadViewContainer.classList.add("hidden");
@@ -2848,9 +3400,12 @@
     const isConv = state.pillar === "convert";
     const isAnn = isAnnotateMode();
     const isOrg = isOrganizeMode();
+    const isTextEdit = isPages && state.pagesSub === "text";
+    const isEditOp = isTextEdit || isAnn;
 
-    // Top Strip only shows parameters/tools; Convert uses clean center card so hide empty top strip!
+    // Top Strip only shows parameters/tools; center tools horizontally during Edit & Annotate operations!
     el.topStrip.classList.toggle("hidden", isConv);
+    el.topStrip.classList.toggle("center-tools", isEditOp);
     el.exportBtn.disabled = state.busy;
 
     el.stripPages.classList.toggle("hidden", !isPages);
@@ -2858,10 +3413,16 @@
     el.stripPreflight.classList.toggle("hidden", !isPf);
     el.preflightDrawer.classList.toggle("hidden", !isPf);
     const showOrgPreview = isOrg && state.orgPreviewOpen;
+    const showEditProps = isTextEdit && state.editPropsOpen;
     el.orgPreviewDrawer.classList.toggle("hidden", !showOrgPreview);
-    el.reopenOrgPreviewTab.classList.toggle("hidden", !(isOrg && !state.orgPreviewOpen));
-    el.rightSplitter.classList.toggle("hidden", !(isPf || showOrgPreview));
+    el.editPropsDrawer.classList.toggle("hidden", !showEditProps);
+    el.reopenOrgPreviewTab.classList.toggle(
+      "hidden",
+      !((isOrg && !state.orgPreviewOpen) || (isTextEdit && !state.editPropsOpen))
+    );
+    el.rightSplitter.classList.toggle("hidden", !(isPf || showOrgPreview || showEditProps));
     el.toggleOrgPreviewBtn.classList.toggle("active", state.orgPreviewOpen);
+    el.toggleEditPropsBtn.classList.toggle("active", state.editPropsOpen);
     el.stripRightGroup.classList.toggle("hidden", isConv);
     el.annExportPngBtn.classList.toggle("hidden", !isAnn);
     el.annExportPngBtn.disabled = state.busy;
@@ -2879,12 +3440,18 @@
 
     el.deletePageBtn.disabled = state.pages.length <= 1;
     el.undoEditBtn.classList.toggle("hidden", state.undoStack.length === 0);
+    const multiCnt = state.multiSelection.length;
+    el.multiAlignGroup.classList.toggle("hidden", multiCnt < 2);
+    el.distOpBtns.forEach((b) => {
+      b.disabled = multiCnt < 3;
+    });
     const hasActiveEditTask = Boolean(
-      state.placingNewText || state.selectedTextId || state.selectedOrigImgId || state.selectedImgEditId
+      state.placingNewText || state.selectedTextId || state.selectedOrigImgId || state.selectedImgEditId || multiCnt >= 2
     );
     el.cancelEditTaskBtn.classList.toggle("hidden", !hasActiveEditTask);
     el.addTextBtn.classList.toggle("active", state.placingNewText);
     el.editHintLabel.textContent = state.placingNewText ? t("editPlaceHint") : t("editClickHint");
+    if (showEditProps) syncEditPropsPanel();
 
     // Designer Annotation Controls
     el.annToolBtns.forEach((b) => b.classList.toggle("active", b.dataset.tool === state.annTool));
@@ -2991,12 +3558,14 @@
   function updateStatusBars() {
     if (!el.leftStatusText || !el.rightStatusBadge || !el.rightStatusMain || !el.rightStatusMeta) return;
 
-    // 1. Left Column Fixed Status Bar (GitHub + Wonvy on left, local offline / loaded files summary on right)
+    // 1. Left Column Fixed Status Bar (GitHub + Wonvy on left, local offline / cached files summary on right)
     if (!state.docOrder.length || !hasPages()) {
       el.leftStatusText.textContent = t("stLeftIdle");
     } else {
       const mbStr = Math.max(0.01, getTotalLoadedBytes() / (1024 * 1024)).toFixed(2);
-      el.leftStatusText.textContent = t("stLeftLoaded", { f: state.docOrder.length, mb: mbStr });
+      el.leftStatusText.textContent = state.cacheSaved
+        ? t("stCacheSaved", { f: state.docOrder.length, mb: mbStr })
+        : t("stLeftLoaded", { f: state.docOrder.length, mb: mbStr });
     }
 
     // 2. Right Column Fixed Contextual Status Bar
@@ -3033,6 +3602,14 @@
       z: zoomDisp
     });
 
+    if (state.cacheRestoredMsg) {
+      el.rightStatusBadge.classList.add("ok");
+      el.rightStatusBadge.textContent = modLabel;
+      el.rightStatusMain.textContent = t("stCacheRestored", { p: state.pages.length });
+      el.rightStatusMeta.textContent = stdPageRight;
+      return;
+    }
+
     if (state.pillar === "pages" && state.pagesSub === "organize") {
       const selCount = getSelectedSlots().length;
       const pIdx = Math.max(0, Math.min(state.pages.length - 1, state.previewSlotIdx || state.activeSlotIdx));
@@ -3061,6 +3638,9 @@
       if (state.placingNewText) {
         el.rightStatusBadge.classList.add("warn");
         el.rightStatusMain.textContent = t("stEditPlace");
+      } else if (state.multiSelection.length >= 2) {
+        el.rightStatusBadge.classList.add("ok");
+        el.rightStatusMain.textContent = t("stMultiSel", { n: state.multiSelection.length });
       } else if (state.selectedTextId) {
         const ed = getSelectedEditObj();
         el.rightStatusBadge.classList.add("ok");
@@ -3268,51 +3848,12 @@
     };
   }
 
-  // Render user text edit at ~430 DPI with exact alphabetic baseline & zero-offset padding compensation!
-  function renderTextEditStampPng(ed) {
-    const scale = 6;
-    const lines = (ed.text || "").split("\n");
-    const fontPx = Math.max(7, ed.fontPt) * scale;
-    const lineH = fontPx * 1.14;
-    const ascRatio = ed.ascent || 0.84;
-    const padPx = Math.ceil(fontPx * 0.14);
-    const fontSpec = `${ed.italic ? "italic " : ""}${ed.bold ? "700" : "400"} ${fontPx}px ${window.ShibaPrepress.getCssFontStack(ed.fontKey)}`;
-
-    const mCv = document.createElement("canvas");
-    const mCtx = mCv.getContext("2d");
-    mCtx.font = fontSpec;
-    let maxW = 8;
-    lines.forEach((ln) => {
-      maxW = Math.max(maxW, mCtx.measureText(ln || " ").width);
-    });
-
-    const cv = document.createElement("canvas");
-    cv.width = Math.ceil(maxW + padPx * 2);
-    cv.height = Math.ceil(lines.length * lineH + padPx * 2);
-    const ctx = cv.getContext("2d");
-
-    if (!ed.origRect && ed.maskBg) {
-      ctx.fillStyle = ed.bgColor || "#ffffff";
-      ctx.fillRect(padPx - 2 * scale, padPx - scale, maxW + 4 * scale, lines.length * lineH + 2 * scale);
-    }
-
-    ctx.font = fontSpec;
-    ctx.fillStyle = ed.color || "#181817";
-    ctx.textBaseline = "alphabetic";
-    lines.forEach((ln, idx) => {
-      ctx.fillText(ln, padPx, padPx + fontPx * ascRatio + idx * lineH);
-    });
-
-    const dataUrl = cv.toDataURL("image/png");
-    const bin = atob(dataUrl.split(",")[1]);
-    const bytes = new Uint8Array(bin.length);
-    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
-    return {
-      bytes,
-      ptW: cv.width / scale,
-      ptH: cv.height / scale,
-      padPt: padPx / scale
-    };
+  function renderTextEditStampPng(ed, pageWPt) {
+    return window.ShibaEditProps.renderRichTextStampPng(
+      ed,
+      pageWPt || 595,
+      window.ShibaPrepress.getCssFontStack
+    );
   }
 
   function normVisualToPdfRect(rawCrop, rotDeg, norm) {
@@ -3400,7 +3941,7 @@
           }
 
           if (ed.text && ed.text.trim().length > 0) {
-            const stamp = renderTextEditStampPng(ed);
+            const stamp = renderTextEditStampPng(ed, getSlotSizeInfo(slot).wPt);
             const pngImg = await outDoc.embedPng(stamp.bytes);
             const posRect = normVisualToPdfRect(crop, totalRot, {
               u: ed.u,
@@ -3551,6 +4092,9 @@
     state.annotations = [];
     state.annUndoStack = [];
     state.bitmapCache.clear();
+    state.cacheSaved = false;
+    state.cacheRestoredMsg = false;
+    if (window.ShibaStorage) window.ShibaStorage.clearWorkspaceSnapshot();
     clearAllContentSelections();
     state.activePfHighlights = [];
     renderFileList();
@@ -4104,7 +4648,103 @@
     }
   });
 
+  // Marquee Rubber-Band Multi-Selection on Blank Overlay Space
+  el.textEditOverlay.addEventListener("pointerdown", (ev) => {
+    if (ev.target !== el.textEditOverlay || ev.button !== 0 || state.placingNewText) return;
+    const slot = getActiveSlot();
+    if (!slot) return;
+
+    const ovRect = el.textEditOverlay.getBoundingClientRect();
+    const sx = ev.clientX;
+    const sy = ev.clientY;
+    let marqueeEl = null;
+    let dragged = false;
+
+    function onMv(mvEv) {
+      const dx = mvEv.clientX - sx;
+      const dy = mvEv.clientY - sy;
+      if (!dragged && Math.hypot(dx, dy) > 5) {
+        dragged = true;
+        marqueeEl = document.createElement("div");
+        marqueeEl.className = "selection-marquee-box";
+        el.textEditOverlay.appendChild(marqueeEl);
+      }
+      if (dragged && marqueeEl) {
+        const x0 = Math.max(0, Math.min(sx, mvEv.clientX) - ovRect.left);
+        const y0 = Math.max(0, Math.min(sy, mvEv.clientY) - ovRect.top);
+        const x1 = Math.min(ovRect.width, Math.max(sx, mvEv.clientX) - ovRect.left);
+        const y1 = Math.min(ovRect.height, Math.max(sy, mvEv.clientY) - ovRect.top);
+        marqueeEl.style.left = `${x0}px`;
+        marqueeEl.style.top = `${y0}px`;
+        marqueeEl.style.width = `${Math.max(1, x1 - x0)}px`;
+        marqueeEl.style.height = `${Math.max(1, y1 - y0)}px`;
+      }
+    }
+
+    function onUp(upEv) {
+      window.removeEventListener("pointermove", onMv);
+      window.removeEventListener("pointerup", onUp);
+      if (!dragged) return;
+      state.suppressNextOverlayClick = true;
+      if (marqueeEl && marqueeEl.parentNode) marqueeEl.parentNode.removeChild(marqueeEl);
+
+      const mLeft = Math.min(sx, upEv.clientX);
+      const mRight = Math.max(sx, upEv.clientX);
+      const mTop = Math.min(sy, upEv.clientY);
+      const mBottom = Math.max(sy, upEv.clientY);
+
+      const hits = [];
+      el.textEditOverlay.querySelectorAll(".text-box-wrap").forEach((wEl) => {
+        const r = wEl.getBoundingClientRect();
+        if (r.right >= mLeft && r.left <= mRight && r.bottom >= mTop && r.top <= mBottom) {
+          hits.push({ kind: "text", id: wEl.dataset.editId });
+        }
+      });
+      el.textEditOverlay.querySelectorAll(".img-box-wrap").forEach((iEl) => {
+        const r = iEl.getBoundingClientRect();
+        if (r.right >= mLeft && r.left <= mRight && r.bottom >= mTop && r.top <= mBottom) {
+          hits.push({ kind: "img", id: iEl.dataset.imgEditId });
+        }
+      });
+
+      // If no existing edit boxes were inside marquee, promote intersected original PDF text spans (up to 24)
+      if (hits.length === 0 && slot.extraRot === 0) {
+        const docEntry = state.sourceDocs.get(slot.docId);
+        const origSpans = (docEntry && docEntry.origPages[slot.origIdx].textSpans) || [];
+        const matchedOrig = [];
+        el.textEditOverlay.querySelectorAll(".pdf-text-hit").forEach((hEl) => {
+          const r = hEl.getBoundingClientRect();
+          if (r.right >= mLeft && r.left <= mRight && r.bottom >= mTop && r.top <= mBottom) {
+            const sp = origSpans.find((s) => s.id === hEl.dataset.spanId);
+            if (sp) matchedOrig.push(sp);
+          }
+        });
+        if (matchedOrig.length > 0 && matchedOrig.length <= 24) {
+          pushUndo();
+          matchedOrig.forEach((sp) => {
+            const newEd = promoteOrigSpanToEdit(slot, sp);
+            hits.push({ kind: "text", id: newEd.id });
+          });
+        }
+      }
+
+      if (hits.length > 0) {
+        state.multiSelection = hits;
+        applyMultiSelectionNormalize();
+      } else {
+        commitAndDeselectContent();
+      }
+    }
+
+    window.addEventListener("pointermove", onMv);
+    window.addEventListener("pointerup", onUp);
+  });
+
   el.textEditOverlay.addEventListener("click", (ev) => {
+    if (state.suppressNextOverlayClick) {
+      state.suppressNextOverlayClick = false;
+      return;
+    }
     if (ev.target !== el.textEditOverlay) return;
     const slot = getActiveSlot();
     if (!slot) return;
@@ -4115,7 +4755,7 @@
       const v = Math.min(0.92, Math.max(0.02, (ev.clientY - rect.top) / rect.height));
       pushUndo();
       const newEd = {
-        id: `ed_${Date.now()}`,
+        id: `ed_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
         origId: null,
         origRect: null,
         u,
@@ -4126,6 +4766,12 @@
         ascent: 0.84,
         bold: false,
         italic: false,
+        underline: false,
+        strike: false,
+        textAlign: "left",
+        lineHeight: 1.16,
+        letterSpacing: 0,
+        opacity: 1,
         fontKey: "sans",
         color: "#181817",
         maskBg: false,
@@ -4135,16 +4781,11 @@
       state.placingNewText = false;
       clearAllContentSelections();
       state.selectedTextId = newEd.id;
-      state.textSessionInitial = {
-        isNew: true,
-        edId: newEd.id,
-        pushedUndo: true,
-        snapshot: JSON.stringify(newEd)
-      };
+      state.textSessionInitial = null;
       updateTopStripControls();
       renderTextEditorOverlay();
       focusSelectedEditorNode();
-    } else if (state.selectedTextId || state.selectedOrigImgId || state.selectedImgEditId) {
+    } else if (state.multiSelection.length > 0 || state.selectedTextId || state.selectedOrigImgId || state.selectedImgEditId) {
       commitAndDeselectContent();
     }
   });
@@ -4667,9 +5308,182 @@
     }
   }
 
+  function setEditPropsOpen(val) {
+    state.editPropsOpen = Boolean(val);
+    localStorage.setItem("shibapdf_edit_props", state.editPropsOpen ? "1" : "0");
+    updateTopStripControls();
+    if (hasPages() && !el.spreadViewContainer.classList.contains("hidden")) {
+      renderCanvasStage();
+    }
+  }
+
   el.toggleOrgPreviewBtn.addEventListener("click", () => setOrgPreviewOpen(!state.orgPreviewOpen));
   el.closeOrgPreviewBtn.addEventListener("click", () => setOrgPreviewOpen(false));
-  el.reopenOrgPreviewTab.addEventListener("click", () => setOrgPreviewOpen(true));
+  el.toggleEditPropsBtn.addEventListener("click", () => setEditPropsOpen(!state.editPropsOpen));
+  el.closeEditPropsBtn.addEventListener("click", () => setEditPropsOpen(false));
+  el.reopenOrgPreviewTab.addEventListener("click", () => {
+    if (state.pillar === "pages" && state.pagesSub === "text") setEditPropsOpen(true);
+    else setOrgPreviewOpen(true);
+  });
+
+  // Right Property Inspector & Multi-Selection Alignment/Distribution Events
+  el.propQuickAddTextBtn.addEventListener("click", () => el.addTextBtn.click());
+  el.propQuickAddImgBtn.addEventListener("click", () => el.addImgBtn.click());
+
+  el.alignOpBtns.forEach((btn) => {
+    btn.addEventListener("click", () => runAlignDistributeOp(btn.dataset.alignOp));
+  });
+
+  function applyBatchTextProp(mutatorFn) {
+    const targets = getSelectedTextObjects();
+    if (!targets.length) return;
+    state.textSessionInitial = null;
+    pushUndo();
+    targets.forEach((ed) => mutatorFn(ed));
+    renderTextEditorOverlay();
+    updateTopStripControls();
+  }
+
+  el.propFontSelect.addEventListener("change", () => {
+    applyBatchTextProp((ed) => { ed.fontKey = el.propFontSelect.value; });
+  });
+
+  el.propSizeDecBtn.addEventListener("click", () => {
+    applyBatchTextProp((ed) => { ed.fontPt = Math.max(6, Math.round((ed.fontPt - 1) * 10) / 10); });
+  });
+
+  el.propSizeIncBtn.addEventListener("click", () => {
+    applyBatchTextProp((ed) => { ed.fontPt = Math.min(160, Math.round((ed.fontPt + 1) * 10) / 10); });
+  });
+
+  el.propSizeInput.addEventListener("change", () => {
+    const v = Math.min(160, Math.max(6, parseFloat(el.propSizeInput.value) || 14));
+    applyBatchTextProp((ed) => { ed.fontPt = v; });
+  });
+
+  el.propSizeChips.forEach((ch) => {
+    ch.addEventListener("click", () => {
+      const v = parseFloat(ch.dataset.pt) || 14;
+      applyBatchTextProp((ed) => { ed.fontPt = v; });
+    });
+  });
+
+  el.propBoldBtn.addEventListener("click", () => {
+    const t0 = getSelectedTextObjects()[0];
+    if (!t0) return;
+    const nextVal = !t0.bold;
+    applyBatchTextProp((ed) => { ed.bold = nextVal; });
+  });
+
+  el.propItalicBtn.addEventListener("click", () => {
+    const t0 = getSelectedTextObjects()[0];
+    if (!t0) return;
+    const nextVal = !t0.italic;
+    applyBatchTextProp((ed) => { ed.italic = nextVal; });
+  });
+
+  el.propUnderlineBtn.addEventListener("click", () => {
+    const t0 = getSelectedTextObjects()[0];
+    if (!t0) return;
+    const nextVal = !t0.underline;
+    applyBatchTextProp((ed) => { ed.underline = nextVal; });
+  });
+
+  el.propStrikeBtn.addEventListener("click", () => {
+    const t0 = getSelectedTextObjects()[0];
+    if (!t0) return;
+    const nextVal = !t0.strike;
+    applyBatchTextProp((ed) => { ed.strike = nextVal; });
+  });
+
+  el.propParaBtns.forEach((pb) => {
+    pb.addEventListener("click", () => {
+      const align = pb.dataset.textAlign || "left";
+      applyBatchTextProp((ed) => {
+        ed.textAlign = align;
+        if (align !== "left" && (!ed.boxWidthU || ed.boxWidthU < 0.03)) {
+          const m = measureItemBoxNorm("text", ed);
+          const minW = align === "justify" && !String(ed.text || "").includes("\n")
+            ? Math.min(0.92 - ed.u, Math.max(m.uw * 1.28, m.uw + 0.045))
+            : Math.max(m.uw, 0.14);
+          ed.boxWidthU = Math.round(minW * 10000) / 10000;
+        }
+      });
+    });
+  });
+
+  el.propLineHeightInput.addEventListener("input", () => {
+    const lh = Math.min(3.0, Math.max(0.85, parseFloat(el.propLineHeightInput.value) || 1.16));
+    applyBatchTextProp((ed) => { ed.lineHeight = lh; });
+  });
+
+  el.propLetterSpacingInput.addEventListener("input", () => {
+    const ls = Math.min(24, Math.max(-2, parseFloat(el.propLetterSpacingInput.value) || 0));
+    applyBatchTextProp((ed) => { ed.letterSpacing = ls; });
+  });
+
+  el.propTextColorInput.addEventListener("input", () => {
+    applyBatchTextProp((ed) => { ed.color = el.propTextColorInput.value; });
+  });
+
+  el.propSwatches.forEach((sw) => {
+    sw.addEventListener("click", () => {
+      applyBatchTextProp((ed) => { ed.color = sw.dataset.col || "#181817"; });
+    });
+  });
+
+  el.propOpacityRange.addEventListener("input", () => {
+    const op = Math.max(0.1, Math.min(1, (parseInt(el.propOpacityRange.value, 10) || 100) / 100));
+    el.propOpacityVal.textContent = `${Math.round(op * 100)}%`;
+    applyBatchTextProp((ed) => { ed.opacity = op; });
+  });
+
+  el.propMaskCheck.addEventListener("change", () => {
+    applyBatchTextProp((ed) => { ed.maskBg = el.propMaskCheck.checked; });
+  });
+
+  el.propBgColorInput.addEventListener("input", () => {
+    applyBatchTextProp((ed) => {
+      ed.bgColor = el.propBgColorInput.value;
+      ed.maskBg = true;
+    });
+  });
+
+  [el.propPosXInput, el.propPosYInput, el.propWidthMmInput].forEach((inp, idx) => {
+    inp.addEventListener("change", () => {
+      const slot = getActiveSlot();
+      const items = getAllSelectedBoxMetrics();
+      if (!slot || items.length !== 1) return;
+      const info = getSlotSizeInfo(slot);
+      const b0 = items[0];
+      pushUndo();
+      if (idx === 0) b0.ref.u = Math.min(0.96, Math.max(0, (parseFloat(inp.value) || 0) / info.wMm));
+      else if (idx === 1) b0.ref.v = Math.min(0.96, Math.max(0, (parseFloat(inp.value) || 0) / info.hMm));
+      else {
+        const wU = Math.min(0.98, Math.max(0.03, (parseFloat(inp.value) || 20) / info.wMm));
+        if (b0.kind === "text") b0.ref.boxWidthU = wU;
+        else b0.ref.uw = wU;
+      }
+      if (b0.kind === "img") b0.ref.moved = true;
+      renderTextEditorOverlay();
+      updateTopStripControls();
+    });
+  });
+
+  el.propImgReplaceBtn.addEventListener("click", () => openImageFileDialog("replace"));
+  el.propImgFitBtns.forEach((b) => {
+    b.addEventListener("click", () => {
+      const imEd = getSelectedImgEditObj();
+      if (!imEd) return;
+      pushUndo();
+      imEd.fitMode = b.dataset.fit || "cover";
+      renderTextEditorOverlay();
+      updateTopStripControls();
+    });
+  });
+  el.propImgRestoreBtn.addEventListener("click", () => el.imgRestoreBtn.click());
+  el.propDuplicateBtn.addEventListener("click", duplicateSelectedEditElements);
+  el.propDeleteSelBtn.addEventListener("click", deleteSelectedEditElements);
   el.orgPrevEditPageBtn.addEventListener("click", () => {
     if (!hasPages()) return;
     state.activeSlotIdx = state.previewSlotIdx || 0;
@@ -4730,7 +5544,8 @@
     );
   }
 
-  // Initialize App
+  // Initialize App & Auto-Restore Cached Project from Browser IndexedDB
   applyTheme();
   applyLanguage();
+  restoreCachedProjectOnBoot();
 })();

@@ -5,11 +5,13 @@ const root = path.resolve(__dirname, "..");
 
 const jsModules = [
   "src/i18n.js",
+  "src/storage.js",
   "src/zip.js",
   "src/prepress-k100.js",
   "src/imposition.js",
   "src/convert-compress.js",
   "src/image-edit.js",
+  "src/edit-props.js",
   "src/annotate.js",
   "src/workspace-ux.js",
   "src/app.js"

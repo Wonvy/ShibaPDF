@@ -158,7 +158,11 @@ window.ShibaPrepress = (function () {
 
   function getCssFontStack(fontKey) {
     if (fontKey === "serif") return '"Songti SC", "STSong", "Noto Serif CJK SC", "SimSun", Georgia, "Times New Roman", serif';
-    if (fontKey === "kai") return '"Kaiti SC", "STKaiti", "KaiTi", "FangSong", serif';
+    if (fontKey === "kai") return '"Kaiti SC", "STKaiti", "KaiTi", serif';
+    if (fontKey === "fangsong") return '"FangSong", "STFangsong", "FangSong_GB2312", "Songti SC", serif';
+    if (fontKey === "round") return '"YouYuan", "STYuanti-SC-Regular", "Microsoft YaHei UI", "PingFang SC", sans-serif';
+    if (fontKey === "helvetica") return 'Arial, "Helvetica Neue", Helvetica, "PingFang SC", "Microsoft YaHei", sans-serif';
+    if (fontKey === "times") return '"Times New Roman", Times, Georgia, "Songti SC", "SimSun", serif';
     if (fontKey === "mono") return '"JetBrains Mono", Consolas, "SFMono-Regular", Menlo, "Courier New", monospace';
     return '-apple-system, BlinkMacSystemFont, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif';
   }
