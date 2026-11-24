@@ -1,5 +1,6 @@
 :root,
 [data-theme="light"] {
+  color-scheme: light;
   --bg-rail: #f4f4f1;
   --bg-canvas: #fafaf9;
   --bg-surface: #ffffff;
@@ -37,6 +38,7 @@
 }
 
 [data-theme="dark"] {
+  color-scheme: dark;
   --bg-rail: #161616;
   --bg-canvas: #101010;
   --bg-surface: #1d1d1d;
