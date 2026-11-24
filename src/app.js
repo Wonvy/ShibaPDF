@@ -79,14 +79,19 @@
     spacePressed: false,
     dragDepth: 0,
 
-    // Imposition State (Default Multi-Sheet Grid Overview + Smart Reader-Spread Auto-Split)
+    // Imposition State (Default Multi-Sheet Grid Overview + Dedicated Dockable Visual Imposition Sidebar)
     imposeView: "grid", // 'grid' | 'single'
+    imposeDrawerOpen: localStorage.getItem("shibapdf_impose_drawer") !== "0",
+    imposeDockSide: localStorage.getItem("shibapdf_impose_side") === "left" ? "left" : "right",
     imposeGridScale: 1.0,
     imposeAutoSplitSpreads: true,
     imposeSpreadFirstBackFront: true,
     imposeSpreadBleedMm: 0,
     hiResSlotCache: new Map(),
-    imposeType: "booklet", // 'booklet' | 'spread2up' | 'nup'
+    imposeType: "booklet", // 'booklet' | 'perfect' | 'spread2up' | 'fold' | 'nup' | 'steprepeat'
+    imposeSigPages: 8,
+    imposeSpineGrindMm: 0,
+    imposeFoldPanels: 3,
     imposeNup: 4,
     sheetPreset: "auto",
     gutterMm: 0,
@@ -249,13 +254,19 @@
     imposeControls: document.getElementById("imposeControls"),
     impViewGridBtn: document.getElementById("impViewGridBtn"),
     impViewSingleBtn: document.getElementById("impViewSingleBtn"),
-    impBookletBtn: document.getElementById("impBookletBtn"),
-    impSpreadBtn: document.getElementById("impSpreadBtn"),
-    impNupBtn: document.getElementById("impNupBtn"),
     impSpreadAutoBtn: document.getElementById("impSpreadAutoBtn"),
     impSpreadAutoText: document.getElementById("impSpreadAutoText"),
-    imposeParamsBtn: document.getElementById("imposeParamsBtn"),
-    imposePopover: document.getElementById("imposePopover"),
+    toggleImposeDrawerBtn: document.getElementById("toggleImposeDrawerBtn"),
+    imposeDrawer: document.getElementById("imposeDrawer"),
+    imposeDockSideBtn: document.getElementById("imposeDockSideBtn"),
+    imposeDockSideText: document.getElementById("imposeDockSideText"),
+    closeImposeDrawerBtn: document.getElementById("closeImposeDrawerBtn"),
+    imposeMethodCards: Array.from(document.querySelectorAll(".impose-method-card")),
+    perfectOnlyRows: document.getElementById("perfectOnlyRows"),
+    sigChips: Array.from(document.querySelectorAll(".sig-chip")),
+    spineGrindInput: document.getElementById("spineGrindInput"),
+    foldOnlyRows: document.getElementById("foldOnlyRows"),
+    foldChips: Array.from(document.querySelectorAll(".fold-chip")),
     impAutoSplitCheck: document.getElementById("impAutoSplitCheck"),
     impSpreadDetailRows: document.getElementById("impSpreadDetailRows"),
     impSpreadCoverCheck: document.getElementById("impSpreadCoverCheck"),
@@ -268,6 +279,7 @@
     firstCoverCheck: document.getElementById("firstCoverCheck"),
     cropMarksCheck: document.getElementById("cropMarksCheck"),
     imposeK100Check: document.getElementById("imposeK100Check"),
+    imposeDrawerExportBtn: document.getElementById("imposeDrawerExportBtn"),
 
     splitControls: document.getElementById("splitControls"),
     tabSpreadBtn: document.getElementById("tabSpreadBtn"),
@@ -306,11 +318,13 @@
 
     stripRightGroup: document.getElementById("stripRightGroup"),
     dimSummaryText: document.getElementById("dimSummaryText"),
+    openFlipbookBtn: document.getElementById("openFlipbookBtn"),
     docInfoBtn: document.getElementById("docInfoBtn"),
     exportBtn: document.getElementById("exportBtn"),
     exportBtnText: document.getElementById("exportBtnText"),
 
     // Main Body & Right-Side Drawers
+    workspaceBody: document.querySelector(".workspace-body"),
     rightSplitter: document.getElementById("rightSplitter"),
     preflightDrawer: document.getElementById("preflightDrawer"),
     orgPreviewDrawer: document.getElementById("orgPreviewDrawer"),
@@ -514,6 +528,9 @@
         bleed: state.bleed,
         bleedAction: state.bleedAction,
         imposeType: state.imposeType,
+        imposeSigPages: state.imposeSigPages,
+        imposeSpineGrindMm: state.imposeSpineGrindMm,
+        imposeFoldPanels: state.imposeFoldPanels,
         imposeNup: state.imposeNup,
         imposeAutoSplitSpreads: state.imposeAutoSplitSpreads,
         imposeSpreadFirstBackFront: state.imposeSpreadFirstBackFront,
@@ -584,6 +601,9 @@
       if (snap.bleed) state.bleed = Object.assign({ top: 3, bottom: 3, left: 3, right: 3 }, snap.bleed);
       if (snap.bleedAction) state.bleedAction = snap.bleedAction;
       if (snap.imposeType) state.imposeType = snap.imposeType;
+      if (snap.imposeSigPages) state.imposeSigPages = snap.imposeSigPages;
+      if (typeof snap.imposeSpineGrindMm === "number") state.imposeSpineGrindMm = snap.imposeSpineGrindMm;
+      if (snap.imposeFoldPanels) state.imposeFoldPanels = snap.imposeFoldPanels;
       if (snap.imposeNup) state.imposeNup = snap.imposeNup;
       if (typeof snap.imposeAutoSplitSpreads === "boolean") state.imposeAutoSplitSpreads = snap.imposeAutoSplitSpreads;
       if (typeof snap.imposeSpreadFirstBackFront === "boolean") state.imposeSpreadFirstBackFront = snap.imposeSpreadFirstBackFront;
@@ -806,6 +826,16 @@
   );
 
   window.addEventListener("keydown", (e) => {
+    if (window.ShibaFlipbook && window.ShibaFlipbook.isOpen()) return;
+
+    if (e.key === "F5") {
+      if (hasPages() && window.ShibaFlipbook) {
+        e.preventDefault();
+        window.ShibaFlipbook.open(state.activeSlotIdx, false);
+      }
+      return;
+    }
+
     // Universal Escape Hatch — Cancel active task, discard uncommitted edit, or clear selection anywhere!
     if (e.key === "Escape") {
       e.preventDefault();
@@ -820,7 +850,7 @@
       if (document.activeElement && typeof document.activeElement.blur === "function") {
         document.activeElement.blur();
       }
-      if (!el.imposePopover.classList.contains("hidden") || !el.splitParamsPopover.classList.contains("hidden")) {
+      if (!el.splitParamsPopover.classList.contains("hidden")) {
         closeAllPopovers();
         return;
       }
@@ -1644,14 +1674,15 @@
   let baselineProbeStrut = null;
   const cssBaselinePxCache = new Map();
 
-  function measureCssBaselinePx(fontStack, bold, italic, lineHeight, sampleText, fontPx) {
+  function measureCssBaselinePx(fontStack, fontWeightVal, italic, lineHeight, sampleText, fontPx) {
     const px = Math.max(4, fontPx || 16);
+    const fwNum = typeof fontWeightVal === "number" ? fontWeightVal : (fontWeightVal ? 700 : 400);
     const lh = typeof lineHeight === "number" && lineHeight >= 0.8 ? lineHeight : 1.08;
     const firstLine = String(sampleText || "").split("\n")[0] || "";
     const hasNonAscii = /[^\x00-\x7F]/.test(firstLine);
     const isEmbSub = String(fontStack || "").includes("ShibaPdfEmb_");
     const sampleKey = isEmbSub ? firstLine.slice(0, 6) : hasNonAscii ? "cjk" : "asc";
-    const cacheKey = `${fontStack}|${bold ? 700 : 400}|${italic ? 1 : 0}|${lh.toFixed(3)}|${px.toFixed(2)}|${sampleKey}`;
+    const cacheKey = `${fontStack}|${fwNum}|${italic ? 1 : 0}|${lh.toFixed(3)}|${px.toFixed(2)}|${sampleKey}`;
     if (cssBaselinePxCache.has(cacheKey)) return cssBaselinePxCache.get(cacheKey);
 
     if (!baselineProbeWrap && typeof document !== "undefined" && document.body) {
@@ -1671,7 +1702,7 @@
     baselineProbeTextNode.nodeValue = isEmbSub ? (firstLine.slice(0, 12) || "Hg") : (hasNonAscii ? "Hg中" : "Hg");
     baselineProbeWrap.style.fontFamily = fontStack;
     baselineProbeWrap.style.fontSize = `${px}px`;
-    baselineProbeWrap.style.fontWeight = bold ? "700" : "400";
+    baselineProbeWrap.style.fontWeight = String(fwNum);
     baselineProbeWrap.style.fontStyle = italic ? "italic" : "normal";
     baselineProbeWrap.style.lineHeight = String(lh);
 
@@ -1697,7 +1728,8 @@
     const fKey = sp.fontKey || "sans";
     const fStack = window.ShibaPrepress.getCssFontStack(fKey);
     const fontPx = Math.max(4, sp.fontPt) * curScale;
-    const baseOffPx = measureCssBaselinePx(fStack, Boolean(sp.bold), Boolean(sp.italic), initLh, sp.str, fontPx);
+    const spWeight = sp.bold ? 700 : (sp.fontWeight || 400);
+    const baseOffPx = measureCssBaselinePx(fStack, spWeight, Boolean(sp.italic), initLh, sp.str, fontPx);
     const baseRatio = Math.round((baseOffPx / fontPx) * 10000) / 10000;
     const hasBaseV = typeof sp.baselineV === "number";
     const exactV = hasBaseV ? Math.max(0, (sp.baselineV * cssH - baseOffPx) / Math.max(1, cssH)) : sp.v;
@@ -1715,6 +1747,7 @@
       text: sp.str,
       fontPt: sp.fontPt,
       ascent: baseRatio || sp.ascent || 0.86,
+      fontWeight: spWeight,
       bold: Boolean(sp.bold),
       italic: Boolean(sp.italic),
       underline: false,
@@ -2463,7 +2496,8 @@
         let hitHPx = Math.max(10, sp.vh * cssH);
         if (typeof sp.baselineV === "number") {
           const spStack = window.ShibaPrepress.getCssFontStack(sp.fontKey || "sans");
-          const spBaseOffPx = measureCssBaselinePx(spStack, Boolean(sp.bold), Boolean(sp.italic), 1.08, sp.str, spFontPx);
+          const spW = sp.bold ? 700 : (sp.fontWeight || 400);
+          const spBaseOffPx = measureCssBaselinePx(spStack, spW, Boolean(sp.italic), 1.08, sp.str, spFontPx);
           hitTopPx = sp.baselineV * cssH - spBaseOffPx;
           hitHPx = Math.max(10, spFontPx * 1.08);
         }
@@ -2532,7 +2566,8 @@
       const fontStack = window.ShibaPrepress.getCssFontStack(ed.fontKey);
       const fontPx = Math.max(4, ed.fontPt) * cssScale;
       const lhVal = typeof ed.lineHeight === "number" ? ed.lineHeight : 1.16;
-      const baseOffPx = measureCssBaselinePx(fontStack, Boolean(ed.bold), Boolean(ed.italic), lhVal, ed.text, fontPx);
+      const effWeight = ed.bold ? 700 : (ed.fontWeight && ed.fontWeight !== 700 ? ed.fontWeight : 400);
+      const baseOffPx = measureCssBaselinePx(fontStack, effWeight, Boolean(ed.italic), lhVal, ed.text, fontPx);
       const curBaseRatio = Math.round((baseOffPx / fontPx) * 10000) / 10000;
       if (Math.abs((ed.ascent || 0) - curBaseRatio) > 0.002) {
         ed.ascent = curBaseRatio;
@@ -2573,7 +2608,7 @@
       textNode.textContent = ed.text;
       textNode.style.fontFamily = fontStack;
       textNode.style.fontSize = `${fontPx}px`;
-      textNode.style.fontWeight = ed.bold ? "700" : "400";
+      textNode.style.fontWeight = String(effWeight);
       textNode.style.fontStyle = ed.italic ? "italic" : "normal";
       textNode.style.lineHeight = String(lhVal);
       textNode.style.letterSpacing = ed.letterSpacing ? `${ed.letterSpacing * cssScale}px` : "normal";
@@ -2815,6 +2850,9 @@
       (slot) => getSlotSizeInfo(slot),
       {
         type: state.imposeType,
+        sigPages: state.imposeSigPages,
+        spineGrindMm: state.imposeSpineGrindMm,
+        foldPanels: state.imposeFoldPanels,
         nup: state.imposeNup,
         sheetPreset: state.sheetPreset,
         gutterMm: state.gutterMm,
@@ -2853,6 +2891,13 @@
       const st = document.createElement("strong");
       st.textContent = t("impSheetTitleFmt", { i: i + 1 });
       cap.appendChild(st);
+
+      if (sh.sigIdx && state.imposeType === "perfect") {
+        const sigPill = document.createElement("span");
+        sigPill.className = "duplex-pill";
+        sigPill.textContent = t("impSigBadgeFmt", { s: sh.sigIdx });
+        cap.appendChild(sigPill);
+      }
 
       if (sh.duplexSide) {
         const dup = document.createElement("span");
@@ -3757,6 +3802,8 @@
       el.preflightDrawer.classList.add("hidden");
       el.orgPreviewDrawer.classList.add("hidden");
       el.editPropsDrawer.classList.add("hidden");
+      if (el.imposeDrawer) el.imposeDrawer.classList.add("hidden");
+      if (el.workspaceBody) el.workspaceBody.classList.remove("impose-dock-left");
       el.reopenOrgPreviewTab.classList.add("hidden");
       el.emptyStage.classList.remove("hidden");
       el.spreadViewContainer.classList.add("hidden");
@@ -3774,6 +3821,7 @@
     el.emptyStage.classList.add("hidden");
     const isPages = state.pillar === "pages";
     const isPrep = state.pillar === "prepress";
+    const isImpose = isPrep && state.prepressSub === "impose";
     const isPf = state.pillar === "preflight";
     const isConv = state.pillar === "convert";
     const isAnn = isAnnotateMode();
@@ -3792,15 +3840,31 @@
     el.preflightDrawer.classList.toggle("hidden", !isPf);
     const showOrgPreview = isOrg && state.orgPreviewOpen;
     const showEditProps = isTextEdit && state.editPropsOpen;
+    const showImposeDrawer = isImpose && state.imposeDrawerOpen;
     el.orgPreviewDrawer.classList.toggle("hidden", !showOrgPreview);
     el.editPropsDrawer.classList.toggle("hidden", !showEditProps);
+    if (el.imposeDrawer) el.imposeDrawer.classList.toggle("hidden", !showImposeDrawer);
+    if (el.workspaceBody) {
+      el.workspaceBody.classList.toggle("impose-dock-left", showImposeDrawer && state.imposeDockSide === "left");
+    }
+    if (el.imposeDockSideText) {
+      el.imposeDockSideText.textContent =
+        state.imposeDockSide === "left" ? t("imposeDockRightShort") : t("imposeDockLeftShort");
+    }
     el.reopenOrgPreviewTab.classList.toggle(
       "hidden",
-      !((isOrg && !state.orgPreviewOpen) || (isTextEdit && !state.editPropsOpen))
+      !(
+        (isOrg && !state.orgPreviewOpen) ||
+        (isTextEdit && !state.editPropsOpen) ||
+        (isImpose && !state.imposeDrawerOpen)
+      )
     );
-    el.rightSplitter.classList.toggle("hidden", !(isPf || showOrgPreview || showEditProps));
+    const showRightSplitter =
+      isPf || showOrgPreview || showEditProps || (showImposeDrawer && state.imposeDockSide === "right");
+    el.rightSplitter.classList.toggle("hidden", !showRightSplitter);
     el.toggleOrgPreviewBtn.classList.toggle("active", state.orgPreviewOpen);
     el.toggleEditPropsBtn.classList.toggle("active", state.editPropsOpen);
+    if (el.toggleImposeDrawerBtn) el.toggleImposeDrawerBtn.classList.toggle("active", state.imposeDrawerOpen);
     el.stripRightGroup.classList.toggle("hidden", isConv);
     el.annExportPngBtn.classList.toggle("hidden", !isAnn);
     el.annExportPngBtn.disabled = state.busy;
@@ -3846,12 +3910,17 @@
 
     el.impViewGridBtn.classList.toggle("active", state.imposeView === "grid");
     el.impViewSingleBtn.classList.toggle("active", state.imposeView === "single");
-    el.impBookletBtn.classList.toggle("active", state.imposeType === "booklet");
-    el.impSpreadBtn.classList.toggle("active", state.imposeType === "spread2up");
-    el.impNupBtn.classList.toggle("active", state.imposeType === "nup");
-    el.nupOnlyRows.classList.toggle("hidden", state.imposeType !== "nup");
+    el.imposeMethodCards.forEach((c) =>
+      c.classList.toggle("active", c.dataset.imposeMode === state.imposeType)
+    );
+    const isNupOrRepeat = state.imposeType === "nup" || state.imposeType === "steprepeat";
+    el.nupOnlyRows.classList.toggle("hidden", !isNupOrRepeat);
+    if (el.perfectOnlyRows) el.perfectOnlyRows.classList.toggle("hidden", state.imposeType !== "perfect");
+    if (el.foldOnlyRows) el.foldOnlyRows.classList.toggle("hidden", state.imposeType !== "fold");
     el.firstCoverRow.classList.toggle("hidden", state.imposeType !== "spread2up");
     el.nupChips.forEach((ch) => ch.classList.toggle("active", Number(ch.dataset.nup) === state.imposeNup));
+    el.sigChips.forEach((ch) => ch.classList.toggle("active", Number(ch.dataset.sig) === state.imposeSigPages));
+    el.foldChips.forEach((ch) => ch.classList.toggle("active", Number(ch.dataset.fold) === state.imposeFoldPanels));
     el.impAutoSplitCheck.checked = Boolean(state.imposeAutoSplitSpreads);
     el.impSpreadCoverCheck.checked = Boolean(state.imposeSpreadFirstBackFront);
     el.impSpreadDetailRows.classList.toggle("hidden", !state.imposeAutoSplitSpreads);
@@ -3899,7 +3968,8 @@
     } else if (isPrep && state.prepressSub === "impose") {
       const impPlan = getCurrentImpositionPlan();
       const padNote =
-        state.imposeType === "booklet" && impPlan.paddedTotal > impPlan.origLogicalCount
+        (state.imposeType === "booklet" || state.imposeType === "perfect" || state.imposeType === "fold") &&
+        impPlan.paddedTotal > impPlan.origLogicalCount
           ? t("bookletPadHint", { orig: impPlan.origLogicalCount, pad: impPlan.paddedTotal })
           : "";
       el.dimSummaryText.textContent =
@@ -4080,12 +4150,15 @@
 
     if (state.pillar === "prepress" && state.prepressSub === "impose") {
       const impPlan = getCurrentImpositionPlan();
-      const modeName =
-        state.imposeType === "booklet"
-          ? t("imposeBooklet")
-          : state.imposeType === "spread2up"
-          ? t("imposeSpread2Up")
-          : `${t("imposeNUp")} (${state.imposeNup})`;
+      const modeNameMap = {
+        booklet: t("bindBooklet"),
+        perfect: `${t("bindPerfect")} (${state.imposeSigPages}P)`,
+        spread2up: t("bindSpread"),
+        fold: `${t("bindFold")} (${state.imposeFoldPanels * 2}P)`,
+        nup: `${t("bindNup")} (${state.imposeNup})`,
+        steprepeat: `${t("bindRepeat")} (${state.imposeNup})`
+      };
+      const modeName = modeNameMap[state.imposeType] || t("bindBooklet");
       const sTotal = Math.max(1, impPlan.sheets.length);
       const sCur = Math.min(sTotal, Math.max(1, state.activeSheetIdx + 1));
       const splitNote = impPlan.didSplitSpreads ? ` · ${t("impAutoSplitPillOn", { p: impPlan.origLogicalCount })}` : "";
@@ -4411,7 +4484,15 @@
         const prepDoc = await assembleSlotsPdfDoc(state.pages, state.imposeK100);
         const plan = getCurrentImpositionPlan();
         const bytes = await window.ShibaImpose.exportImposedPdfBytes(prepDoc, plan, state.cropMarks, normVisualToPdfRect);
-        const suffix = state.imposeType === "booklet" ? "_骑马钉拼版" : state.imposeType === "spread2up" ? "_跨页拼版" : `_${state.imposeNup}拼大版`;
+        const suffixMap = {
+          booklet: "_骑马钉拼版",
+          perfect: `_${state.imposeSigPages}P胶装折手`,
+          spread2up: "_对裱跨页拼版",
+          fold: `_${state.imposeFoldPanels}折页拼版`,
+          nup: `_${state.imposeNup}联顺序拼版`,
+          steprepeat: `_${state.imposeNup}联连晒拼版`
+        };
+        const suffix = suffixMap[state.imposeType] || "_拼版";
         triggerDownloadBlob(new Blob([bytes], { type: "application/pdf" }), `${stem}${suffix}.pdf`);
       } else if (state.pillar === "prepress" && state.prepressSub === "split") {
         const bytes = await exportSplitSpreadsPdfBytes(state.pages);
@@ -5252,6 +5333,7 @@
     const ed = getSelectedEditObj();
     if (!ed) return;
     ed.bold = !ed.bold;
+    ed.fontWeight = ed.bold ? 700 : 400;
     renderTextEditorOverlay();
   });
 
@@ -5303,14 +5385,10 @@
 
   // Pillar 2: Impose & Split Controls + Popovers
   function closeAllPopovers() {
-    el.imposePopover.classList.add("hidden");
     el.splitParamsPopover.classList.add("hidden");
   }
 
   document.addEventListener("click", (ev) => {
-    if (!el.imposePopover.contains(ev.target) && !el.imposeParamsBtn.contains(ev.target)) {
-      el.imposePopover.classList.add("hidden");
-    }
     if (!el.splitParamsPopover.contains(ev.target) && !el.splitParamsBtn.contains(ev.target)) {
       el.splitParamsPopover.classList.add("hidden");
     }
@@ -5378,29 +5456,49 @@
     refreshWorkspace(true);
   });
 
-  el.impBookletBtn.addEventListener("click", () => {
-    state.imposeType = "booklet";
-    state.activeSheetIdx = 0;
-    refreshWorkspace(true);
+  // Inject SVG Visual Schematics & Wire 6 Binding Mode Cards
+  if (window.ShibaImpose && window.ShibaImpose.getBindingMethodSvgs) {
+    const svgMap = window.ShibaImpose.getBindingMethodSvgs();
+    document.querySelectorAll(".impose-svg-slot[data-svg-key]").forEach((slotEl) => {
+      const k = slotEl.dataset.svgKey;
+      if (svgMap[k]) slotEl.innerHTML = svgMap[k];
+    });
+  }
+
+  el.imposeMethodCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      state.imposeType = card.dataset.imposeMode || "booklet";
+      state.activeSheetIdx = 0;
+      refreshWorkspace(true);
+    });
   });
 
-  el.impSpreadBtn.addEventListener("click", () => {
-    state.imposeType = "spread2up";
-    state.activeSheetIdx = 0;
-    refreshWorkspace(true);
+  el.sigChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      state.imposeSigPages = Number(chip.dataset.sig) || 8;
+      state.activeSheetIdx = 0;
+      refreshWorkspace(true);
+    });
   });
 
-  el.impNupBtn.addEventListener("click", () => {
-    state.imposeType = "nup";
-    state.activeSheetIdx = 0;
-    refreshWorkspace(true);
+  if (el.spineGrindInput) {
+    el.spineGrindInput.addEventListener("input", () => {
+      state.imposeSpineGrindMm = Math.max(0, Math.min(10, parseFloat(el.spineGrindInput.value) || 0));
+      refreshWorkspace(true);
+    });
+  }
+
+  el.foldChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      state.imposeFoldPanels = Number(chip.dataset.fold) || 3;
+      state.activeSheetIdx = 0;
+      refreshWorkspace(true);
+    });
   });
 
-  el.imposeParamsBtn.addEventListener("click", (ev) => {
-    ev.stopPropagation();
-    el.splitParamsPopover.classList.add("hidden");
-    el.imposePopover.classList.toggle("hidden");
-  });
+  if (el.imposeDrawerExportBtn) {
+    el.imposeDrawerExportBtn.addEventListener("click", runPrimaryTopExport);
+  }
 
   el.nupChips.forEach((chip) => {
     chip.addEventListener("click", () => {
@@ -5449,7 +5547,6 @@
 
   el.splitParamsBtn.addEventListener("click", (ev) => {
     ev.stopPropagation();
-    el.imposePopover.classList.add("hidden");
     el.splitParamsPopover.classList.toggle("hidden");
   });
 
@@ -5753,12 +5850,36 @@
     }
   }
 
+  function setImposeDrawerOpen(val) {
+    state.imposeDrawerOpen = Boolean(val);
+    localStorage.setItem("shibapdf_impose_drawer", state.imposeDrawerOpen ? "1" : "0");
+    updateTopStripControls();
+    if (hasPages() && !el.spreadViewContainer.classList.contains("hidden")) {
+      renderCanvasStage();
+    }
+  }
+
   el.toggleOrgPreviewBtn.addEventListener("click", () => setOrgPreviewOpen(!state.orgPreviewOpen));
   el.closeOrgPreviewBtn.addEventListener("click", () => setOrgPreviewOpen(false));
   el.toggleEditPropsBtn.addEventListener("click", () => setEditPropsOpen(!state.editPropsOpen));
   el.closeEditPropsBtn.addEventListener("click", () => setEditPropsOpen(false));
+  if (el.toggleImposeDrawerBtn) {
+    el.toggleImposeDrawerBtn.addEventListener("click", () => setImposeDrawerOpen(!state.imposeDrawerOpen));
+  }
+  if (el.closeImposeDrawerBtn) {
+    el.closeImposeDrawerBtn.addEventListener("click", () => setImposeDrawerOpen(false));
+  }
+  if (el.imposeDockSideBtn) {
+    el.imposeDockSideBtn.addEventListener("click", () => {
+      state.imposeDockSide = state.imposeDockSide === "left" ? "right" : "left";
+      localStorage.setItem("shibapdf_impose_side", state.imposeDockSide);
+      updateTopStripControls();
+      if (hasPages() && !el.spreadViewContainer.classList.contains("hidden")) renderCanvasStage();
+    });
+  }
   el.reopenOrgPreviewTab.addEventListener("click", () => {
     if (state.pillar === "pages" && state.pagesSub === "text") setEditPropsOpen(true);
+    else if (state.pillar === "prepress" && state.prepressSub === "impose") setImposeDrawerOpen(true);
     else setOrgPreviewOpen(true);
   });
 
@@ -5848,7 +5969,10 @@
     const t0 = getSelectedTextObjects()[0];
     if (!t0) return;
     const nextVal = !t0.bold;
-    applyBatchTextProp((ed) => { ed.bold = nextVal; });
+    applyBatchTextProp((ed) => {
+      ed.bold = nextVal;
+      ed.fontWeight = nextVal ? 700 : 400;
+    });
   });
 
   el.propItalicBtn.addEventListener("click", () => {
@@ -6330,6 +6454,23 @@
       },
       () => el.fileInput.click()
     );
+  }
+
+  // Initialize Maximized 3D Catalog Flipbook Showcase Player
+  if (window.ShibaFlipbook) {
+    window.ShibaFlipbook.init({
+      renderUnitHiRes: getHiResImposeUnitCanvas,
+      getSlotsInfo: () => ({
+        slots: state.pages,
+        getSlotSizePt: (slot) => getSlotSizeInfo(slot)
+      }),
+      t
+    });
+    if (el.openFlipbookBtn) {
+      el.openFlipbookBtn.addEventListener("click", () => {
+        if (hasPages()) window.ShibaFlipbook.open(state.activeSlotIdx, false);
+      });
+    }
   }
 
   // Initialize App & Auto-Restore Cached Project from Browser IndexedDB

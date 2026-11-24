@@ -1348,6 +1348,9 @@ svg.lucide {
   outline: none;
   border: none;
   cursor: grab;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
 }
 
 .text-box-wrap.selected .editable-text-node {
@@ -2042,7 +2045,8 @@ svg.lucide {
   }
   .preflight-drawer,
   .org-preview-drawer,
-  .edit-props-drawer {
+  .edit-props-drawer,
+  .impose-drawer {
     width: 100% !important;
     max-height: 38vh;
     padding: 10px 12px 16px;
@@ -2674,6 +2678,627 @@ svg.lucide {
   flex-shrink: 0;
 }
 
+/* ============================================================================
+   v2.0 Dedicated Visual Imposition Sidebar (Dockable Right or Left)
+   ============================================================================ */
+.impose-drawer {
+  width: var(--right-w);
+  background: var(--bg-rail);
+  padding: 14px 15px 22px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+@media (min-width: 901px) {
+  .workspace-body.impose-dock-left #imposeDrawer {
+    order: -2;
+    border-right: 1px solid var(--status-border);
+  }
+}
+
+.impose-method-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.impose-method-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 9px 7px 9px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: var(--bg-rail);
+  color: var(--text-1);
+  cursor: pointer;
+  transition: background-color 0.14s, border-color 0.14s, transform 0.12s, box-shadow 0.14s;
+  gap: 4px;
+}
+
+.impose-method-card:hover {
+  background: var(--bg-hover);
+  border-color: rgba(35, 131, 226, 0.35);
+}
+
+.impose-method-card.active {
+  background: rgba(35, 131, 226, 0.08);
+  border-color: #2383e2;
+  box-shadow: 0 2px 10px rgba(35, 131, 226, 0.12);
+}
+
+.impose-svg-slot {
+  width: 78px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-1);
+}
+
+.impose-svg-slot svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.impose-card-title {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--text-1);
+  line-height: 1.2;
+}
+
+.impose-method-card.active .impose-card-title {
+  color: #2383e2;
+}
+
+.impose-card-sub {
+  font-size: 10.5px;
+  color: var(--text-3);
+  line-height: 1.25;
+}
+
+/* ============================================================================
+   v2.0 Maximized Realistic 3D & Real-Scene Catalog Flipbook Showcase Player
+   ============================================================================ */
+.flipbook-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  user-select: none;
+  color: #f5f5f3;
+  background: radial-gradient(circle at 50% 34%, #2c2d31 0%, #141518 68%, #0b0c0e 100%);
+  transition: background 0.35s ease;
+}
+
+.flipbook-modal[data-fb-scene="wood3d"] {
+  background: radial-gradient(circle at 38% 22%, #4a3728 0%, #261b14 66%, #140e0a 100%);
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] {
+  color: #1f2023;
+  background: radial-gradient(circle at 46% 24%, #f7f6f2 0%, #e4e2dc 68%, #cfcdc6 100%);
+}
+
+.flipbook-modal[data-fb-scene="flatmax"] {
+  background: #141517;
+}
+
+.fb-hud-top,
+.fb-hud-bottom {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.fb-hud-bottom {
+  justify-content: center;
+  padding-bottom: 14px;
+}
+
+.fb-scene-pills,
+.fb-top-actions,
+.fb-hud-bottom > * {
+  pointer-events: auto;
+}
+
+.fb-scene-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(20, 21, 24, 0.68);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-scene-pills {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.fb-scene-btn {
+  height: 30px;
+  padding: 0 11px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  font-weight: 550;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.fb-scene-btn svg {
+  width: 13.5px;
+  height: 13.5px;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-scene-btn {
+  color: rgba(24, 24, 23, 0.75);
+}
+
+.fb-scene-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-scene-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #181817;
+}
+
+.fb-scene-btn.active {
+  background: #2383e2 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(35, 131, 226, 0.35);
+}
+
+.fb-top-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.fb-glass-btn {
+  height: 32px;
+  padding: 0 11px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(20, 21, 24, 0.66);
+  backdrop-filter: blur(12px);
+  color: #f3f3f1;
+  font-size: 12px;
+  font-weight: 550;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.fb-glass-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.fb-glass-btn.icon-only {
+  width: 34px;
+  padding: 0;
+}
+
+.fb-glass-btn.active {
+  border-color: rgba(35, 131, 226, 0.7);
+  background: rgba(35, 131, 226, 0.25);
+}
+
+.fb-glass-btn.close-btn:hover {
+  background: #e03e3e;
+  border-color: #e03e3e;
+  color: #ffffff;
+}
+
+.fb-glass-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-glass-btn {
+  background: rgba(255, 255, 255, 0.82);
+  color: #181817;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.fb-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 2400px;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.fb-stage:active {
+  cursor: grabbing;
+}
+
+.flipbook-modal[data-fb-scene="flatmax"] .fb-stage {
+  cursor: default;
+}
+
+.fb-ambient-light {
+  position: absolute;
+  inset: -15%;
+  pointer-events: none;
+  background: radial-gradient(ellipse 56% 42% at 50% 42%, rgba(255, 247, 230, 0.13) 0%, rgba(255, 247, 230, 0) 72%);
+}
+
+.fb-world {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transition: transform 0.08s ease-out;
+}
+
+/* 3D Real-World Tabletop / Plinth Surface */
+.fb-table-surface {
+  position: absolute;
+  width: 170vw;
+  height: 150vh;
+  border-radius: 36px;
+  transform: translateZ(-6px);
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 48% 45% at 50% 50%, rgba(255, 255, 255, 0.06) 0%, rgba(0, 0, 0, 0.55) 78%),
+    linear-gradient(145deg, #25272c 0%, #17181c 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 50px 120px rgba(0, 0, 0, 0.75);
+}
+
+/* Warm Walnut Wood Grain Tabletop */
+.flipbook-modal[data-fb-scene="wood3d"] .fb-table-surface {
+  background:
+    radial-gradient(ellipse 54% 48% at 46% 48%, rgba(255, 226, 182, 0.16) 0%, rgba(16, 10, 6, 0.62) 82%),
+    repeating-linear-gradient(
+      92deg,
+      rgba(28, 16, 9, 0.16) 0px,
+      rgba(28, 16, 9, 0.16) 3px,
+      rgba(86, 54, 34, 0.12) 4px,
+      rgba(62, 39, 24, 0.18) 11px,
+      rgba(42, 25, 15, 0.14) 19px
+    ),
+    linear-gradient(160deg, #5c3d28 0%, #3f2819 52%, #2b1b10 100%);
+}
+
+/* Sunlit Window Blind / Leaf Gobo Shadow on Walnut & Marble Tables */
+.fb-table-gobo {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s;
+}
+
+.flipbook-modal[data-fb-scene="wood3d"] .fb-table-gobo {
+  opacity: 1;
+  background:
+    linear-gradient(122deg, rgba(255, 232, 190, 0.14) 0%, transparent 38%, rgba(0, 0, 0, 0.24) 64%, transparent 82%);
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-table-surface {
+  background:
+    radial-gradient(ellipse 56% 50% at 48% 48%, rgba(255, 255, 255, 0.92) 0%, rgba(218, 215, 208, 0.95) 84%),
+    linear-gradient(135deg, #f5f4f0 0%, #dedbd3 100%);
+  box-shadow: inset 0 1px 0 #ffffff, 0 40px 90px rgba(0, 0, 0, 0.18);
+}
+
+/* Book Assembly & Realistic Contact Shadow */
+.fb-book-rig {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.22s ease-out;
+}
+
+.fb-book-shadow {
+  position: absolute;
+  top: 2%;
+  height: 98%;
+  left: 0;
+  width: 100%;
+  transform: translateZ(-13px);
+  background: rgba(0, 0, 0, 0.56);
+  filter: blur(22px);
+  border-radius: 8px;
+  pointer-events: none;
+  transition: left 0.18s ease, width 0.18s ease;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-book-shadow {
+  background: rgba(30, 28, 24, 0.28);
+  filter: blur(26px);
+}
+
+/* 3D Paper-Block Fore-Edge Stack Thickness */
+.fb-page-stack {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    #f3f1ec 0px,
+    #e2dfd7 1.5px,
+    #faf9f5 3px
+  );
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28);
+  transform: translateZ(-4px);
+  pointer-events: none;
+}
+
+.fb-page-stack.left {
+  border-radius: 2px 0 0 2px;
+}
+
+.fb-page-stack.right {
+  border-radius: 0 2px 2px 0;
+}
+
+.fb-half-page {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: #fbfaf7;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+}
+
+.fb-half-page.left {
+  left: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+.fb-half-page.right {
+  left: 50%;
+  border-radius: 0 3px 3px 0;
+}
+
+.fb-half-page.empty-half {
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.fb-page-img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  pointer-events: none;
+}
+
+/* Spine Crease Ambient Occlusion */
+.fb-gutter-ao {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 11%;
+  pointer-events: none;
+}
+
+.fb-gutter-ao.left {
+  right: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.05) 68%, rgba(0, 0, 0, 0.19) 100%);
+}
+
+.fb-gutter-ao.right {
+  left: 0;
+  background: linear-gradient(270deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.05) 68%, rgba(0, 0, 0, 0.19) 100%);
+}
+
+.fb-half-page.empty-half .fb-gutter-ao {
+  display: none;
+}
+
+.fb-spine-crease {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.32), rgba(255,255,255,0.18) 50%, rgba(0,0,0,0.32));
+  transform: translateZ(1px);
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.fb-cast-shade {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fb-corner-num {
+  position: absolute;
+  bottom: 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: rgba(60, 60, 56, 0.55);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.fb-corner-num.left {
+  left: 12px;
+}
+
+.fb-corner-num.right {
+  right: 12px;
+}
+
+/* 3D Turning Page Leaf */
+.fb-flip-leaf {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  pointer-events: none;
+  z-index: 12;
+}
+
+.fb-leaf-face {
+  position: absolute;
+  inset: 0;
+  background: #fbfaf7;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+}
+
+.fb-leaf-face.front {
+  border-radius: 0 3px 3px 0;
+}
+
+.fb-leaf-face.back {
+  transform: rotateY(180deg);
+  border-radius: 3px 0 0 3px;
+}
+
+.fb-leaf-lighting {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.fb-orbit-hint {
+  position: absolute;
+  bottom: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.52);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-orbit-hint {
+  color: rgba(24, 24, 23, 0.52);
+}
+
+/* Bottom Playback Controls Pill */
+.fb-hud-bottom {
+  gap: 8px;
+}
+
+.fb-play-btn {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: none;
+  background: #2383e2;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(35, 131, 226, 0.38);
+}
+
+.fb-play-btn svg {
+  width: 13.5px;
+  height: 13.5px;
+}
+
+.fb-play-btn.active {
+  background: #f59e0b;
+  box-shadow: 0 3px 12px rgba(245, 158, 11, 0.4);
+}
+
+.fb-speed-select {
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(20, 21, 24, 0.72);
+  color: #f3f3f1;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-speed-select {
+  background: rgba(255, 255, 255, 0.85);
+  color: #181817;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.fb-scrubber {
+  width: 220px;
+  accent-color: #2383e2;
+  cursor: pointer;
+}
+
+.fb-page-label {
+  min-width: 82px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(20, 21, 24, 0.68);
+  color: #f3f3f1;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-page-label {
+  background: rgba(255, 255, 255, 0.85);
+  color: #181817;
+}
+
+@media (max-width: 860px) {
+  .fb-hud-top {
+    flex-wrap: wrap;
+    padding: 8px 10px;
+  }
+  .fb-scrubber {
+    width: 110px;
+  }
+  .fb-orbit-hint {
+    display: none;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -2684,7 +3309,7 @@ svg.lucide {
         <div class="brand-mark">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /> </svg>
           <span>ShibaPDF</span>
-          <span class="version-pill">v1.9.2</span>
+          <span class="version-pill">v2.0.0</span>
         </div>
         <div class="header-mini-btns">
           <button id="langBtn" class="ghost-btn" type="button" title="Switch Language">
@@ -2847,7 +3472,7 @@ svg.lucide {
         <button id="mobileMenuBtn" class="ghost-btn" type="button">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /> </svg>
           <span style="font-weight:700;">ShibaPDF</span>
-          <span class="version-pill">v1.9.2</span>
+          <span class="version-pill">v2.0.0</span>
         </button>
         <div style="display:flex;align-items:center;gap:4px;">
           <button id="mobileQuickOpenBtn" class="ghost-btn" type="button">
@@ -2992,7 +3617,7 @@ svg.lucide {
 
           <!-- Pillar 2 Parameter Controls -->
           <div id="stripPrepress" class="strip-left hidden">
-            <!-- Sub: Imposition Controls -->
+            <!-- Sub: Imposition Controls (Streamlined Top View Bar; Visual Binding Cards & Params Live in Dedicated Impose Sidebar!) -->
             <div id="imposeControls" class="strip-left">
               <div class="soft-pills">
                 <button id="impViewGridBtn" class="soft-pill active" type="button">
@@ -3003,79 +3628,15 @@ svg.lucide {
                 </button>
               </div>
 
-              <div class="soft-pills">
-                <button id="impBookletBtn" class="soft-pill active" type="button" data-i18n="imposeBooklet">骑马钉折手</button>
-                <button id="impSpreadBtn" class="soft-pill" type="button" data-i18n="imposeSpread2Up">单页合跨页</button>
-                <button id="impNupBtn" class="soft-pill" type="button" data-i18n="imposeNUp">多联拼版 (N拼)</button>
-              </div>
-
               <button id="impSpreadAutoBtn" class="ghost-btn active hidden" type="button" title="Toggle auto-splitting reader spreads into single pages">
                 <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-scissors" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="6" cy="6" r="3" /> <path d="M8.12 8.12 12 12" /> <path d="M20 4 8.12 15.88" /> <circle cx="6" cy="18" r="3" /> <path d="M14.8 14.8 20 20" /> </svg>
                 <span id="impSpreadAutoText">跨页已拆单页</span>
               </button>
 
-              <div class="popover-anchor">
-                <button id="imposeParamsBtn" class="ghost-btn active" type="button">
-                  <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-sliders-horizontal" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M10 5H3" /> <path d="M12 19H3" /> <path d="M14 3v4" /> <path d="M16 17v4" /> <path d="M21 12h-9" /> <path d="M21 19h-5" /> <path d="M21 5h-7" /> <path d="M8 10v4" /> <path d="M8 12H3" /> </svg>
-                  <span data-i18n="imposeParamsFmt">拼版参数 ▾</span>
-                </button>
-                <div id="imposePopover" class="popover-card hidden" style="min-width:316px;">
-                  <label class="pop-row" style="cursor:pointer;">
-                    <span data-i18n="impAutoSplitLabel">自动将横向跨页原稿拆为单页再拼版</span>
-                    <span class="switch-ctrl"><input id="impAutoSplitCheck" type="checkbox" checked /><span class="switch-track"></span></span>
-                  </label>
-
-                  <div id="impSpreadDetailRows" style="display:flex;flex-direction:column;gap:10px;padding-left:8px;border-left:2px solid var(--bg-pill);">
-                    <label class="pop-row" style="cursor:pointer;">
-                      <span data-i18n="impSpreadCoverLabel">首张跨页为「左封底 · 右封面」</span>
-                      <span class="switch-ctrl"><input id="impSpreadCoverCheck" type="checkbox" checked /><span class="switch-track"></span></span>
-                    </label>
-                    <div class="pop-row">
-                      <span data-i18n="impSpreadBleedLabel">跨页外出血裁除</span>
-                      <span class="num-pill"><input id="impSpreadBleedInput" type="number" min="0" max="30" step="0.5" value="0" /><span class="unit-txt">mm</span></span>
-                    </div>
-                  </div>
-                  <div id="nupOnlyRows" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
-                    <div class="pop-row">
-                      <span data-i18n="nupCountLabel">每张拼数</span>
-                      <div class="soft-pills">
-                        <button class="soft-pill nup-chip" data-nup="2" type="button">2拼</button>
-                        <button class="soft-pill nup-chip active" data-nup="4" type="button">4拼</button>
-                        <button class="soft-pill nup-chip" data-nup="8" type="button">8拼</button>
-                      </div>
-                    </div>
-                    <div class="pop-row">
-                      <span data-i18n="sheetSizeLabel">印张尺寸</span>
-                      <select id="sheetPresetSelect" class="pop-select">
-                        <option value="auto" data-i18n="sheetAuto">自动贴合原尺寸倍数</option>
-                        <option value="sra3" data-i18n="sheetSra3">SRA3 数码大纸 (450×320mm)</option>
-                        <option value="a3" data-i18n="sheetA3">A3 标准 (420×297mm)</option>
-                        <option value="dadu4" data-i18n="sheetDadu4">大度四开 (595×440mm)</option>
-                        <option value="zhengdu4" data-i18n="sheetZhengdu4">正度四开 (543×390mm)</option>
-                      </select>
-                    </div>
-                    <div class="pop-row">
-                      <span data-i18n="gutterLabel">拼版间距</span>
-                      <span class="num-pill"><input id="gutterInput" type="number" min="0" max="30" step="1" value="0" /><span class="unit-txt">mm</span></span>
-                    </div>
-                  </div>
-
-                  <label id="firstCoverRow" class="pop-row hidden" style="cursor:pointer;">
-                    <span data-i18n="firstCoverAloneLabel">首张封面单独占右半页</span>
-                    <span class="switch-ctrl"><input id="firstCoverCheck" type="checkbox" /><span class="switch-track"></span></span>
-                  </label>
-
-                  <label class="pop-row" style="cursor:pointer;">
-                    <span data-i18n="cropMarksLabel">绘制 K100 标准印刷裁切角线</span>
-                    <span class="switch-ctrl"><input id="cropMarksCheck" type="checkbox" checked /><span class="switch-track"></span></span>
-                  </label>
-
-                  <label class="pop-row" style="cursor:pointer;">
-                    <span data-i18n="pureBlackShort">同步转为印刷单色黑 K100</span>
-                    <span class="switch-ctrl"><input id="imposeK100Check" type="checkbox" checked /><span class="switch-track"></span></span>
-                  </label>
-                </div>
-              </div>
+              <button id="toggleImposeDrawerBtn" class="ghost-btn active" type="button">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-panel-right" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M15 3v18" /> </svg>
+                <span data-i18n="imposeSidebarBtn">拼版侧栏</span>
+              </button>
             </div>
 
             <!-- Sub: Split Spreads Controls -->
@@ -3153,6 +3714,10 @@ svg.lucide {
 
         <div id="stripRightGroup" class="strip-right">
           <span id="dimSummaryText" style="font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;cursor:pointer;" title="查看 PDF 文档属性与字体信息 (Ctrl+D)"></span>
+          <button id="openFlipbookBtn" class="ghost-btn active" type="button" title="F5 · 拟真画册翻页与 3D 场景预览">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-play" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /> </svg>
+            <span data-i18n="playFlipbookBtn">画册播放</span>
+          </button>
           <button id="docInfoBtn" class="ghost-btn" type="button" title="Ctrl+D">
             <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-info" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="M12 16v-4" /> <path d="M12 8h.01" /> </svg>
             <span data-i18n="docInfoBtn">文档属性</span>
@@ -3523,6 +4088,170 @@ svg.lucide {
           </div>
         </aside>
 
+        <!-- Dedicated Print Imposition Sidebar (Dockable Left or Right, with 6 Visual SVG Binding Mode Cards) -->
+        <aside id="imposeDrawer" class="impose-drawer hidden">
+          <div class="org-preview-head">
+            <span class="org-preview-title" data-i18n="imposeDrawerTitle">装订与拼版方案</span>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <button id="imposeDockSideBtn" class="ghost-btn" style="height:25px;padding:0 7px;font-size:11px;" type="button" title="切换侧栏至左侧 / 右侧">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:12px;height:12px;" class="lucide lucide-panel-left" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M9 3v18" /> </svg>
+                <span id="imposeDockSideText" data-i18n="imposeDockLeftShort">移至左栏</span>
+              </button>
+              <button id="closeImposeDrawerBtn" class="ghost-btn icon-only-btn" type="button" title="Collapse">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-panel-right-close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M15 3v18" /> <path d="m8 9 3 3-3 3" /> </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- 1. Six Visual SVG Binding & Imposition Method Cards -->
+          <div class="prop-card">
+            <div class="prop-sec-head"><span data-i18n="imposeSecMethods">选择装订 / 拼版方式</span></div>
+            <div id="imposeMethodGrid" class="impose-method-grid">
+              <button class="impose-method-card active" data-impose-mode="booklet" type="button">
+                <div class="impose-svg-slot" data-svg-key="booklet"></div>
+                <div class="impose-card-title" data-i18n="bindBooklet">骑马钉画册</div>
+                <div class="impose-card-sub" data-i18n="bindBookletSub">整本套帖对折 · 书脊钉装</div>
+              </button>
+
+              <button class="impose-method-card" data-impose-mode="perfect" type="button">
+                <div class="impose-svg-slot" data-svg-key="perfect"></div>
+                <div class="impose-card-title" data-i18n="bindPerfect">无线胶装 / 锁线</div>
+                <div class="impose-card-sub" data-i18n="bindPerfectSub">分帖叠装 · 铣背胶订</div>
+              </button>
+
+              <button class="impose-method-card" data-impose-mode="spread2up" type="button">
+                <div class="impose-svg-slot" data-svg-key="spread2up"></div>
+                <div class="impose-card-title" data-i18n="bindSpread">蝴蝶对裱跨页</div>
+                <div class="impose-card-sub" data-i18n="bindSpreadSub">180°平摊 · 相册画册</div>
+              </button>
+
+              <button class="impose-method-card" data-impose-mode="fold" type="button">
+                <div class="impose-svg-slot" data-svg-key="fold"></div>
+                <div class="impose-card-title" data-i18n="bindFold">折页宣传单</div>
+                <div class="impose-card-sub" data-i18n="bindFoldSub">对折/三折/四折 · 折线</div>
+              </button>
+
+              <button class="impose-method-card" data-impose-mode="nup" type="button">
+                <div class="impose-svg-slot" data-svg-key="nup"></div>
+                <div class="impose-card-title" data-i18n="bindNup">多联顺序拼</div>
+                <div class="impose-card-sub" data-i18n="bindNupSub">P1~Pn 排版 · 讲义卡片</div>
+              </button>
+
+              <button class="impose-method-card" data-impose-mode="steprepeat" type="button">
+                <div class="impose-svg-slot" data-svg-key="steprepeat"></div>
+                <div class="impose-card-title" data-i18n="bindRepeat">同版连晒拼</div>
+                <div class="impose-card-sub" data-i18n="bindRepeatSub">单页重复 · 名片传单</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Mode-Specific Binding & Sheet Parameters -->
+          <div class="prop-card">
+            <div class="prop-sec-head"><span data-i18n="imposeSecSpec">装订规格与纸张参数</span></div>
+
+            <!-- Perfect Binding Signature Rows -->
+            <div id="perfectOnlyRows" class="hidden" style="display:flex;flex-direction:column;gap:9px;">
+              <div class="pop-row">
+                <span data-i18n="sigPagesLabel">每帖折手页数</span>
+                <div class="soft-pills">
+                  <button class="soft-pill sig-chip" data-sig="4" type="button">4P</button>
+                  <button class="soft-pill sig-chip active" data-sig="8" type="button">8P</button>
+                  <button class="soft-pill sig-chip" data-sig="16" type="button">16P</button>
+                  <button class="soft-pill sig-chip" data-sig="32" type="button">32P</button>
+                </div>
+              </div>
+              <div class="pop-row">
+                <span data-i18n="spineGrindLabel">铣背预留位</span>
+                <span class="num-pill"><input id="spineGrindInput" type="number" min="0" max="10" step="0.5" value="0" /><span class="unit-txt">mm</span></span>
+              </div>
+            </div>
+
+            <!-- Spread 2-Up Cover Row -->
+            <label id="firstCoverRow" class="pop-row hidden" style="cursor:pointer;">
+              <span data-i18n="firstCoverAloneLabel">首张封面单独占右半页</span>
+              <span class="switch-ctrl"><input id="firstCoverCheck" type="checkbox" /><span class="switch-track"></span></span>
+            </label>
+
+            <!-- Brochure Fold Panels Row -->
+            <div id="foldOnlyRows" class="hidden" style="display:flex;flex-direction:column;gap:8px;">
+              <span style="font-size:11.5px;color:var(--text-2);" data-i18n="foldPanelsLabel">折页折数规格</span>
+              <div class="soft-pills" style="display:grid;grid-template-columns:repeat(3,1fr);">
+                <button class="soft-pill fold-chip" data-fold="2" type="button" data-i18n="fold2Panel">对折页 (4P)</button>
+                <button class="soft-pill fold-chip active" data-fold="3" type="button" data-i18n="fold3Panel">三折页 (6P)</button>
+                <button class="soft-pill fold-chip" data-fold="4" type="button" data-i18n="fold4Panel">四折页 (8P)</button>
+              </div>
+            </div>
+
+            <!-- N-Up & Step-Repeat Count + Gutter Rows -->
+            <div id="nupOnlyRows" class="hidden" style="display:flex;flex-direction:column;gap:9px;">
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <span style="font-size:11.5px;color:var(--text-2);" data-i18n="nupCountLabel">每张拼数</span>
+                <div class="soft-pills" style="display:grid;grid-template-columns:repeat(6,1fr);">
+                  <button class="soft-pill nup-chip" data-nup="2" type="button">2</button>
+                  <button class="soft-pill nup-chip active" data-nup="4" type="button">4</button>
+                  <button class="soft-pill nup-chip" data-nup="6" type="button">6</button>
+                  <button class="soft-pill nup-chip" data-nup="8" type="button">8</button>
+                  <button class="soft-pill nup-chip" data-nup="9" type="button">9</button>
+                  <button class="soft-pill nup-chip" data-nup="16" type="button">16</button>
+                </div>
+              </div>
+              <div class="pop-row">
+                <span data-i18n="gutterLabel">拼版间距</span>
+                <span class="num-pill"><input id="gutterInput" type="number" min="0" max="30" step="1" value="0" /><span class="unit-txt">mm</span></span>
+              </div>
+            </div>
+
+            <!-- Press Sheet Paper Preset (Available for All Imposition Modes!) -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:11.5px;color:var(--text-2);" data-i18n="sheetSizeLabel">印张尺寸</span>
+              <select id="sheetPresetSelect" class="prop-select">
+                <option value="auto" data-i18n="sheetAuto">自动贴合原尺寸倍数</option>
+                <option value="sra3" data-i18n="sheetSra3">SRA3 数码大纸 (450×320mm)</option>
+                <option value="a3" data-i18n="sheetA3">A3 标准 (420×297mm)</option>
+                <option value="dadu4" data-i18n="sheetDadu4">大度四开 (595×440mm)</option>
+                <option value="zhengdu4" data-i18n="sheetZhengdu4">正度四开 (543×390mm)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 3. Source Spread Splitting & Prepress Crop Marks / Pure K100 -->
+          <div class="prop-card">
+            <div class="prop-sec-head"><span data-i18n="imposeSecSource">跨页原稿与印前输出</span></div>
+
+            <label class="pop-row" style="cursor:pointer;">
+              <span data-i18n="impAutoSplitLabel">自动将横向跨页原稿拆为单页再拼版</span>
+              <span class="switch-ctrl"><input id="impAutoSplitCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+            </label>
+
+            <div id="impSpreadDetailRows" style="display:flex;flex-direction:column;gap:8px;padding-left:8px;border-left:2px solid var(--bg-pill);">
+              <label class="pop-row" style="cursor:pointer;">
+                <span data-i18n="impSpreadCoverLabel">首张跨页为「左封底 · 右封面」</span>
+                <span class="switch-ctrl"><input id="impSpreadCoverCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+              </label>
+              <div class="pop-row">
+                <span data-i18n="impSpreadBleedLabel">跨页外出血裁除</span>
+                <span class="num-pill"><input id="impSpreadBleedInput" type="number" min="0" max="30" step="0.5" value="0" /><span class="unit-txt">mm</span></span>
+              </div>
+            </div>
+
+            <label class="pop-row" style="cursor:pointer;">
+              <span data-i18n="cropMarksLabel">绘制 K100 标准印刷裁切角线</span>
+              <span class="switch-ctrl"><input id="cropMarksCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+            </label>
+
+            <label class="pop-row" style="cursor:pointer;">
+              <span data-i18n="pureBlackShort">同步转为印刷单色黑 K100</span>
+              <span class="switch-ctrl"><input id="imposeK100Check" type="checkbox" checked /><span class="switch-track"></span></span>
+            </label>
+          </div>
+
+          <!-- 4. Quick Export CTA inside Impose Sidebar -->
+          <button id="imposeDrawerExportBtn" class="primary-btn" style="height:38px;width:100%;justify-content:center;flex-shrink:0;" type="button">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-download" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /> </svg>
+            <span data-i18n="imposeExportBtn">导出拼版 PDF</span>
+          </button>
+        </aside>
+
         <!-- Floating Edge Reopen Tab When Organize Preview Drawer Is Collapsed -->
         <button id="reopenOrgPreviewTab" class="reopen-preview-tab hidden" type="button" title="Expand Preview Pane">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-panel-right-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M15 3v18" /> <path d="m10 15-3-3 3-3" /> </svg>
@@ -3680,6 +4409,124 @@ svg.lucide {
             <button id="closePdfInfoFootBtn" class="primary-btn" style="height:32px;" type="button" data-i18n="infoCloseBtn">关闭</button>
           </div>
         </div>
+      </div>
+
+      <!-- Maximized Realistic 3D & Real-Scene Catalog Flipbook Showcase Player -->
+      <div id="flipbookModal" class="flipbook-modal hidden" data-fb-scene="studio3d" role="dialog" aria-modal="true">
+        <!-- Floating Top Scene & Camera Bar -->
+        <header class="fb-hud-top">
+          <div class="fb-scene-pills">
+            <button class="fb-scene-btn active" data-scene="studio3d" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-sparkles" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /> </svg><span data-i18n="fbSceneStudio">3D 暗厅聚光</span>
+            </button>
+            <button class="fb-scene-btn" data-scene="wood3d" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-box" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" /> <path d="m3.3 7 8.7 5 8.7-5" /> <path d="M12 22V12" /> </svg><span data-i18n="fbSceneWood">3D 胡桃木桌</span>
+            </button>
+            <button class="fb-scene-btn" data-scene="marble3d" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-layers" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /> <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /> <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /> </svg><span data-i18n="fbSceneMarble">3D 艺术展台</span>
+            </button>
+            <button class="fb-scene-btn" data-scene="flatmax" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /> </svg><span data-i18n="fbSceneFlat">2D 巨幕正视</span>
+            </button>
+          </div>
+
+          <div class="fb-top-actions">
+            <button id="fbSplitToggleBtn" class="fb-glass-btn active hidden" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-scissors" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="6" cy="6" r="3" /> <path d="M8.12 8.12 12 12" /> <path d="M20 4 8.12 15.88" /> <circle cx="6" cy="18" r="3" /> <path d="M14.8 14.8 20 20" /> </svg><span data-i18n="fbSplitToggle">跨页拆单翻阅</span>
+            </button>
+            <button id="fbResetCamBtn" class="fb-glass-btn" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-rotate-ccw" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /> </svg><span data-i18n="fbResetCam">重置 3D 视角</span>
+            </button>
+            <button id="fbSoundBtn" class="fb-glass-btn icon-only" type="button" title="翻书音效开关">
+              <span id="fbSoundOnIcon"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-volume-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z" /> <path d="M16 9a5 5 0 0 1 0 6" /> <path d="M19.364 18.364a9 9 0 0 0 0-12.728" /> </svg></span>
+              <span id="fbSoundOffIcon" class="hidden"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-volume-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M11 4.702a.7.7 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.7.7 0 0 0 11 19.298z" /> <path d="m16.5 14.5 5-5" /> <path d="m16.5 9.5 5 5" /> </svg></span>
+            </button>
+            <button id="fbFullscreenBtn" class="fb-glass-btn icon-only" type="button" title="全屏最大化显示">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-maximize" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M8 3H5a2 2 0 0 0-2 2v3" /> <path d="M21 8V5a2 2 0 0 0-2-2h-3" /> <path d="M3 16v3a2 2 0 0 0 2 2h3" /> <path d="M16 21h3a2 2 0 0 0 2-2v-3" /> </svg>
+            </button>
+            <button id="fbCloseBtn" class="fb-glass-btn close-btn" type="button" title="Esc">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M18 6 6 18" /> <path d="m6 6 12 12" /> </svg>
+            </button>
+          </div>
+        </header>
+
+        <!-- Interactive 3D Perspective Viewport -->
+        <div id="fbStage" class="fb-stage">
+          <div class="fb-ambient-light"></div>
+          <div id="fbWorld" class="fb-world">
+            <!-- 3D Tabletop / Plinth Surface with Ambient Gobo Lighting -->
+            <div id="fbTableSurface" class="fb-table-surface">
+              <div class="fb-table-gobo"></div>
+            </div>
+
+            <!-- Book Assembly in 3D Space -->
+            <div id="fbBookRig" class="fb-book-rig">
+              <div id="fbBookShadow" class="fb-book-shadow"></div>
+              <div id="fbStackLeft" class="fb-page-stack left"></div>
+              <div id="fbStackRight" class="fb-page-stack right"></div>
+
+              <!-- Static Left Half -->
+              <div id="fbLeftPage" class="fb-half-page left">
+                <img id="fbLeftImg" class="fb-page-img hidden" alt="" draggable="false" />
+                <div class="fb-gutter-ao left"></div>
+                <div id="fbLeftShade" class="fb-cast-shade"></div>
+                <span id="fbLeftNum" class="fb-corner-num left"></span>
+              </div>
+
+              <!-- Static Right Half -->
+              <div id="fbRightPage" class="fb-half-page right">
+                <img id="fbRightImg" class="fb-page-img hidden" alt="" draggable="false" />
+                <div class="fb-gutter-ao right"></div>
+                <div id="fbRightShade" class="fb-cast-shade"></div>
+                <span id="fbRightNum" class="fb-corner-num right"></span>
+              </div>
+
+              <!-- Center Spine Crease -->
+              <div id="fbSpineCrease" class="fb-spine-crease"></div>
+
+              <!-- Active 3D Turning Leaf (Front & Back Faces) -->
+              <div id="fbFlipLeaf" class="fb-flip-leaf hidden">
+                <div class="fb-leaf-face front">
+                  <img id="fbFlipFrontImg" class="fb-page-img hidden" alt="" draggable="false" />
+                  <div id="fbFlipFrontLight" class="fb-leaf-lighting"></div>
+                  <span id="fbFlipFrontNum" class="fb-corner-num right"></span>
+                </div>
+                <div class="fb-leaf-face back">
+                  <img id="fbFlipBackImg" class="fb-page-img hidden" alt="" draggable="false" />
+                  <div id="fbFlipBackLight" class="fb-leaf-lighting"></div>
+                  <span id="fbFlipBackNum" class="fb-corner-num left"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="fbOrbitHint" class="fb-orbit-hint" data-i18n="fbOrbitHint">拖拽书页边缘可真实翻页 · 拖拽桌面空白处可 3D 旋转视角 · 滚轮翻页 / Ctrl+滚轮缩放</div>
+        </div>
+
+        <!-- Floating Bottom Playback & Scrubber Bar -->
+        <footer class="fb-hud-bottom">
+          <button id="fbPrevBtn" class="fb-glass-btn icon-only" type="button" title="Previous Page">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-chevron-left" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m15 18-6-6 6-6" /> </svg>
+          </button>
+
+          <button id="fbPlayBtn" class="fb-play-btn" type="button">
+            <span id="fbPlayIcon"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-play" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" /> </svg></span>
+            <span id="fbPauseIcon" class="hidden"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-pause" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect x="14" y="3" width="5" height="18" rx="1" /> <rect x="5" y="3" width="5" height="18" rx="1" /> </svg></span>
+            <span id="fbPlayText" data-i18n="fbAutoPlay">自动翻页</span>
+          </button>
+
+          <select id="fbSpeedSelect" class="fb-speed-select" title="Flip Interval">
+            <option value="2000">2.0s</option>
+            <option value="3200" selected>3.2s</option>
+            <option value="5000">5.0s</option>
+          </select>
+
+          <input id="fbSlider" class="fb-scrubber" type="range" min="0" max="1" step="1" value="0" />
+          <span id="fbPageLabel" class="fb-page-label">P1 / 1</span>
+
+          <button id="fbNextBtn" class="fb-glass-btn icon-only" type="button" title="Next Page">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-chevron-right" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m9 18 6-6-6-6" /> </svg>
+          </button>
+        </footer>
       </div>
 
       <!-- Fixed Right Workspace Contextual Status Bar -->
@@ -4144,7 +4991,50 @@ window.SHIBA_I18N = {
     sysFontsGroupLabel: "本机已安装字体",
     sysFontsUnsupported: "当前浏览器不支持直接枚举本机字库（建议使用 Chrome / Edge 桌面版）。",
     subsetFontLoadedHint: "已载入内嵌字库「{f}」（原文已有字形直接渲染；输入新字将优先匹配本机同名原字体）。",
-    subsetFontFallbackHint: "识别为原文档「{f}」（PDF 子集字体仅含原文已有字形，编辑与输入新字时优先调用本机同名原字体）。"
+    subsetFontFallbackHint: "识别为原文档「{f}」（PDF 子集字体仅含原文已有字形，编辑与输入新字时优先调用本机同名原字体）。",
+
+    // v2.0 Visual Imposition Sidebar & 6 Binding Methods
+    imposeSidebarBtn: "拼版侧栏",
+    imposeDrawerTitle: "装订与拼版方案",
+    imposeDockLeftTip: "切换侧栏至左侧 / 右侧",
+    imposeDockLeftShort: "移至左栏",
+    imposeDockRightShort: "移至右栏",
+    imposeSecMethods: "选择装订 / 拼版方式",
+    bindBooklet: "骑马钉画册",
+    bindBookletSub: "整本套帖对折 · 书脊钉装",
+    bindPerfect: "无线胶装 / 锁线",
+    bindPerfectSub: "分帖叠装 · 铣背胶订",
+    bindSpread: "蝴蝶对裱跨页",
+    bindSpreadSub: "180°平摊 · 相册画册",
+    bindFold: "折页宣传单",
+    bindFoldSub: "对折/三折/四折 · 折线",
+    bindNup: "多联顺序拼",
+    bindNupSub: "P1~Pn 排版 · 讲义卡片",
+    bindRepeat: "同版连晒拼",
+    bindRepeatSub: "单页重复 · 名片传单",
+    imposeSecSpec: "装订规格与纸张参数",
+    sigPagesLabel: "每帖折手页数",
+    spineGrindLabel: "铣背预留位",
+    foldPanelsLabel: "折页折数规格",
+    fold2Panel: "对折页 (4P)",
+    fold3Panel: "三折页 (6P)",
+    fold4Panel: "四折页 (8P)",
+    imposeSecSource: "跨页原稿与印前输出",
+    impSigBadgeFmt: "第 {s} 帖",
+
+    // v2.0 3D Flipbook Showcase Player
+    playFlipbookBtn: "画册播放",
+    fbSceneStudio: "3D 暗厅聚光",
+    fbSceneWood: "3D 胡桃木桌",
+    fbSceneMarble: "3D 艺术展台",
+    fbSceneFlat: "2D 巨幕正视",
+    fbSplitToggle: "跨页拆单翻阅",
+    fbResetCam: "重置 3D 视角",
+    fbFullTip: "全屏最大化显示",
+    fbSoundTip: "翻书音效开关",
+    fbAutoPlay: "自动翻页",
+    fbPausePlay: "暂停播放",
+    fbOrbitHint: "拖拽书页边缘可真实翻页 · 拖拽桌面空白处可 3D 旋转视角 · 滚轮翻页 / Ctrl+滚轮缩放"
   },
 
   en: {
@@ -4512,7 +5402,48 @@ window.SHIBA_I18N = {
     sysFontsGroupLabel: "Installed Local Fonts",
     sysFontsUnsupported: "Local Font Access API is not available in this browser (try desktop Chrome / Edge).",
     subsetFontLoadedHint: "Embedded font \"{f}\" loaded (existing glyphs render directly; new chars match local installed fonts).",
-    subsetFontFallbackHint: "Matched PDF font \"{f}\" (PDF embeds subset glyphs only; editing & new chars prioritize matching local fonts)."
+    subsetFontFallbackHint: "Matched PDF font \"{f}\" (PDF embeds subset glyphs only; editing & new chars prioritize matching local fonts).",
+
+    imposeSidebarBtn: "Impose Panel",
+    imposeDrawerTitle: "Binding & Imposition",
+    imposeDockLeftTip: "Dock Sidebar Left / Right",
+    imposeDockLeftShort: "Dock Left",
+    imposeDockRightShort: "Dock Right",
+    imposeSecMethods: "Binding & Imposition Mode",
+    bindBooklet: "Saddle-Stitch",
+    bindBookletSub: "Nested sheets · Stapled spine",
+    bindPerfect: "Perfect / Sewn",
+    bindPerfectSub: "Stacked signatures · Spine mill",
+    bindSpread: "Lay-Flat Spreads",
+    bindSpreadSub: "180° butterfly album",
+    bindFold: "Folded Brochure",
+    bindFoldSub: "Bi-fold / Tri-fold / 4-panel",
+    bindNup: "Sequential N-Up",
+    bindNupSub: "P1..Pn grid · Handouts",
+    bindRepeat: "Step & Repeat",
+    bindRepeatSub: "Repeat same page · Cards/Flyers",
+    imposeSecSpec: "Binding & Sheet Specs",
+    sigPagesLabel: "Pages per Signature",
+    spineGrindLabel: "Spine Milling",
+    foldPanelsLabel: "Brochure Panels",
+    fold2Panel: "Bi-Fold (4P)",
+    fold3Panel: "Tri-Fold (6P)",
+    fold4Panel: "4-Panel (8P)",
+    imposeSecSource: "Source Spreads & Marks",
+    impSigBadgeFmt: "Sig {s}",
+
+    playFlipbookBtn: "Play Book",
+    fbSceneStudio: "3D Spotlight",
+    fbSceneWood: "3D Walnut Desk",
+    fbSceneMarble: "3D Gallery",
+    fbSceneFlat: "2D Max View",
+    fbSplitToggle: "Split Spreads",
+    fbResetCam: "Reset 3D View",
+    fbFullTip: "Fullscreen Maximize",
+    fbSoundTip: "Page Flip Sound",
+    fbAutoPlay: "Auto Play",
+    fbPausePlay: "Pause",
+    fbOrbitHint: "Drag page edge to curl & flip · Drag background to orbit 3D camera · Wheel to flip / Ctrl+Wheel to zoom"
   }
 };
 
@@ -4904,7 +5835,7 @@ window.ShibaPrepress = (function () {
       const safeId = `ShibaPdfEmb_${registeredEmbeddedFaces.size}_${cleanName.replace(/[^A-Za-z0-9]/g, "")}`;
       const copyBuf = decoded.slice().buffer;
       const face = new FontFace(safeId, copyBuf, {
-        weight: fMeta.bold ? "700" : "400",
+        weight: String(fMeta.fontWeight || (fMeta.bold ? 700 : 400)),
         style: fMeta.italic ? "italic" : "normal"
       });
       await face.load();
@@ -4915,7 +5846,19 @@ window.ShibaPrepress = (function () {
 
   function classifyPdfFontStyle(fontName, styleObj) {
     const raw = `${fontName || ""} ${(styleObj && styleObj.fontFamily) || ""}`;
-    const bold = /bold|heavy|black|demi|semibold|extrabold|-b\b|-db\b|-eb\b|-h\b|w[6789]|粗|中黑|大黑|特黑|浓/i.test(raw);
+    let fontWeight = 400;
+    if (/extrabold|heavy|black|ultra|-eb\b|-h\b|w[89]|大黑|特黑|浓/i.test(raw)) {
+      fontWeight = 700;
+    } else if (/\bbold\b|-bold|-b\b|w7|粗体|粗宋|粗黑|粗楷/i.test(raw) && !/semibold|demibold/i.test(raw)) {
+      fontWeight = 700;
+    } else if (/semibold|demibold|demi|-db\b|-sb\b|w6|中黑|中粗|半粗/i.test(raw)) {
+      fontWeight = 600;
+    } else if (/\bmedium\b|-medium|-m\b|w5|中等/i.test(raw)) {
+      fontWeight = 500;
+    } else if (/\blight\b|\bthin\b|-light|-l\b|w[123]|细体|极细/i.test(raw)) {
+      fontWeight = 300;
+    }
+    const bold = fontWeight >= 700;
     const italic = /italic|oblique|倾斜/i.test(raw);
     let fontKey = "sans";
     if (/mono|consolas|courier|menlo|fira\s*code|jetbrains|等宽/i.test(raw)) {
@@ -4933,7 +5876,7 @@ window.ShibaPrepress = (function () {
     } else if (/arial|helvetica|calibri|roboto|inter|segoe/i.test(raw)) {
       fontKey = "helvetica";
     }
-    return { bold, italic, fontKey };
+    return { bold, fontWeight, italic, fontKey };
   }
 
   function expandPdfFontAliases(origName) {
@@ -5047,7 +5990,9 @@ window.ShibaPrepress = (function () {
               : null;
         if (fObj) {
           if (fObj.name) realPdfFontName = decodePdfFontBaseName(fObj.name).cleanName;
-          if (fObj.bold || fObj.black) fontObjBold = true;
+          // Note: pdf.js sets fObj.bold = true whenever FontDescriptor /StemV >= 70, which is true for ~90% of Regular CJK fonts!
+          // Only trust explicit fObj.black or real font-name weight tokens in classifyPdfFontStyle.
+          if (fObj.black) fontObjBold = true;
           if (fObj.italic) fontObjItalic = true;
         }
       } catch (_) {}
@@ -5090,6 +6035,7 @@ window.ShibaPrepress = (function () {
         },
         fontPt: Math.round(fontH * 100) / 100,
         ascent: Math.round(ascent * 1000) / 1000,
+        fontWeight: fontObjBold ? 700 : (fMeta.fontWeight || 400),
         bold: Boolean(fontObjBold || fMeta.bold),
         italic: Boolean(fontObjItalic || fMeta.italic),
         origFontName: realPdfFontName || "",
@@ -5963,7 +6909,7 @@ window.ShibaPdfInfo = (function () {
 
 ;
 /* === src/imposition.js === */
-// Prepress Imposition Engine v1.8: Smart Reader-Spread Auto-Split, Multi-Sheet Overview, HiDPI Rendering & Pure K100 Crop Marks
+// Prepress Imposition Engine v2.0: 6 Binding Methods with Visual SVG Schematics, Smart Spread Split, HiDPI & Lossless PDF Export
 window.ShibaImpose = (function () {
   "use strict";
 
@@ -5978,13 +6924,87 @@ window.ShibaImpose = (function () {
 
   function getGridColsRows(nup) {
     if (nup === 4) return { cols: 2, rows: 2 };
+    if (nup === 6) return { cols: 3, rows: 2 };
     if (nup === 8) return { cols: 4, rows: 2 };
+    if (nup === 9) return { cols: 3, rows: 3 };
+    if (nup === 16) return { cols: 4, rows: 4 };
     return { cols: 2, rows: 1 };
   }
 
+  // Crisp visual schematic SVGs illustrating each binding & imposition method for intuitive selection
+  const BINDING_SVGS = {
+    booklet: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12 14 L44 19 L76 14 L76 46 L44 51 L12 46 Z" fill="currentColor" fill-opacity="0.07" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <path d="M17 10 L44 16 L71 10 L71 42 L44 48 L17 42 Z" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <line x1="44" y1="14" x2="44" y2="50" stroke="currentColor" stroke-width="1.3" stroke-dasharray="2.5 2"/>
+      <line x1="41.5" y1="23" x2="46.5" y2="23" stroke="#2383e2" stroke-width="2.2" stroke-linecap="round"/>
+      <line x1="41.5" y1="39" x2="46.5" y2="39" stroke="#2383e2" stroke-width="2.2" stroke-linecap="round"/>
+      <text x="27" y="30" font-size="8.5" font-weight="700" fill="currentColor" opacity="0.72" text-anchor="middle">Pn</text>
+      <text x="60" y="30" font-size="8.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
+    </svg>`,
+
+    perfect: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="14" y="10" width="27" height="36" rx="1.5" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.4"/>
+      <rect x="47" y="10" width="27" height="36" rx="1.5" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.4"/>
+      <rect x="41" y="9" width="6" height="38" rx="1" fill="#2383e2" fill-opacity="0.22" stroke="#2383e2" stroke-width="1.5"/>
+      <path d="M41 18 H47 M41 28 H47 M41 38 H47" stroke="#2383e2" stroke-width="1.4"/>
+      <line x1="18" y1="49" x2="40" y2="49" stroke="currentColor" stroke-width="1.2" opacity="0.45"/>
+      <line x1="48" y1="49" x2="70" y2="49" stroke="currentColor" stroke-width="1.2" opacity="0.45"/>
+      <text x="27.5" y="31" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.75" text-anchor="middle">1帖</text>
+      <text x="60.5" y="31" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">2帖</text>
+    </svg>`,
+
+    spread2up: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="11" y="13" width="66" height="33" rx="2" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.4"/>
+      <rect x="14" y="10" width="30" height="33" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.5"/>
+      <rect x="44" y="10" width="30" height="33" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.5"/>
+      <line x1="44" y1="10" x2="44" y2="43" stroke="#2383e2" stroke-width="1.8"/>
+      <path d="M35 26 H53" stroke="#2383e2" stroke-width="1.3" stroke-dasharray="2 2"/>
+      <text x="29" y="29" font-size="8.5" font-weight="700" fill="currentColor" opacity="0.72" text-anchor="middle">P2</text>
+      <text x="59" y="29" font-size="8.5" font-weight="700" fill="#2383e2" text-anchor="middle">P3</text>
+    </svg>`,
+
+    fold: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="12,13 33,9 33,43 12,47" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <polygon points="33,9 55,15 55,49 33,43" fill="currentColor" fill-opacity="0.08" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>
+      <polygon points="55,15 76,10 76,44 55,49" fill="var(--bg-surface, #fff)" stroke="#2383e2" stroke-width="1.6" stroke-linejoin="round"/>
+      <line x1="33" y1="9" x2="33" y2="43" stroke="#2383e2" stroke-width="1.3" stroke-dasharray="2.5 2"/>
+      <line x1="55" y1="15" x2="55" y2="49" stroke="#2383e2" stroke-width="1.3" stroke-dasharray="2.5 2"/>
+      <text x="22.5" y="31" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.7" text-anchor="middle">P5</text>
+      <text x="44" y="32" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.7" text-anchor="middle">P6</text>
+      <text x="65.5" y="30" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
+    </svg>`,
+
+    nup: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="8" width="58" height="40" rx="2" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.4"/>
+      <rect x="20" y="12" width="22" height="14" rx="1" fill="#2383e2" fill-opacity="0.10" stroke="#2383e2" stroke-width="1.3"/>
+      <rect x="46" y="12" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.2"/>
+      <rect x="20" y="30" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.2"/>
+      <rect x="46" y="30" width="22" height="14" rx="1" fill="currentColor" fill-opacity="0.05" stroke="currentColor" stroke-width="1.2"/>
+      <text x="31" y="21.5" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
+      <text x="57" y="21.5" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.72" text-anchor="middle">P2</text>
+      <text x="31" y="39.5" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.72" text-anchor="middle">P3</text>
+      <text x="57" y="39.5" font-size="7.5" font-weight="700" fill="currentColor" opacity="0.72" text-anchor="middle">P4</text>
+    </svg>`,
+
+    steprepeat: `<svg viewBox="0 0 88 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="15" y="8" width="58" height="40" rx="2" fill="var(--bg-surface, #fff)" stroke="currentColor" stroke-width="1.4"/>
+      <rect x="20" y="12" width="22" height="14" rx="1" fill="#2383e2" fill-opacity="0.13" stroke="#2383e2" stroke-width="1.3"/>
+      <rect x="46" y="12" width="22" height="14" rx="1" fill="#2383e2" fill-opacity="0.13" stroke="#2383e2" stroke-width="1.3"/>
+      <rect x="20" y="30" width="22" height="14" rx="1" fill="#2383e2" fill-opacity="0.13" stroke="#2383e2" stroke-width="1.3"/>
+      <rect x="46" y="30" width="22" height="14" rx="1" fill="#2383e2" fill-opacity="0.13" stroke="#2383e2" stroke-width="1.3"/>
+      <text x="31" y="21.5" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
+      <text x="57" y="21.5" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
+      <text x="31" y="39.5" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
+      <text x="57" y="39.5" font-size="7.5" font-weight="700" fill="#2383e2" text-anchor="middle">P1</text>
+    </svg>`
+  };
+
+  function getBindingMethodSvgs() {
+    return BINDING_SVGS;
+  }
+
   // Build logical single-page units from source slots.
-  // When autoSplitSpreads is ON and a source page is a landscape spread (e.g. A3 420×297mm reader spread),
-  // automatically split it into Left & Right single pages (e.g. A4 210×297mm) so imposing 2-up produces 1×A3 instead of 2×A3!
   function buildLogicalUnits(slots, getSlotSizePt, opts) {
     const units = [];
     let hasAnySpread = false;
@@ -6043,7 +7063,6 @@ window.ShibaImpose = (function () {
       }
     });
 
-    // Standard Chinese designer spread convention: Spread 1 is [Back Cover | Front Cover]
     if (didSplitSpreads && firstWasSpread && opts.spreadFirstBackFront !== false && units.length >= 2) {
       const backCover = units.shift();
       units.push(backCover);
@@ -6056,7 +7075,21 @@ window.ShibaImpose = (function () {
     return { units, hasAnySpread, didSplitSpreads };
   }
 
-  // Compute imposition layout plan (shared by Multi-Sheet Grid, Single-Sheet Zoom, and Vector PDF Export!)
+  // Helper to impose a slice of indices as a nested saddle-stitch signature
+  function buildNestedSignatureEntries(sliceIndices) {
+    const out = [];
+    const total = sliceIndices.length;
+    const numSheets = total / 2;
+    for (let s = 0; s < numSheets; s++) {
+      if (s % 2 === 0) {
+        out.push(sliceIndices[total - 1 - s], sliceIndices[s]);
+      } else {
+        out.push(sliceIndices[s], sliceIndices[total - 1 - s]);
+      }
+    }
+    return out;
+  }
+
   function computeImpositionPlan(slots, getSlotSizePt, opts) {
     if (!slots.length) {
       return {
@@ -6071,42 +7104,70 @@ window.ShibaImpose = (function () {
         cellWMm: 0,
         cellHMm: 0,
         origLogicalCount: 0,
-        paddedTotal: 0
+        paddedTotal: 0,
+        sigCount: 0
       };
     }
 
+    const mode = (opts && opts.type) || "booklet";
     const built = buildLogicalUnits(slots, getSlotSizePt, opts || {});
     const logicalUnits = built.units;
     const firstUnit = logicalUnits[0];
     const cellW = firstUnit.wPt;
     const cellH = firstUnit.hPt;
     const marginPt = opts.cropMarks ? 10 * MM_TO_PT : 0;
-    const gutterPt = (opts.type === "nup" ? Math.max(0, opts.gutterMm || 0) : 0) * MM_TO_PT;
+
+    let gutterMm = 0;
+    if (mode === "nup" || mode === "steprepeat") {
+      gutterMm = Math.max(0, opts.gutterMm || 0);
+    } else if (mode === "perfect") {
+      // Spine milling allowance (each leaf gets spineGrindMm at the spine -> 2 * spineGrindMm between left & right pages)
+      gutterMm = Math.max(0, (opts.spineGrindMm || 0) * 2);
+    }
+    const gutterPt = gutterMm * MM_TO_PT;
 
     let cols = 2, rows = 1;
-    let orderedEntries = []; // Array of unitIndex (number) or null (blank cell)
+    let orderedEntries = [];
+    let sheetMetaList = []; // Optional per-sheet duplexSide / sigIndex metadata
     let paddedTotal = logicalUnits.length;
+    let sigCount = 0;
 
-    if (opts.type === "booklet") {
+    if (mode === "booklet") {
       cols = 2;
       rows = 1;
       const n = logicalUnits.length;
       paddedTotal = Math.max(4, Math.ceil(n / 4) * 4);
       const padded = [];
-      for (let i = 0; i < paddedTotal; i++) {
-        padded.push(i < n ? i : null);
+      for (let i = 0; i < paddedTotal; i++) padded.push(i < n ? i : null);
+      orderedEntries = buildNestedSignatureEntries(padded);
+      sigCount = 1;
+      for (let s = 0; s < orderedEntries.length / 2; s++) {
+        sheetMetaList.push({ duplexSide: s % 2 === 0 ? "front" : "back", sigIdx: 1 });
       }
-      const numSheets = paddedTotal / 2;
-      for (let s = 0; s < numSheets; s++) {
-        if (s % 2 === 0) {
-          // Front of signature sheet: [Last - s | First + s]
-          orderedEntries.push(padded[paddedTotal - 1 - s], padded[s]);
-        } else {
-          // Back of signature sheet: [First + s | Last - s]
-          orderedEntries.push(padded[s], padded[paddedTotal - 1 - s]);
+    } else if (mode === "perfect") {
+      cols = 2;
+      rows = 1;
+      const rawSig = Number(opts.sigPages) || 8;
+      const sigPages = [4, 8, 16, 32].includes(rawSig) ? rawSig : 8;
+      const n = logicalUnits.length;
+      // Pad overall book to a multiple of 4, then group into signatures of sigPages (last signature rounds to multiple of 4)
+      paddedTotal = Math.max(4, Math.ceil(n / 4) * 4);
+      const padded = [];
+      for (let i = 0; i < paddedTotal; i++) padded.push(i < n ? i : null);
+
+      let cursor = 0;
+      while (cursor < padded.length) {
+        const chunk = padded.slice(cursor, cursor + sigPages);
+        while (chunk.length % 4 !== 0) chunk.push(null);
+        sigCount++;
+        const sigEntries = buildNestedSignatureEntries(chunk);
+        orderedEntries.push(...sigEntries);
+        for (let s = 0; s < sigEntries.length / 2; s++) {
+          sheetMetaList.push({ duplexSide: s % 2 === 0 ? "front" : "back", sigIdx: sigCount });
         }
+        cursor += sigPages;
       }
-    } else if (opts.type === "spread2up") {
+    } else if (mode === "spread2up") {
       cols = 2;
       rows = 1;
       const list = logicalUnits.map((_, idx) => idx);
@@ -6120,7 +7181,41 @@ window.ShibaImpose = (function () {
           orderedEntries.push(list[i], i + 1 < list.length ? list[i + 1] : null);
         }
       }
+    } else if (mode === "fold") {
+      const panels = [2, 3, 4].includes(Number(opts.foldPanels)) ? Number(opts.foldPanels) : 3;
+      cols = panels;
+      rows = 1;
+      const perBrochure = panels * 2;
+      const n = logicalUnits.length;
+      paddedTotal = Math.max(perBrochure, Math.ceil(n / perBrochure) * perBrochure);
+      const padded = [];
+      for (let i = 0; i < paddedTotal; i++) padded.push(i < n ? i : null);
+
+      for (let b = 0; b < padded.length; b += perBrochure) {
+        const p = padded.slice(b, b + perBrochure);
+        if (panels === 2) {
+          // Bi-fold 4P: Outside [P4 | P1], Inside [P2 | P3]
+          orderedEntries.push(p[3], p[0], p[1], p[2]);
+        } else if (panels === 3) {
+          // Tri-fold 6P: Outside [P5 | P6 | P1], Inside [P2 | P3 | P4]
+          orderedEntries.push(p[4], p[5], p[0], p[1], p[2], p[3]);
+        } else {
+          // 4-panel Accordion 8P: Outside [P8 | P7 | P6 | P1], Inside [P2 | P3 | P4 | P5]
+          orderedEntries.push(p[7], p[6], p[5], p[0], p[1], p[2], p[3], p[4]);
+        }
+        sheetMetaList.push({ duplexSide: "front", sigIdx: b / perBrochure + 1 });
+        sheetMetaList.push({ duplexSide: "back", sigIdx: b / perBrochure + 1 });
+      }
+    } else if (mode === "steprepeat") {
+      const gr = getGridColsRows(opts.nup || 4);
+      cols = gr.cols;
+      rows = gr.rows;
+      const perSheet = cols * rows;
+      for (let i = 0; i < logicalUnits.length; i++) {
+        for (let r = 0; r < perSheet; r++) orderedEntries.push(i);
+      }
     } else {
+      // Sequential N-Up
       const gr = getGridColsRows(opts.nup || 4);
       cols = gr.cols;
       rows = gr.rows;
@@ -6135,7 +7230,7 @@ window.ShibaImpose = (function () {
     let sheetWPt = gridW + marginPt * 2;
     let sheetHPt = gridH + marginPt * 2;
 
-    if (opts.type === "nup" && opts.sheetPreset && opts.sheetPreset !== "auto" && SHEET_PRESETS_MM[opts.sheetPreset]) {
+    if (opts.sheetPreset && opts.sheetPreset !== "auto" && SHEET_PRESETS_MM[opts.sheetPreset]) {
       const sp = SHEET_PRESETS_MM[opts.sheetPreset];
       let pw = sp.w * MM_TO_PT;
       let ph = sp.h * MM_TO_PT;
@@ -6188,10 +7283,18 @@ window.ShibaImpose = (function () {
         }
       }
       const sIdx = sheets.length;
+      const sm = sheetMetaList[sIdx] || {};
+      const summaryStr =
+        mode === "steprepeat" && placements[0] && placements[0].logicalPageNum
+          ? `P${placements[0].logicalPageNum} × ${perSheet}`
+          : pageLabels.join(" · ");
+
       sheets.push({
         sheetIndex: sIdx,
-        duplexSide: opts.type === "booklet" ? (sIdx % 2 === 0 ? "front" : "back") : null,
-        pageSummary: pageLabels.join(" · "),
+        mode,
+        duplexSide: sm.duplexSide || null,
+        sigIdx: sm.sigIdx || null,
+        pageSummary: summaryStr,
         wPt: sheetWPt,
         hPt: sheetHPt,
         cols,
@@ -6208,6 +7311,7 @@ window.ShibaImpose = (function () {
     }
 
     return {
+      mode,
       sheets,
       logicalUnits,
       hasAnySpread: built.hasAnySpread,
@@ -6219,7 +7323,8 @@ window.ShibaImpose = (function () {
       cellWMm: drawCellW / MM_TO_PT,
       cellHMm: drawCellH / MM_TO_PT,
       origLogicalCount: logicalUnits.length,
-      paddedTotal
+      paddedTotal,
+      sigCount
     };
   }
 
@@ -6254,7 +7359,6 @@ window.ShibaImpose = (function () {
     return segs;
   }
 
-  // Render HiDPI Retina preview of an imposed sheet at the exact requested CSS width (no CSS stretching!)
   async function renderImposedSheetPreview(canvas, sheet, targetCssW, renderUnitHiResFn, cropMarks, blankLabel) {
     const cssW = Math.max(120, Math.round(targetCssW || 720));
     const scale = cssW / Math.max(1, sheet.wPt);
@@ -6273,6 +7377,14 @@ window.ShibaImpose = (function () {
 
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, cssW, cssH);
+
+    // Optional Perfect-Binding spine milling shaded zone
+    if (sheet.mode === "perfect" && sheet.cols === 2 && sheet.drawGutter > 0.2) {
+      const gx = (sheet.startX + sheet.drawCellW) * scale;
+      const gw = sheet.drawGutter * scale;
+      ctx.fillStyle = "rgba(35, 131, 226, 0.08)";
+      ctx.fillRect(gx, sheet.startYTop * scale, gw, sheet.totalDrawH * scale);
+    }
 
     for (const pl of sheet.placements) {
       const dx = pl.xPt * scale;
@@ -6301,7 +7413,6 @@ window.ShibaImpose = (function () {
         ctx.lineWidth = 0.75;
         ctx.strokeRect(dx, dy, dw, dh);
 
-        // Crisp page number pill in top-left corner of cell
         const labelTxt = `P${pl.logicalPageNum}`;
         const pillW = Math.max(28, labelTxt.length * 7 + 12);
         ctx.fillStyle = "rgba(24,24,23,0.78)";
@@ -6314,16 +7425,18 @@ window.ShibaImpose = (function () {
       }
     }
 
-    // Center spine fold guide line for 2-up zero-gutter press sheets
-    if (sheet.cols === 2 && sheet.rows === 1 && sheet.drawGutter < 0.5) {
-      const spineX = (sheet.startX + sheet.drawCellW) * scale;
+    // Fold / Spine guide dashed lines
+    if (sheet.rows === 1 && sheet.cols >= 2 && (sheet.drawGutter < 0.5 || sheet.mode === "perfect" || sheet.mode === "fold")) {
       ctx.save();
-      ctx.strokeStyle = "rgba(35, 131, 226, 0.55)";
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = "rgba(35, 131, 226, 0.65)";
+      ctx.lineWidth = 1.1;
+      ctx.setLineDash([4, 3.5]);
       ctx.beginPath();
-      ctx.moveTo(spineX, sheet.startYTop * scale);
-      ctx.lineTo(spineX, (sheet.startYTop + sheet.totalDrawH) * scale);
+      for (let c = 1; c < sheet.cols; c++) {
+        const foldX = (sheet.startX + c * sheet.drawCellW + (c - 0.5) * sheet.drawGutter) * scale;
+        ctx.moveTo(foldX, sheet.startYTop * scale);
+        ctx.lineTo(foldX, (sheet.startYTop + sheet.totalDrawH) * scale);
+      }
       ctx.stroke();
       ctx.restore();
     }
@@ -6341,7 +7454,6 @@ window.ShibaImpose = (function () {
     }
   }
 
-  // Build Vector Lossless Imposed PDF using pdf-lib embedPages with exact half-spread clipping boxes!
   async function exportImposedPdfBytes(preparedSlotDocs, plan, cropMarks, normVisualToPdfRectFn) {
     const outDoc = await PDFLib.PDFDocument.create();
     const srcPages = preparedSlotDocs.getPages();
@@ -6349,7 +7461,7 @@ window.ShibaImpose = (function () {
     const pagesToEmbed = [];
     const clipBoxes = [];
     const rotAngles = [];
-    const validUnitMap = new Map(); // unitIdx -> embeddedIndex
+    const validUnitMap = new Map();
 
     plan.logicalUnits.forEach((unit, uIdx) => {
       const srcPage = srcPages[unit.slotIdx];
@@ -6437,9 +7549,796 @@ window.ShibaImpose = (function () {
   }
 
   return {
+    buildLogicalUnits,
+    getBindingMethodSvgs,
     computeImpositionPlan,
     renderImposedSheetPreview,
     exportImposedPdfBytes
+  };
+})();
+
+;
+/* === src/flipbook-3d.js === */
+// Maximized Realistic 3D Catalog Flipbook Showcase Player (v2.0)
+// Supports 3D Real-World Scenes (Studio Spotlight, Walnut Desk, Gallery Plinth) + 2D Cinema Max,
+// Interactive Page-Edge Drag Flip, Camera Orbit, Auto-Play Presentation, Smart Spread Split & Paper Flip Audio
+window.ShibaFlipbook = (function () {
+  "use strict";
+
+  let isOpen = false;
+  let units = []; // Logical single pages built from loaded slots
+  let leaves = []; // [{ frontUnitIdx, backUnitIdx }]
+  let turnedCount = 0; // 0 = closed front cover, 1..leaves.length-1 = open spread, leaves.length = closed back cover
+  let sceneMode = localStorage.getItem("shibapdf_fb_scene") || "studio3d"; // 'studio3d' | 'wood3d' | 'marble3d' | 'flatmax'
+  let autoSplitSpreads = true;
+  let spreadFirstBackFront = true;
+  let soundOn = localStorage.getItem("shibapdf_fb_sound") !== "0";
+
+  // 3D Camera Orbit & Zoom
+  let camPitch = 25;
+  let camYaw = -7;
+  let camZoom = 1.0;
+
+  // Live Flip Animation / Interactive Drag State
+  let animFrame = null;
+  let activeFlip = null; // { leafIdx, dir: 1|-1, p: 0..1, targetP: 0|1, dragging: bool, startX: number }
+  let autoPlayTimer = null;
+  let isPlaying = false;
+  let playIntervalMs = 3200;
+
+  // Rendered page bitmap cache (unitIdx -> dataUrl)
+  let pageImgCache = new Map();
+  let renderUnitFn = null;
+  let getSlotsInfoFn = null;
+  let tFn = (k) => k;
+  let audioCtx = null;
+
+  const SCENE_DEFAULTS = {
+    studio3d: { pitch: 25, yaw: -7, zoom: 1.0 },
+    wood3d: { pitch: 28, yaw: -9, zoom: 1.0 },
+    marble3d: { pitch: 23, yaw: 6, zoom: 1.0 },
+    flatmax: { pitch: 0, yaw: 0, zoom: 1.0 }
+  };
+
+  function playPaperRustle(durationSec) {
+    if (!soundOn) return;
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (!AC) return;
+      if (!audioCtx) audioCtx = new AC();
+      if (audioCtx.state === "suspended") audioCtx.resume();
+
+      const dur = Math.max(0.14, Math.min(0.42, durationSec || 0.24));
+      const sampleRate = audioCtx.sampleRate;
+      const len = Math.floor(sampleRate * dur);
+      const buf = audioCtx.createBuffer(1, len, sampleRate);
+      const data = buf.getChannelData(0);
+
+      let b0 = 0, b1 = 0, b2 = 0;
+      for (let i = 0; i < len; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.997 * b0 + white * 0.029;
+        b1 = 0.985 * b1 + white * 0.032;
+        b2 = 0.950 * b2 + white * 0.048;
+        const t = i / len;
+        const env = Math.sin(t * Math.PI) * Math.pow(1 - t * 0.55, 1.4);
+        data[i] = (b0 + b1 + b2 + white * 0.08) * env * 0.28;
+      }
+
+      const src = audioCtx.createBufferSource();
+      src.buffer = buf;
+
+      const filter = audioCtx.createBiquadFilter();
+      filter.type = "bandpass";
+      filter.frequency.setValueAtTime(1350, audioCtx.currentTime);
+      filter.frequency.exponentialRampToValueAtTime(680, audioCtx.currentTime + dur);
+      filter.Q.value = 0.85;
+
+      const gain = audioCtx.createGain();
+      gain.gain.value = 0.22;
+
+      src.connect(filter);
+      filter.connect(gain);
+      gain.connect(audioCtx.destination);
+      src.start();
+    } catch (_) {}
+  }
+
+  function dom() {
+    return {
+      modal: document.getElementById("flipbookModal"),
+      stage: document.getElementById("fbStage"),
+      world: document.getElementById("fbWorld"),
+      tableSurface: document.getElementById("fbTableSurface"),
+      bookRig: document.getElementById("fbBookRig"),
+      bookShadow: document.getElementById("fbBookShadow"),
+      stackLeft: document.getElementById("fbStackLeft"),
+      stackRight: document.getElementById("fbStackRight"),
+      leftPage: document.getElementById("fbLeftPage"),
+      leftImg: document.getElementById("fbLeftImg"),
+      leftShade: document.getElementById("fbLeftShade"),
+      leftNum: document.getElementById("fbLeftNum"),
+      rightPage: document.getElementById("fbRightPage"),
+      rightImg: document.getElementById("fbRightImg"),
+      rightShade: document.getElementById("fbRightShade"),
+      rightNum: document.getElementById("fbRightNum"),
+      flipLeaf: document.getElementById("fbFlipLeaf"),
+      flipFrontImg: document.getElementById("fbFlipFrontImg"),
+      flipFrontLight: document.getElementById("fbFlipFrontLight"),
+      flipFrontNum: document.getElementById("fbFlipFrontNum"),
+      flipBackImg: document.getElementById("fbFlipBackImg"),
+      flipBackLight: document.getElementById("fbFlipBackLight"),
+      flipBackNum: document.getElementById("fbFlipBackNum"),
+      spineCrease: document.getElementById("fbSpineCrease"),
+      sceneBtns: Array.from(document.querySelectorAll(".fb-scene-btn")),
+      splitBtn: document.getElementById("fbSplitToggleBtn"),
+      resetCamBtn: document.getElementById("fbResetCamBtn"),
+      soundBtn: document.getElementById("fbSoundBtn"),
+      soundOnIcon: document.getElementById("fbSoundOnIcon"),
+      soundOffIcon: document.getElementById("fbSoundOffIcon"),
+      fullBtn: document.getElementById("fbFullscreenBtn"),
+      closeBtn: document.getElementById("fbCloseBtn"),
+      prevBtn: document.getElementById("fbPrevBtn"),
+      nextBtn: document.getElementById("fbNextBtn"),
+      playBtn: document.getElementById("fbPlayBtn"),
+      playIcon: document.getElementById("fbPlayIcon"),
+      pauseIcon: document.getElementById("fbPauseIcon"),
+      playText: document.getElementById("fbPlayText"),
+      speedSelect: document.getElementById("fbSpeedSelect"),
+      slider: document.getElementById("fbSlider"),
+      pageLabel: document.getElementById("fbPageLabel"),
+      orbitHint: document.getElementById("fbOrbitHint")
+    };
+  }
+
+  function rebuildBookStructure() {
+    if (!getSlotsInfoFn || !window.ShibaImpose) return;
+    const info = getSlotsInfoFn();
+    if (!info || !info.slots || !info.slots.length) {
+      units = [];
+      leaves = [];
+      return;
+    }
+
+    const built = window.ShibaImpose.buildLogicalUnits(info.slots, info.getSlotSizePt, {
+      autoSplitSpreads,
+      spreadFirstBackFront,
+      spreadBleedMm: 0
+    });
+    units = built.units;
+
+    const d = dom();
+    if (d.splitBtn) {
+      d.splitBtn.classList.toggle("hidden", !built.hasAnySpread);
+      d.splitBtn.classList.toggle("active", autoSplitSpreads);
+    }
+
+    leaves = [];
+    for (let i = 0; i < units.length; i += 2) {
+      leaves.push({
+        frontUnitIdx: i,
+        backUnitIdx: i + 1 < units.length ? i + 1 : null
+      });
+    }
+    if (turnedCount > leaves.length) turnedCount = 0;
+  }
+
+  function computePageDimensionsPx() {
+    const u0 = units[0] || { wPt: 595, hPt: 842 };
+    const aspect = Math.max(0.35, Math.min(2.6, u0.wPt / Math.max(1, u0.hPt)));
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const is3d = sceneMode !== "flatmax";
+
+    // Maximize display area while keeping room for 3D perspective swing & ultra-compact HUD
+    const maxSpreadW = vw * (is3d ? 0.84 : 0.92);
+    const maxPageH = vh * (is3d ? 0.78 : 0.86);
+
+    let pageH = maxPageH;
+    let pageW = pageH * aspect;
+    if (pageW * 2 > maxSpreadW) {
+      pageW = maxSpreadW / 2;
+      pageH = pageW / aspect;
+    }
+    return {
+      pageW: Math.max(140, Math.round(pageW)),
+      pageH: Math.max(180, Math.round(pageH))
+    };
+  }
+
+  async function ensureUnitImage(unitIdx, targetPxW) {
+    if (unitIdx === null || unitIdx === undefined || !units[unitIdx]) return "";
+    if (pageImgCache.has(unitIdx)) return pageImgCache.get(unitIdx);
+    if (!renderUnitFn) return "";
+
+    const cv = await renderUnitFn(units[unitIdx], Math.max(900, Math.round(targetPxW * 2.1)));
+    if (!cv) return "";
+    const url = cv.toDataURL("image/jpeg", 0.92);
+    pageImgCache.set(unitIdx, url);
+    return url;
+  }
+
+  function preloadNearbyUnits(centerLeafIdx, pageW) {
+    const indices = new Set();
+    for (let l = Math.max(0, centerLeafIdx - 2); l <= Math.min(leaves.length - 1, centerLeafIdx + 2); l++) {
+      const lf = leaves[l];
+      if (lf.frontUnitIdx !== null) indices.add(lf.frontUnitIdx);
+      if (lf.backUnitIdx !== null) indices.add(lf.backUnitIdx);
+    }
+    indices.forEach((uIdx) => {
+      ensureUnitImage(uIdx, pageW);
+    });
+  }
+
+  function setImgOrBlank(imgEl, numEl, unitIdx, pageW) {
+    if (!imgEl) return;
+    if (unitIdx === null || unitIdx === undefined || !units[unitIdx]) {
+      imgEl.classList.add("hidden");
+      imgEl.removeAttribute("src");
+      if (numEl) numEl.textContent = "";
+      return;
+    }
+    if (numEl) numEl.textContent = `${unitIdx + 1}`;
+    const cached = pageImgCache.get(unitIdx);
+    if (cached) {
+      imgEl.src = cached;
+      imgEl.classList.remove("hidden");
+    } else {
+      imgEl.classList.add("hidden");
+      ensureUnitImage(unitIdx, pageW).then((url) => {
+        if (url && imgEl.dataset.wantUnit === String(unitIdx)) {
+          imgEl.src = url;
+          imgEl.classList.remove("hidden");
+        }
+      });
+    }
+    imgEl.dataset.wantUnit = String(unitIdx);
+  }
+
+  function updateWorldTransform() {
+    const d = dom();
+    if (!d.world || !d.bookRig || !units.length) return;
+
+    const { pageW, pageH } = computePageDimensionsPx();
+    const spreadW = pageW * 2;
+    d.bookRig.style.width = `${spreadW}px`;
+    d.bookRig.style.height = `${pageH}px`;
+
+    // Center closed cover (turnedCount === 0 shifts left by pageW/2; turnedCount === leaves.length shifts right by pageW/2)
+    let effTurned = turnedCount;
+    if (activeFlip) {
+      effTurned = activeFlip.dir === 1 ? turnedCount + activeFlip.p : turnedCount - activeFlip.p;
+    }
+    let centerShiftX = 0;
+    if (leaves.length >= 1) {
+      if (effTurned < 1) {
+        centerShiftX = -pageW * 0.5 * (1 - effTurned);
+      } else if (effTurned > leaves.length - 1 && leaves[leaves.length - 1].backUnitIdx !== null) {
+        const tailP = effTurned - (leaves.length - 1);
+        centerShiftX = pageW * 0.5 * Math.max(0, Math.min(1, tailP));
+      } else if (leaves.length === 1 && leaves[0].backUnitIdx === null && effTurned >= 1) {
+        centerShiftX = pageW * 0.5;
+      }
+    }
+
+    const is3d = sceneMode !== "flatmax";
+    const pitch = is3d ? camPitch : 0;
+    const yaw = is3d ? camYaw : 0;
+
+    d.world.style.transform = `scale(${camZoom.toFixed(3)}) rotateX(${pitch.toFixed(2)}deg) rotateZ(${yaw.toFixed(2)}deg)`;
+    d.bookRig.style.transform = `translate3d(${centerShiftX.toFixed(1)}px, 0px, ${is3d ? 10 : 0}px)`;
+
+    if (d.tableSurface) {
+      d.tableSurface.classList.toggle("hidden", !is3d);
+    }
+
+    // Dynamic 3D Paper-Stack Thickness on Left & Right Fore-Edges
+    const leftLeaves = activeFlip
+      ? (activeFlip.dir === 1 ? turnedCount : Math.max(0, turnedCount - 1))
+      : turnedCount;
+    const rightLeaves = activeFlip
+      ? (activeFlip.dir === 1 ? Math.max(0, leaves.length - turnedCount - 1) : Math.max(0, leaves.length - turnedCount))
+      : Math.max(0, leaves.length - turnedCount);
+
+    const maxThickPx = Math.min(16, Math.max(4, leaves.length * 1.4));
+    const leftThick = leftLeaves > 0 ? Math.max(2, (leftLeaves / Math.max(1, leaves.length)) * maxThickPx) : 0;
+    const rightThick = rightLeaves > 0 ? Math.max(2, (rightLeaves / Math.max(1, leaves.length)) * maxThickPx) : 0;
+
+    if (d.stackLeft) {
+      d.stackLeft.style.display = leftLeaves > 0 ? "block" : "none";
+      d.stackLeft.style.width = `${leftThick.toFixed(1)}px`;
+      d.stackLeft.style.left = `${(-leftThick).toFixed(1)}px`;
+    }
+    if (d.stackRight) {
+      d.stackRight.style.display = rightLeaves > 0 ? "block" : "none";
+      d.stackRight.style.width = `${rightThick.toFixed(1)}px`;
+      d.stackRight.style.right = `${(-rightThick).toFixed(1)}px`;
+    }
+    if (d.spineCrease) {
+      const showSpine = leftLeaves > 0 && rightLeaves > 0 || Boolean(activeFlip);
+      d.spineCrease.style.opacity = showSpine ? "1" : "0";
+    }
+    if (d.bookShadow) {
+      const leftBound = leftLeaves > 0 || (activeFlip && activeFlip.p > 0.15) ? 0 : 50;
+      const rightBound = rightLeaves > 0 || (activeFlip && activeFlip.p < 0.85) ? 100 : 50;
+      d.bookShadow.style.left = `${leftBound}%`;
+      d.bookShadow.style.width = `${Math.max(50, rightBound - leftBound)}%`;
+    }
+  }
+
+  function renderBookState() {
+    if (!isOpen) return;
+    const d = dom();
+    if (!d.modal || !units.length) return;
+
+    d.modal.setAttribute("data-fb-scene", sceneMode);
+    d.sceneBtns.forEach((b) => b.classList.toggle("active", b.dataset.scene === sceneMode));
+    if (d.orbitHint) d.orbitHint.classList.toggle("hidden", sceneMode === "flatmax");
+    if (d.soundOnIcon && d.soundOffIcon) {
+      d.soundOnIcon.classList.toggle("hidden", !soundOn);
+      d.soundOffIcon.classList.toggle("hidden", soundOn);
+    }
+
+    const { pageW } = computePageDimensionsPx();
+
+    // Determine visible static left unit & static right unit
+    let staticLeftLeafIdx = turnedCount - 1;
+    let staticRightLeafIdx = turnedCount;
+
+    if (activeFlip) {
+      if (activeFlip.dir === 1) {
+        // Turning leaf `turnedCount` from Right (0 deg) -> Left (-180 deg)
+        staticLeftLeafIdx = turnedCount - 1;
+        staticRightLeafIdx = turnedCount + 1;
+      } else {
+        // Turning leaf `turnedCount - 1` from Left (-180 deg) -> Right (0 deg)
+        staticLeftLeafIdx = turnedCount - 2;
+        staticRightLeafIdx = turnedCount;
+      }
+    }
+
+    const hasLeftLeaf = staticLeftLeafIdx >= 0 && staticLeftLeafIdx < leaves.length;
+    const hasRightLeaf = staticRightLeafIdx >= 0 && staticRightLeafIdx < leaves.length;
+
+    d.leftPage.classList.toggle("empty-half", !hasLeftLeaf);
+    d.rightPage.classList.toggle("empty-half", !hasRightLeaf);
+
+    if (hasLeftLeaf) {
+      setImgOrBlank(d.leftImg, d.leftNum, leaves[staticLeftLeafIdx].backUnitIdx, pageW);
+    } else {
+      setImgOrBlank(d.leftImg, d.leftNum, null, pageW);
+    }
+
+    if (hasRightLeaf) {
+      setImgOrBlank(d.rightImg, d.rightNum, leaves[staticRightLeafIdx].frontUnitIdx, pageW);
+    } else {
+      setImgOrBlank(d.rightImg, d.rightNum, null, pageW);
+    }
+
+    // Render active 3D turning leaf + dynamic cylindrical curl lighting & cast shadows
+    if (activeFlip && leaves[activeFlip.leafIdx]) {
+      const lf = leaves[activeFlip.leafIdx];
+      d.flipLeaf.classList.remove("hidden");
+      setImgOrBlank(d.flipFrontImg, d.flipFrontNum, lf.frontUnitIdx, pageW);
+      setImgOrBlank(d.flipBackImg, d.flipBackNum, lf.backUnitIdx, pageW);
+
+      const p = activeFlip.dir === 1 ? activeFlip.p : 1 - activeFlip.p; // 0 = flat on right, 1 = flat on left
+      const deg = -p * 180;
+      const liftZ = Math.sin(p * Math.PI) * 3.5;
+      d.flipLeaf.style.transform = `translateZ(${liftZ.toFixed(2)}px) rotateY(${deg.toFixed(2)}deg)`;
+
+      // Dynamic curvature specular highlight & spine shadow on front & back faces
+      const sinP = Math.sin(p * Math.PI);
+      const sheenPos = Math.round(18 + p * 68);
+      d.flipFrontLight.style.background = `linear-gradient(90deg, rgba(0,0,0,${(0.22 * sinP).toFixed(3)}) 0%, rgba(255,255,255,${(0.28 * sinP).toFixed(3)}) ${sheenPos}%, rgba(0,0,0,${(0.08 * sinP).toFixed(3)}) 100%)`;
+      d.flipBackLight.style.background = `linear-gradient(270deg, rgba(0,0,0,${(0.22 * sinP).toFixed(3)}) 0%, rgba(255,255,255,${(0.26 * sinP).toFixed(3)}) ${100 - sheenPos}%, rgba(0,0,0,${(0.08 * sinP).toFixed(3)}) 100%)`;
+
+      // Sweeping cast drop-shadow onto underlying right & left pages
+      if (p < 0.52 && hasRightLeaf) {
+        const reach = Math.round((0.52 - p) * 165);
+        d.rightShade.style.opacity = String((sinP * 0.48).toFixed(3));
+        d.rightShade.style.background = `linear-gradient(90deg, rgba(0,0,0,0.48) 0%, rgba(0,0,0,0.16) ${Math.max(12, reach * 0.55)}%, rgba(0,0,0,0) ${Math.max(22, reach)}%)`;
+      } else {
+        d.rightShade.style.opacity = "0";
+      }
+
+      if (p > 0.48 && hasLeftLeaf) {
+        const reach = Math.round((p - 0.48) * 165);
+        d.leftShade.style.opacity = String((sinP * 0.48).toFixed(3));
+        d.leftShade.style.background = `linear-gradient(270deg, rgba(0,0,0,0.48) 0%, rgba(0,0,0,0.16) ${Math.max(12, reach * 0.55)}%, rgba(0,0,0,0) ${Math.max(22, reach)}%)`;
+      } else {
+        d.leftShade.style.opacity = "0";
+      }
+    } else {
+      d.flipLeaf.classList.add("hidden");
+      d.leftShade.style.opacity = "0";
+      d.rightShade.style.opacity = "0";
+    }
+
+    updateWorldTransform();
+    preloadNearbyUnits(turnedCount, pageW);
+
+    // Update HUD Scrubber & Page Indicator
+    if (d.slider) {
+      d.slider.max = String(leaves.length);
+      d.slider.value = String(turnedCount);
+    }
+    if (d.prevBtn) d.prevBtn.disabled = turnedCount <= 0 && !activeFlip;
+    if (d.nextBtn) d.nextBtn.disabled = turnedCount >= leaves.length && !activeFlip;
+
+    if (d.pageLabel) {
+      const totalP = units.length;
+      if (turnedCount === 0) {
+        d.pageLabel.textContent = `P1 / ${totalP}`;
+      } else if (turnedCount >= leaves.length) {
+        const lastLf = leaves[leaves.length - 1];
+        const backP = lastLf && lastLf.backUnitIdx !== null ? lastLf.backUnitIdx + 1 : totalP;
+        d.pageLabel.textContent = `${backP <= totalP ? "P" + backP : "End"} / ${totalP}`;
+      } else {
+        const pL = leaves[turnedCount - 1].backUnitIdx !== null ? `P${leaves[turnedCount - 1].backUnitIdx + 1}` : "—";
+        const pR = leaves[turnedCount].frontUnitIdx !== null ? `P${leaves[turnedCount].frontUnitIdx + 1}` : "—";
+        d.pageLabel.textContent = `${pL} - ${pR} / ${totalP}`;
+      }
+    }
+  }
+
+  function stepFlipAnimation() {
+    if (!activeFlip || activeFlip.dragging) return;
+    const speed = 0.085;
+    const diff = activeFlip.targetP - activeFlip.p;
+    if (Math.abs(diff) < 0.008) {
+      const completed = activeFlip.targetP === 1;
+      const dir = activeFlip.dir;
+      activeFlip = null;
+      if (completed) {
+        turnedCount = Math.max(0, Math.min(leaves.length, turnedCount + dir));
+      }
+      renderBookState();
+      return;
+    }
+    // Smooth ease-out cubic step
+    activeFlip.p += diff * 0.19 + Math.sign(diff) * speed * 0.22;
+    activeFlip.p = Math.max(0, Math.min(1, activeFlip.p));
+    renderBookState();
+    animFrame = requestAnimationFrame(stepFlipAnimation);
+  }
+
+  function flipNext() {
+    if (!leaves.length) return false;
+    if (activeFlip && !activeFlip.dragging) {
+      // Fast-forward active flip cleanly if user clicks rapidly
+      cancelAnimationFrame(animFrame);
+      if (activeFlip.targetP === 1) {
+        turnedCount = Math.max(0, Math.min(leaves.length, turnedCount + activeFlip.dir));
+      }
+      activeFlip = null;
+    }
+    if (turnedCount >= leaves.length) return false;
+    activeFlip = { leafIdx: turnedCount, dir: 1, p: 0.01, targetP: 1, dragging: false };
+    playPaperRustle(0.24);
+    cancelAnimationFrame(animFrame);
+    animFrame = requestAnimationFrame(stepFlipAnimation);
+    return true;
+  }
+
+  function flipPrev() {
+    if (!leaves.length) return false;
+    if (activeFlip && !activeFlip.dragging) {
+      cancelAnimationFrame(animFrame);
+      if (activeFlip.targetP === 1) {
+        turnedCount = Math.max(0, Math.min(leaves.length, turnedCount + activeFlip.dir));
+      }
+      activeFlip = null;
+    }
+    if (turnedCount <= 0) return false;
+    activeFlip = { leafIdx: turnedCount - 1, dir: -1, p: 0.01, targetP: 1, dragging: false };
+    playPaperRustle(0.24);
+    cancelAnimationFrame(animFrame);
+    animFrame = requestAnimationFrame(stepFlipAnimation);
+    return true;
+  }
+
+  function stopAutoPlay() {
+    isPlaying = false;
+    clearInterval(autoPlayTimer);
+    autoPlayTimer = null;
+    const d = dom();
+    if (d.playBtn) d.playBtn.classList.remove("active");
+    if (d.playIcon) d.playIcon.classList.remove("hidden");
+    if (d.pauseIcon) d.pauseIcon.classList.add("hidden");
+    if (d.playText) d.playText.textContent = tFn("fbAutoPlay");
+  }
+
+  function startAutoPlay() {
+    stopAutoPlay();
+    isPlaying = true;
+    const d = dom();
+    if (d.playBtn) d.playBtn.classList.add("active");
+    if (d.playIcon) d.playIcon.classList.add("hidden");
+    if (d.pauseIcon) d.pauseIcon.classList.remove("hidden");
+    if (d.playText) d.playText.textContent = tFn("fbPausePlay");
+
+    autoPlayTimer = setInterval(() => {
+      if (!isOpen) {
+        stopAutoPlay();
+        return;
+      }
+      if (turnedCount >= leaves.length) {
+        turnedCount = 0;
+        renderBookState();
+        playPaperRustle(0.2);
+      } else {
+        flipNext();
+      }
+    }, playIntervalMs);
+  }
+
+  function setScene(mode) {
+    sceneMode = SCENE_DEFAULTS[mode] ? mode : "studio3d";
+    localStorage.setItem("shibapdf_fb_scene", sceneMode);
+    const preset = SCENE_DEFAULTS[sceneMode];
+    camPitch = preset.pitch;
+    camYaw = preset.yaw;
+    camZoom = preset.zoom;
+    renderBookState();
+  }
+
+  function open(initialSlotIdx, autoStartPlay) {
+    const d = dom();
+    if (!d.modal) return;
+    pageImgCache.clear();
+    rebuildBookStructure();
+    if (!units.length) return;
+
+    // Jump to the spread containing initialSlotIdx if provided
+    turnedCount = 0;
+    if (typeof initialSlotIdx === "number" && initialSlotIdx > 0) {
+      const uIdx = units.findIndex((u) => u.slotIdx === initialSlotIdx);
+      if (uIdx > 0) turnedCount = Math.min(leaves.length, Math.ceil(uIdx / 2));
+    }
+
+    const preset = SCENE_DEFAULTS[sceneMode] || SCENE_DEFAULTS.studio3d;
+    camPitch = preset.pitch;
+    camYaw = preset.yaw;
+    camZoom = preset.zoom;
+
+    isOpen = true;
+    d.modal.classList.remove("hidden");
+    renderBookState();
+    if (autoStartPlay) startAutoPlay();
+  }
+
+  function close() {
+    stopAutoPlay();
+    cancelAnimationFrame(animFrame);
+    activeFlip = null;
+    isOpen = false;
+    const d = dom();
+    if (d.modal) d.modal.classList.add("hidden");
+    if (document.fullscreenElement) {
+      document.exitFullscreen().catch(() => {});
+    }
+  }
+
+  function init(opts) {
+    renderUnitFn = opts.renderUnitHiRes;
+    getSlotsInfoFn = opts.getSlotsInfo;
+    if (opts.t) tFn = opts.t;
+
+    const d = dom();
+    if (!d.modal) return;
+
+    d.closeBtn.addEventListener("click", close);
+    d.prevBtn.addEventListener("click", () => { stopAutoPlay(); flipPrev(); });
+    d.nextBtn.addEventListener("click", () => { stopAutoPlay(); flipNext(); });
+
+    d.playBtn.addEventListener("click", () => {
+      if (isPlaying) stopAutoPlay();
+      else startAutoPlay();
+    });
+
+    if (d.speedSelect) {
+      d.speedSelect.addEventListener("change", () => {
+        playIntervalMs = Number(d.speedSelect.value) || 3200;
+        if (isPlaying) startAutoPlay();
+      });
+    }
+
+    d.slider.addEventListener("input", () => {
+      stopAutoPlay();
+      cancelAnimationFrame(animFrame);
+      activeFlip = null;
+      turnedCount = Math.max(0, Math.min(leaves.length, parseInt(d.slider.value, 10) || 0));
+      renderBookState();
+    });
+
+    d.sceneBtns.forEach((btn) => {
+      btn.addEventListener("click", () => setScene(btn.dataset.scene));
+    });
+
+    if (d.splitBtn) {
+      d.splitBtn.addEventListener("click", () => {
+        autoSplitSpreads = !autoSplitSpreads;
+        pageImgCache.clear();
+        turnedCount = 0;
+        rebuildBookStructure();
+        renderBookState();
+      });
+    }
+
+    if (d.resetCamBtn) {
+      d.resetCamBtn.addEventListener("click", () => {
+        const preset = SCENE_DEFAULTS[sceneMode] || SCENE_DEFAULTS.studio3d;
+        camPitch = preset.pitch;
+        camYaw = preset.yaw;
+        camZoom = 1.0;
+        updateWorldTransform();
+      });
+    }
+
+    if (d.soundBtn) {
+      d.soundBtn.addEventListener("click", () => {
+        soundOn = !soundOn;
+        localStorage.setItem("shibapdf_fb_sound", soundOn ? "1" : "0");
+        renderBookState();
+      });
+    }
+
+    if (d.fullBtn) {
+      d.fullBtn.addEventListener("click", () => {
+        if (!document.fullscreenElement) {
+          d.modal.requestFullscreen().catch(() => {});
+        } else {
+          document.exitFullscreen().catch(() => {});
+        }
+      });
+    }
+
+    // Interactive Drag-to-Flip on Left/Right Book Pages & Background 3D Camera Orbit!
+    function bindPageInteractiveFlip(pageEl, dir) {
+      pageEl.addEventListener("pointerdown", (ev) => {
+        if (ev.button !== 0) return;
+        if (dir === 1 && turnedCount >= leaves.length) return;
+        if (dir === -1 && turnedCount <= 0) return;
+        if (pageEl.classList.contains("empty-half")) return;
+
+        ev.preventDefault();
+        ev.stopPropagation();
+        stopAutoPlay();
+        cancelAnimationFrame(animFrame);
+
+        const { pageW } = computePageDimensionsPx();
+        const spanPx = Math.max(160, pageW * 1.75);
+        const startX = ev.clientX;
+        let movedPx = 0;
+
+        activeFlip = {
+          leafIdx: dir === 1 ? turnedCount : turnedCount - 1,
+          dir,
+          p: 0.005,
+          targetP: 0,
+          dragging: true,
+          startX
+        };
+        renderBookState();
+
+        function onMove(mv) {
+          const dx = mv.clientX - startX;
+          movedPx = Math.max(movedPx, Math.abs(dx));
+          const rawP = dir === 1 ? -dx / spanPx : dx / spanPx;
+          activeFlip.p = Math.max(0.002, Math.min(0.998, rawP));
+          renderBookState();
+        }
+
+        function onUp() {
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onUp);
+          if (!activeFlip) return;
+          activeFlip.dragging = false;
+          // Either quick click (< 7px drag) or dragged past 26% completes the turn!
+          if (movedPx < 7 || activeFlip.p > 0.26) {
+            activeFlip.targetP = 1;
+            playPaperRustle(0.22);
+          } else {
+            activeFlip.targetP = 0;
+          }
+          cancelAnimationFrame(animFrame);
+          animFrame = requestAnimationFrame(stepFlipAnimation);
+        }
+
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+      });
+    }
+
+    bindPageInteractiveFlip(d.rightPage, 1);
+    bindPageInteractiveFlip(d.leftPage, -1);
+
+    // Dragging on 3D Stage Background Orbits the 3D Camera Angle Smoothly!
+    d.stage.addEventListener("pointerdown", (ev) => {
+      if (ev.button !== 0 && ev.button !== 2) return;
+      if (ev.target.closest("#fbBookRig")) return;
+      if (sceneMode === "flatmax") return;
+
+      ev.preventDefault();
+      const sx = ev.clientX;
+      const sy = ev.clientY;
+      const p0 = camPitch;
+      const y0 = camYaw;
+
+      function onMove(mv) {
+        const dx = mv.clientX - sx;
+        const dy = mv.clientY - sy;
+        camYaw = Math.max(-38, Math.min(38, y0 - dx * 0.16));
+        camPitch = Math.max(5, Math.min(54, p0 - dy * 0.16));
+        updateWorldTransform();
+      }
+      function onUp() {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+      }
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+    });
+
+    // Wheel: Ctrl+Wheel zooms camera; plain Wheel flips pages smoothly (with cooldown)
+    let lastWheelFlip = 0;
+    d.stage.addEventListener("wheel", (ev) => {
+      if (!isOpen) return;
+      ev.preventDefault();
+      if (ev.ctrlKey || ev.metaKey) {
+        const factor = ev.deltaY < 0 ? 1.07 : 0.935;
+        camZoom = Math.max(0.62, Math.min(2.25, camZoom * factor));
+        updateWorldTransform();
+        return;
+      }
+      const now = Date.now();
+      if (now - lastWheelFlip < 340) return;
+      if (Math.abs(ev.deltaY) > 16 || Math.abs(ev.deltaX) > 16) {
+        lastWheelFlip = now;
+        stopAutoPlay();
+        if (ev.deltaY > 0 || ev.deltaX > 0) flipNext();
+        else flipPrev();
+      }
+    }, { passive: false });
+
+    window.addEventListener("resize", () => {
+      if (isOpen) renderBookState();
+    });
+
+    window.addEventListener("keydown", (ev) => {
+      if (!isOpen) return;
+      if (ev.key === "Escape") {
+        ev.preventDefault();
+        ev.stopPropagation();
+        close();
+      } else if (ev.key === "ArrowRight" || ev.key === "PageDown") {
+        ev.preventDefault();
+        stopAutoPlay();
+        flipNext();
+      } else if (ev.key === "ArrowLeft" || ev.key === "PageUp") {
+        ev.preventDefault();
+        stopAutoPlay();
+        flipPrev();
+      } else if (ev.key === " ") {
+        ev.preventDefault();
+        if (isPlaying) stopAutoPlay();
+        else startAutoPlay();
+      }
+    }, true);
+  }
+
+  return {
+    init,
+    open,
+    close,
+    isOpen: () => isOpen,
+    refreshLabels: () => {
+      if (!isPlaying) {
+        const d = dom();
+        if (d.playText) d.playText.textContent = tFn("fbAutoPlay");
+      }
+    }
   };
 })();
 
@@ -7063,9 +8962,10 @@ window.ShibaEditProps = (function () {
     const align = ed.textAlign || "left";
     const opacity = typeof ed.opacity === "number" ? Math.max(0.08, Math.min(1, ed.opacity)) : 1;
 
+    const fwStr = ed.bold ? "700" : String(ed.fontWeight && ed.fontWeight !== 700 ? ed.fontWeight : 400);
     ctx.save();
     ctx.globalAlpha = opacity;
-    ctx.font = `${ed.italic ? "italic " : ""}${ed.bold ? "700" : "400"} ${fontPx}px ${getCssFontStackFn(ed.fontKey)}`;
+    ctx.font = `${ed.italic ? "italic " : ""}${fwStr} ${fontPx}px ${getCssFontStackFn(ed.fontKey)}`;
     ctx.textBaseline = "alphabetic";
 
     const explicitBoxW =
@@ -7144,7 +9044,8 @@ window.ShibaEditProps = (function () {
     const lineH = fontPx * lineRatio;
     const letterSpPx = (ed.letterSpacing || 0) * scale;
     const padPx = Math.ceil(fontPx * 0.16);
-    const fontSpec = `${ed.italic ? "italic " : ""}${ed.bold ? "700" : "400"} ${fontPx}px ${getCssFontStackFn(ed.fontKey)}`;
+    const fwStr = ed.bold ? "700" : String(ed.fontWeight && ed.fontWeight !== 700 ? ed.fontWeight : 400);
+    const fontSpec = `${ed.italic ? "italic " : ""}${fwStr} ${fontPx}px ${getCssFontStackFn(ed.fontKey)}`;
 
     const mCv = document.createElement("canvas");
     const mCtx = mCv.getContext("2d");
@@ -8093,14 +9994,19 @@ window.ShibaUX = (function () {
     spacePressed: false,
     dragDepth: 0,
 
-    // Imposition State (Default Multi-Sheet Grid Overview + Smart Reader-Spread Auto-Split)
+    // Imposition State (Default Multi-Sheet Grid Overview + Dedicated Dockable Visual Imposition Sidebar)
     imposeView: "grid", // 'grid' | 'single'
+    imposeDrawerOpen: localStorage.getItem("shibapdf_impose_drawer") !== "0",
+    imposeDockSide: localStorage.getItem("shibapdf_impose_side") === "left" ? "left" : "right",
     imposeGridScale: 1.0,
     imposeAutoSplitSpreads: true,
     imposeSpreadFirstBackFront: true,
     imposeSpreadBleedMm: 0,
     hiResSlotCache: new Map(),
-    imposeType: "booklet", // 'booklet' | 'spread2up' | 'nup'
+    imposeType: "booklet", // 'booklet' | 'perfect' | 'spread2up' | 'fold' | 'nup' | 'steprepeat'
+    imposeSigPages: 8,
+    imposeSpineGrindMm: 0,
+    imposeFoldPanels: 3,
     imposeNup: 4,
     sheetPreset: "auto",
     gutterMm: 0,
@@ -8263,13 +10169,19 @@ window.ShibaUX = (function () {
     imposeControls: document.getElementById("imposeControls"),
     impViewGridBtn: document.getElementById("impViewGridBtn"),
     impViewSingleBtn: document.getElementById("impViewSingleBtn"),
-    impBookletBtn: document.getElementById("impBookletBtn"),
-    impSpreadBtn: document.getElementById("impSpreadBtn"),
-    impNupBtn: document.getElementById("impNupBtn"),
     impSpreadAutoBtn: document.getElementById("impSpreadAutoBtn"),
     impSpreadAutoText: document.getElementById("impSpreadAutoText"),
-    imposeParamsBtn: document.getElementById("imposeParamsBtn"),
-    imposePopover: document.getElementById("imposePopover"),
+    toggleImposeDrawerBtn: document.getElementById("toggleImposeDrawerBtn"),
+    imposeDrawer: document.getElementById("imposeDrawer"),
+    imposeDockSideBtn: document.getElementById("imposeDockSideBtn"),
+    imposeDockSideText: document.getElementById("imposeDockSideText"),
+    closeImposeDrawerBtn: document.getElementById("closeImposeDrawerBtn"),
+    imposeMethodCards: Array.from(document.querySelectorAll(".impose-method-card")),
+    perfectOnlyRows: document.getElementById("perfectOnlyRows"),
+    sigChips: Array.from(document.querySelectorAll(".sig-chip")),
+    spineGrindInput: document.getElementById("spineGrindInput"),
+    foldOnlyRows: document.getElementById("foldOnlyRows"),
+    foldChips: Array.from(document.querySelectorAll(".fold-chip")),
     impAutoSplitCheck: document.getElementById("impAutoSplitCheck"),
     impSpreadDetailRows: document.getElementById("impSpreadDetailRows"),
     impSpreadCoverCheck: document.getElementById("impSpreadCoverCheck"),
@@ -8282,6 +10194,7 @@ window.ShibaUX = (function () {
     firstCoverCheck: document.getElementById("firstCoverCheck"),
     cropMarksCheck: document.getElementById("cropMarksCheck"),
     imposeK100Check: document.getElementById("imposeK100Check"),
+    imposeDrawerExportBtn: document.getElementById("imposeDrawerExportBtn"),
 
     splitControls: document.getElementById("splitControls"),
     tabSpreadBtn: document.getElementById("tabSpreadBtn"),
@@ -8320,11 +10233,13 @@ window.ShibaUX = (function () {
 
     stripRightGroup: document.getElementById("stripRightGroup"),
     dimSummaryText: document.getElementById("dimSummaryText"),
+    openFlipbookBtn: document.getElementById("openFlipbookBtn"),
     docInfoBtn: document.getElementById("docInfoBtn"),
     exportBtn: document.getElementById("exportBtn"),
     exportBtnText: document.getElementById("exportBtnText"),
 
     // Main Body & Right-Side Drawers
+    workspaceBody: document.querySelector(".workspace-body"),
     rightSplitter: document.getElementById("rightSplitter"),
     preflightDrawer: document.getElementById("preflightDrawer"),
     orgPreviewDrawer: document.getElementById("orgPreviewDrawer"),
@@ -8528,6 +10443,9 @@ window.ShibaUX = (function () {
         bleed: state.bleed,
         bleedAction: state.bleedAction,
         imposeType: state.imposeType,
+        imposeSigPages: state.imposeSigPages,
+        imposeSpineGrindMm: state.imposeSpineGrindMm,
+        imposeFoldPanels: state.imposeFoldPanels,
         imposeNup: state.imposeNup,
         imposeAutoSplitSpreads: state.imposeAutoSplitSpreads,
         imposeSpreadFirstBackFront: state.imposeSpreadFirstBackFront,
@@ -8598,6 +10516,9 @@ window.ShibaUX = (function () {
       if (snap.bleed) state.bleed = Object.assign({ top: 3, bottom: 3, left: 3, right: 3 }, snap.bleed);
       if (snap.bleedAction) state.bleedAction = snap.bleedAction;
       if (snap.imposeType) state.imposeType = snap.imposeType;
+      if (snap.imposeSigPages) state.imposeSigPages = snap.imposeSigPages;
+      if (typeof snap.imposeSpineGrindMm === "number") state.imposeSpineGrindMm = snap.imposeSpineGrindMm;
+      if (snap.imposeFoldPanels) state.imposeFoldPanels = snap.imposeFoldPanels;
       if (snap.imposeNup) state.imposeNup = snap.imposeNup;
       if (typeof snap.imposeAutoSplitSpreads === "boolean") state.imposeAutoSplitSpreads = snap.imposeAutoSplitSpreads;
       if (typeof snap.imposeSpreadFirstBackFront === "boolean") state.imposeSpreadFirstBackFront = snap.imposeSpreadFirstBackFront;
@@ -8820,6 +10741,16 @@ window.ShibaUX = (function () {
   );
 
   window.addEventListener("keydown", (e) => {
+    if (window.ShibaFlipbook && window.ShibaFlipbook.isOpen()) return;
+
+    if (e.key === "F5") {
+      if (hasPages() && window.ShibaFlipbook) {
+        e.preventDefault();
+        window.ShibaFlipbook.open(state.activeSlotIdx, false);
+      }
+      return;
+    }
+
     // Universal Escape Hatch — Cancel active task, discard uncommitted edit, or clear selection anywhere!
     if (e.key === "Escape") {
       e.preventDefault();
@@ -8834,7 +10765,7 @@ window.ShibaUX = (function () {
       if (document.activeElement && typeof document.activeElement.blur === "function") {
         document.activeElement.blur();
       }
-      if (!el.imposePopover.classList.contains("hidden") || !el.splitParamsPopover.classList.contains("hidden")) {
+      if (!el.splitParamsPopover.classList.contains("hidden")) {
         closeAllPopovers();
         return;
       }
@@ -9658,14 +11589,15 @@ window.ShibaUX = (function () {
   let baselineProbeStrut = null;
   const cssBaselinePxCache = new Map();
 
-  function measureCssBaselinePx(fontStack, bold, italic, lineHeight, sampleText, fontPx) {
+  function measureCssBaselinePx(fontStack, fontWeightVal, italic, lineHeight, sampleText, fontPx) {
     const px = Math.max(4, fontPx || 16);
+    const fwNum = typeof fontWeightVal === "number" ? fontWeightVal : (fontWeightVal ? 700 : 400);
     const lh = typeof lineHeight === "number" && lineHeight >= 0.8 ? lineHeight : 1.08;
     const firstLine = String(sampleText || "").split("\n")[0] || "";
     const hasNonAscii = /[^\x00-\x7F]/.test(firstLine);
     const isEmbSub = String(fontStack || "").includes("ShibaPdfEmb_");
     const sampleKey = isEmbSub ? firstLine.slice(0, 6) : hasNonAscii ? "cjk" : "asc";
-    const cacheKey = `${fontStack}|${bold ? 700 : 400}|${italic ? 1 : 0}|${lh.toFixed(3)}|${px.toFixed(2)}|${sampleKey}`;
+    const cacheKey = `${fontStack}|${fwNum}|${italic ? 1 : 0}|${lh.toFixed(3)}|${px.toFixed(2)}|${sampleKey}`;
     if (cssBaselinePxCache.has(cacheKey)) return cssBaselinePxCache.get(cacheKey);
 
     if (!baselineProbeWrap && typeof document !== "undefined" && document.body) {
@@ -9685,7 +11617,7 @@ window.ShibaUX = (function () {
     baselineProbeTextNode.nodeValue = isEmbSub ? (firstLine.slice(0, 12) || "Hg") : (hasNonAscii ? "Hg中" : "Hg");
     baselineProbeWrap.style.fontFamily = fontStack;
     baselineProbeWrap.style.fontSize = `${px}px`;
-    baselineProbeWrap.style.fontWeight = bold ? "700" : "400";
+    baselineProbeWrap.style.fontWeight = String(fwNum);
     baselineProbeWrap.style.fontStyle = italic ? "italic" : "normal";
     baselineProbeWrap.style.lineHeight = String(lh);
 
@@ -9711,7 +11643,8 @@ window.ShibaUX = (function () {
     const fKey = sp.fontKey || "sans";
     const fStack = window.ShibaPrepress.getCssFontStack(fKey);
     const fontPx = Math.max(4, sp.fontPt) * curScale;
-    const baseOffPx = measureCssBaselinePx(fStack, Boolean(sp.bold), Boolean(sp.italic), initLh, sp.str, fontPx);
+    const spWeight = sp.bold ? 700 : (sp.fontWeight || 400);
+    const baseOffPx = measureCssBaselinePx(fStack, spWeight, Boolean(sp.italic), initLh, sp.str, fontPx);
     const baseRatio = Math.round((baseOffPx / fontPx) * 10000) / 10000;
     const hasBaseV = typeof sp.baselineV === "number";
     const exactV = hasBaseV ? Math.max(0, (sp.baselineV * cssH - baseOffPx) / Math.max(1, cssH)) : sp.v;
@@ -9729,6 +11662,7 @@ window.ShibaUX = (function () {
       text: sp.str,
       fontPt: sp.fontPt,
       ascent: baseRatio || sp.ascent || 0.86,
+      fontWeight: spWeight,
       bold: Boolean(sp.bold),
       italic: Boolean(sp.italic),
       underline: false,
@@ -10477,7 +12411,8 @@ window.ShibaUX = (function () {
         let hitHPx = Math.max(10, sp.vh * cssH);
         if (typeof sp.baselineV === "number") {
           const spStack = window.ShibaPrepress.getCssFontStack(sp.fontKey || "sans");
-          const spBaseOffPx = measureCssBaselinePx(spStack, Boolean(sp.bold), Boolean(sp.italic), 1.08, sp.str, spFontPx);
+          const spW = sp.bold ? 700 : (sp.fontWeight || 400);
+          const spBaseOffPx = measureCssBaselinePx(spStack, spW, Boolean(sp.italic), 1.08, sp.str, spFontPx);
           hitTopPx = sp.baselineV * cssH - spBaseOffPx;
           hitHPx = Math.max(10, spFontPx * 1.08);
         }
@@ -10546,7 +12481,8 @@ window.ShibaUX = (function () {
       const fontStack = window.ShibaPrepress.getCssFontStack(ed.fontKey);
       const fontPx = Math.max(4, ed.fontPt) * cssScale;
       const lhVal = typeof ed.lineHeight === "number" ? ed.lineHeight : 1.16;
-      const baseOffPx = measureCssBaselinePx(fontStack, Boolean(ed.bold), Boolean(ed.italic), lhVal, ed.text, fontPx);
+      const effWeight = ed.bold ? 700 : (ed.fontWeight && ed.fontWeight !== 700 ? ed.fontWeight : 400);
+      const baseOffPx = measureCssBaselinePx(fontStack, effWeight, Boolean(ed.italic), lhVal, ed.text, fontPx);
       const curBaseRatio = Math.round((baseOffPx / fontPx) * 10000) / 10000;
       if (Math.abs((ed.ascent || 0) - curBaseRatio) > 0.002) {
         ed.ascent = curBaseRatio;
@@ -10587,7 +12523,7 @@ window.ShibaUX = (function () {
       textNode.textContent = ed.text;
       textNode.style.fontFamily = fontStack;
       textNode.style.fontSize = `${fontPx}px`;
-      textNode.style.fontWeight = ed.bold ? "700" : "400";
+      textNode.style.fontWeight = String(effWeight);
       textNode.style.fontStyle = ed.italic ? "italic" : "normal";
       textNode.style.lineHeight = String(lhVal);
       textNode.style.letterSpacing = ed.letterSpacing ? `${ed.letterSpacing * cssScale}px` : "normal";
@@ -10829,6 +12765,9 @@ window.ShibaUX = (function () {
       (slot) => getSlotSizeInfo(slot),
       {
         type: state.imposeType,
+        sigPages: state.imposeSigPages,
+        spineGrindMm: state.imposeSpineGrindMm,
+        foldPanels: state.imposeFoldPanels,
         nup: state.imposeNup,
         sheetPreset: state.sheetPreset,
         gutterMm: state.gutterMm,
@@ -10867,6 +12806,13 @@ window.ShibaUX = (function () {
       const st = document.createElement("strong");
       st.textContent = t("impSheetTitleFmt", { i: i + 1 });
       cap.appendChild(st);
+
+      if (sh.sigIdx && state.imposeType === "perfect") {
+        const sigPill = document.createElement("span");
+        sigPill.className = "duplex-pill";
+        sigPill.textContent = t("impSigBadgeFmt", { s: sh.sigIdx });
+        cap.appendChild(sigPill);
+      }
 
       if (sh.duplexSide) {
         const dup = document.createElement("span");
@@ -11771,6 +13717,8 @@ window.ShibaUX = (function () {
       el.preflightDrawer.classList.add("hidden");
       el.orgPreviewDrawer.classList.add("hidden");
       el.editPropsDrawer.classList.add("hidden");
+      if (el.imposeDrawer) el.imposeDrawer.classList.add("hidden");
+      if (el.workspaceBody) el.workspaceBody.classList.remove("impose-dock-left");
       el.reopenOrgPreviewTab.classList.add("hidden");
       el.emptyStage.classList.remove("hidden");
       el.spreadViewContainer.classList.add("hidden");
@@ -11788,6 +13736,7 @@ window.ShibaUX = (function () {
     el.emptyStage.classList.add("hidden");
     const isPages = state.pillar === "pages";
     const isPrep = state.pillar === "prepress";
+    const isImpose = isPrep && state.prepressSub === "impose";
     const isPf = state.pillar === "preflight";
     const isConv = state.pillar === "convert";
     const isAnn = isAnnotateMode();
@@ -11806,15 +13755,31 @@ window.ShibaUX = (function () {
     el.preflightDrawer.classList.toggle("hidden", !isPf);
     const showOrgPreview = isOrg && state.orgPreviewOpen;
     const showEditProps = isTextEdit && state.editPropsOpen;
+    const showImposeDrawer = isImpose && state.imposeDrawerOpen;
     el.orgPreviewDrawer.classList.toggle("hidden", !showOrgPreview);
     el.editPropsDrawer.classList.toggle("hidden", !showEditProps);
+    if (el.imposeDrawer) el.imposeDrawer.classList.toggle("hidden", !showImposeDrawer);
+    if (el.workspaceBody) {
+      el.workspaceBody.classList.toggle("impose-dock-left", showImposeDrawer && state.imposeDockSide === "left");
+    }
+    if (el.imposeDockSideText) {
+      el.imposeDockSideText.textContent =
+        state.imposeDockSide === "left" ? t("imposeDockRightShort") : t("imposeDockLeftShort");
+    }
     el.reopenOrgPreviewTab.classList.toggle(
       "hidden",
-      !((isOrg && !state.orgPreviewOpen) || (isTextEdit && !state.editPropsOpen))
+      !(
+        (isOrg && !state.orgPreviewOpen) ||
+        (isTextEdit && !state.editPropsOpen) ||
+        (isImpose && !state.imposeDrawerOpen)
+      )
     );
-    el.rightSplitter.classList.toggle("hidden", !(isPf || showOrgPreview || showEditProps));
+    const showRightSplitter =
+      isPf || showOrgPreview || showEditProps || (showImposeDrawer && state.imposeDockSide === "right");
+    el.rightSplitter.classList.toggle("hidden", !showRightSplitter);
     el.toggleOrgPreviewBtn.classList.toggle("active", state.orgPreviewOpen);
     el.toggleEditPropsBtn.classList.toggle("active", state.editPropsOpen);
+    if (el.toggleImposeDrawerBtn) el.toggleImposeDrawerBtn.classList.toggle("active", state.imposeDrawerOpen);
     el.stripRightGroup.classList.toggle("hidden", isConv);
     el.annExportPngBtn.classList.toggle("hidden", !isAnn);
     el.annExportPngBtn.disabled = state.busy;
@@ -11860,12 +13825,17 @@ window.ShibaUX = (function () {
 
     el.impViewGridBtn.classList.toggle("active", state.imposeView === "grid");
     el.impViewSingleBtn.classList.toggle("active", state.imposeView === "single");
-    el.impBookletBtn.classList.toggle("active", state.imposeType === "booklet");
-    el.impSpreadBtn.classList.toggle("active", state.imposeType === "spread2up");
-    el.impNupBtn.classList.toggle("active", state.imposeType === "nup");
-    el.nupOnlyRows.classList.toggle("hidden", state.imposeType !== "nup");
+    el.imposeMethodCards.forEach((c) =>
+      c.classList.toggle("active", c.dataset.imposeMode === state.imposeType)
+    );
+    const isNupOrRepeat = state.imposeType === "nup" || state.imposeType === "steprepeat";
+    el.nupOnlyRows.classList.toggle("hidden", !isNupOrRepeat);
+    if (el.perfectOnlyRows) el.perfectOnlyRows.classList.toggle("hidden", state.imposeType !== "perfect");
+    if (el.foldOnlyRows) el.foldOnlyRows.classList.toggle("hidden", state.imposeType !== "fold");
     el.firstCoverRow.classList.toggle("hidden", state.imposeType !== "spread2up");
     el.nupChips.forEach((ch) => ch.classList.toggle("active", Number(ch.dataset.nup) === state.imposeNup));
+    el.sigChips.forEach((ch) => ch.classList.toggle("active", Number(ch.dataset.sig) === state.imposeSigPages));
+    el.foldChips.forEach((ch) => ch.classList.toggle("active", Number(ch.dataset.fold) === state.imposeFoldPanels));
     el.impAutoSplitCheck.checked = Boolean(state.imposeAutoSplitSpreads);
     el.impSpreadCoverCheck.checked = Boolean(state.imposeSpreadFirstBackFront);
     el.impSpreadDetailRows.classList.toggle("hidden", !state.imposeAutoSplitSpreads);
@@ -11913,7 +13883,8 @@ window.ShibaUX = (function () {
     } else if (isPrep && state.prepressSub === "impose") {
       const impPlan = getCurrentImpositionPlan();
       const padNote =
-        state.imposeType === "booklet" && impPlan.paddedTotal > impPlan.origLogicalCount
+        (state.imposeType === "booklet" || state.imposeType === "perfect" || state.imposeType === "fold") &&
+        impPlan.paddedTotal > impPlan.origLogicalCount
           ? t("bookletPadHint", { orig: impPlan.origLogicalCount, pad: impPlan.paddedTotal })
           : "";
       el.dimSummaryText.textContent =
@@ -12094,12 +14065,15 @@ window.ShibaUX = (function () {
 
     if (state.pillar === "prepress" && state.prepressSub === "impose") {
       const impPlan = getCurrentImpositionPlan();
-      const modeName =
-        state.imposeType === "booklet"
-          ? t("imposeBooklet")
-          : state.imposeType === "spread2up"
-          ? t("imposeSpread2Up")
-          : `${t("imposeNUp")} (${state.imposeNup})`;
+      const modeNameMap = {
+        booklet: t("bindBooklet"),
+        perfect: `${t("bindPerfect")} (${state.imposeSigPages}P)`,
+        spread2up: t("bindSpread"),
+        fold: `${t("bindFold")} (${state.imposeFoldPanels * 2}P)`,
+        nup: `${t("bindNup")} (${state.imposeNup})`,
+        steprepeat: `${t("bindRepeat")} (${state.imposeNup})`
+      };
+      const modeName = modeNameMap[state.imposeType] || t("bindBooklet");
       const sTotal = Math.max(1, impPlan.sheets.length);
       const sCur = Math.min(sTotal, Math.max(1, state.activeSheetIdx + 1));
       const splitNote = impPlan.didSplitSpreads ? ` · ${t("impAutoSplitPillOn", { p: impPlan.origLogicalCount })}` : "";
@@ -12425,7 +14399,15 @@ window.ShibaUX = (function () {
         const prepDoc = await assembleSlotsPdfDoc(state.pages, state.imposeK100);
         const plan = getCurrentImpositionPlan();
         const bytes = await window.ShibaImpose.exportImposedPdfBytes(prepDoc, plan, state.cropMarks, normVisualToPdfRect);
-        const suffix = state.imposeType === "booklet" ? "_骑马钉拼版" : state.imposeType === "spread2up" ? "_跨页拼版" : `_${state.imposeNup}拼大版`;
+        const suffixMap = {
+          booklet: "_骑马钉拼版",
+          perfect: `_${state.imposeSigPages}P胶装折手`,
+          spread2up: "_对裱跨页拼版",
+          fold: `_${state.imposeFoldPanels}折页拼版`,
+          nup: `_${state.imposeNup}联顺序拼版`,
+          steprepeat: `_${state.imposeNup}联连晒拼版`
+        };
+        const suffix = suffixMap[state.imposeType] || "_拼版";
         triggerDownloadBlob(new Blob([bytes], { type: "application/pdf" }), `${stem}${suffix}.pdf`);
       } else if (state.pillar === "prepress" && state.prepressSub === "split") {
         const bytes = await exportSplitSpreadsPdfBytes(state.pages);
@@ -13266,6 +15248,7 @@ window.ShibaUX = (function () {
     const ed = getSelectedEditObj();
     if (!ed) return;
     ed.bold = !ed.bold;
+    ed.fontWeight = ed.bold ? 700 : 400;
     renderTextEditorOverlay();
   });
 
@@ -13317,14 +15300,10 @@ window.ShibaUX = (function () {
 
   // Pillar 2: Impose & Split Controls + Popovers
   function closeAllPopovers() {
-    el.imposePopover.classList.add("hidden");
     el.splitParamsPopover.classList.add("hidden");
   }
 
   document.addEventListener("click", (ev) => {
-    if (!el.imposePopover.contains(ev.target) && !el.imposeParamsBtn.contains(ev.target)) {
-      el.imposePopover.classList.add("hidden");
-    }
     if (!el.splitParamsPopover.contains(ev.target) && !el.splitParamsBtn.contains(ev.target)) {
       el.splitParamsPopover.classList.add("hidden");
     }
@@ -13392,29 +15371,49 @@ window.ShibaUX = (function () {
     refreshWorkspace(true);
   });
 
-  el.impBookletBtn.addEventListener("click", () => {
-    state.imposeType = "booklet";
-    state.activeSheetIdx = 0;
-    refreshWorkspace(true);
+  // Inject SVG Visual Schematics & Wire 6 Binding Mode Cards
+  if (window.ShibaImpose && window.ShibaImpose.getBindingMethodSvgs) {
+    const svgMap = window.ShibaImpose.getBindingMethodSvgs();
+    document.querySelectorAll(".impose-svg-slot[data-svg-key]").forEach((slotEl) => {
+      const k = slotEl.dataset.svgKey;
+      if (svgMap[k]) slotEl.innerHTML = svgMap[k];
+    });
+  }
+
+  el.imposeMethodCards.forEach((card) => {
+    card.addEventListener("click", () => {
+      state.imposeType = card.dataset.imposeMode || "booklet";
+      state.activeSheetIdx = 0;
+      refreshWorkspace(true);
+    });
   });
 
-  el.impSpreadBtn.addEventListener("click", () => {
-    state.imposeType = "spread2up";
-    state.activeSheetIdx = 0;
-    refreshWorkspace(true);
+  el.sigChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      state.imposeSigPages = Number(chip.dataset.sig) || 8;
+      state.activeSheetIdx = 0;
+      refreshWorkspace(true);
+    });
   });
 
-  el.impNupBtn.addEventListener("click", () => {
-    state.imposeType = "nup";
-    state.activeSheetIdx = 0;
-    refreshWorkspace(true);
+  if (el.spineGrindInput) {
+    el.spineGrindInput.addEventListener("input", () => {
+      state.imposeSpineGrindMm = Math.max(0, Math.min(10, parseFloat(el.spineGrindInput.value) || 0));
+      refreshWorkspace(true);
+    });
+  }
+
+  el.foldChips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      state.imposeFoldPanels = Number(chip.dataset.fold) || 3;
+      state.activeSheetIdx = 0;
+      refreshWorkspace(true);
+    });
   });
 
-  el.imposeParamsBtn.addEventListener("click", (ev) => {
-    ev.stopPropagation();
-    el.splitParamsPopover.classList.add("hidden");
-    el.imposePopover.classList.toggle("hidden");
-  });
+  if (el.imposeDrawerExportBtn) {
+    el.imposeDrawerExportBtn.addEventListener("click", runPrimaryTopExport);
+  }
 
   el.nupChips.forEach((chip) => {
     chip.addEventListener("click", () => {
@@ -13463,7 +15462,6 @@ window.ShibaUX = (function () {
 
   el.splitParamsBtn.addEventListener("click", (ev) => {
     ev.stopPropagation();
-    el.imposePopover.classList.add("hidden");
     el.splitParamsPopover.classList.toggle("hidden");
   });
 
@@ -13767,12 +15765,36 @@ window.ShibaUX = (function () {
     }
   }
 
+  function setImposeDrawerOpen(val) {
+    state.imposeDrawerOpen = Boolean(val);
+    localStorage.setItem("shibapdf_impose_drawer", state.imposeDrawerOpen ? "1" : "0");
+    updateTopStripControls();
+    if (hasPages() && !el.spreadViewContainer.classList.contains("hidden")) {
+      renderCanvasStage();
+    }
+  }
+
   el.toggleOrgPreviewBtn.addEventListener("click", () => setOrgPreviewOpen(!state.orgPreviewOpen));
   el.closeOrgPreviewBtn.addEventListener("click", () => setOrgPreviewOpen(false));
   el.toggleEditPropsBtn.addEventListener("click", () => setEditPropsOpen(!state.editPropsOpen));
   el.closeEditPropsBtn.addEventListener("click", () => setEditPropsOpen(false));
+  if (el.toggleImposeDrawerBtn) {
+    el.toggleImposeDrawerBtn.addEventListener("click", () => setImposeDrawerOpen(!state.imposeDrawerOpen));
+  }
+  if (el.closeImposeDrawerBtn) {
+    el.closeImposeDrawerBtn.addEventListener("click", () => setImposeDrawerOpen(false));
+  }
+  if (el.imposeDockSideBtn) {
+    el.imposeDockSideBtn.addEventListener("click", () => {
+      state.imposeDockSide = state.imposeDockSide === "left" ? "right" : "left";
+      localStorage.setItem("shibapdf_impose_side", state.imposeDockSide);
+      updateTopStripControls();
+      if (hasPages() && !el.spreadViewContainer.classList.contains("hidden")) renderCanvasStage();
+    });
+  }
   el.reopenOrgPreviewTab.addEventListener("click", () => {
     if (state.pillar === "pages" && state.pagesSub === "text") setEditPropsOpen(true);
+    else if (state.pillar === "prepress" && state.prepressSub === "impose") setImposeDrawerOpen(true);
     else setOrgPreviewOpen(true);
   });
 
@@ -13862,7 +15884,10 @@ window.ShibaUX = (function () {
     const t0 = getSelectedTextObjects()[0];
     if (!t0) return;
     const nextVal = !t0.bold;
-    applyBatchTextProp((ed) => { ed.bold = nextVal; });
+    applyBatchTextProp((ed) => {
+      ed.bold = nextVal;
+      ed.fontWeight = nextVal ? 700 : 400;
+    });
   });
 
   el.propItalicBtn.addEventListener("click", () => {
@@ -14344,6 +16369,23 @@ window.ShibaUX = (function () {
       },
       () => el.fileInput.click()
     );
+  }
+
+  // Initialize Maximized 3D Catalog Flipbook Showcase Player
+  if (window.ShibaFlipbook) {
+    window.ShibaFlipbook.init({
+      renderUnitHiRes: getHiResImposeUnitCanvas,
+      getSlotsInfo: () => ({
+        slots: state.pages,
+        getSlotSizePt: (slot) => getSlotSizeInfo(slot)
+      }),
+      t
+    });
+    if (el.openFlipbookBtn) {
+      el.openFlipbookBtn.addEventListener("click", () => {
+        if (hasPages()) window.ShibaFlipbook.open(state.activeSlotIdx, false);
+      });
+    }
   }
 
   // Initialize App & Auto-Restore Cached Project from Browser IndexedDB

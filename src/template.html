@@ -335,7 +335,7 @@
 
           <!-- Pillar 2 Parameter Controls -->
           <div id="stripPrepress" class="strip-left hidden">
-            <!-- Sub: Imposition Controls -->
+            <!-- Sub: Imposition Controls (Streamlined Top View Bar; Visual Binding Cards & Params Live in Dedicated Impose Sidebar!) -->
             <div id="imposeControls" class="strip-left">
               <div class="soft-pills">
                 <button id="impViewGridBtn" class="soft-pill active" type="button">
@@ -346,79 +346,15 @@
                 </button>
               </div>
 
-              <div class="soft-pills">
-                <button id="impBookletBtn" class="soft-pill active" type="button" data-i18n="imposeBooklet">骑马钉折手</button>
-                <button id="impSpreadBtn" class="soft-pill" type="button" data-i18n="imposeSpread2Up">单页合跨页</button>
-                <button id="impNupBtn" class="soft-pill" type="button" data-i18n="imposeNUp">多联拼版 (N拼)</button>
-              </div>
-
               <button id="impSpreadAutoBtn" class="ghost-btn active hidden" type="button" title="Toggle auto-splitting reader spreads into single pages">
                 <i data-lucide="scissors"></i>
                 <span id="impSpreadAutoText">跨页已拆单页</span>
               </button>
 
-              <div class="popover-anchor">
-                <button id="imposeParamsBtn" class="ghost-btn active" type="button">
-                  <i data-lucide="sliders-horizontal"></i>
-                  <span data-i18n="imposeParamsFmt">拼版参数 ▾</span>
-                </button>
-                <div id="imposePopover" class="popover-card hidden" style="min-width:316px;">
-                  <label class="pop-row" style="cursor:pointer;">
-                    <span data-i18n="impAutoSplitLabel">自动将横向跨页原稿拆为单页再拼版</span>
-                    <span class="switch-ctrl"><input id="impAutoSplitCheck" type="checkbox" checked /><span class="switch-track"></span></span>
-                  </label>
-
-                  <div id="impSpreadDetailRows" style="display:flex;flex-direction:column;gap:10px;padding-left:8px;border-left:2px solid var(--bg-pill);">
-                    <label class="pop-row" style="cursor:pointer;">
-                      <span data-i18n="impSpreadCoverLabel">首张跨页为「左封底 · 右封面」</span>
-                      <span class="switch-ctrl"><input id="impSpreadCoverCheck" type="checkbox" checked /><span class="switch-track"></span></span>
-                    </label>
-                    <div class="pop-row">
-                      <span data-i18n="impSpreadBleedLabel">跨页外出血裁除</span>
-                      <span class="num-pill"><input id="impSpreadBleedInput" type="number" min="0" max="30" step="0.5" value="0" /><span class="unit-txt">mm</span></span>
-                    </div>
-                  </div>
-                  <div id="nupOnlyRows" class="hidden" style="display:flex;flex-direction:column;gap:10px;">
-                    <div class="pop-row">
-                      <span data-i18n="nupCountLabel">每张拼数</span>
-                      <div class="soft-pills">
-                        <button class="soft-pill nup-chip" data-nup="2" type="button">2拼</button>
-                        <button class="soft-pill nup-chip active" data-nup="4" type="button">4拼</button>
-                        <button class="soft-pill nup-chip" data-nup="8" type="button">8拼</button>
-                      </div>
-                    </div>
-                    <div class="pop-row">
-                      <span data-i18n="sheetSizeLabel">印张尺寸</span>
-                      <select id="sheetPresetSelect" class="pop-select">
-                        <option value="auto" data-i18n="sheetAuto">自动贴合原尺寸倍数</option>
-                        <option value="sra3" data-i18n="sheetSra3">SRA3 数码大纸 (450×320mm)</option>
-                        <option value="a3" data-i18n="sheetA3">A3 标准 (420×297mm)</option>
-                        <option value="dadu4" data-i18n="sheetDadu4">大度四开 (595×440mm)</option>
-                        <option value="zhengdu4" data-i18n="sheetZhengdu4">正度四开 (543×390mm)</option>
-                      </select>
-                    </div>
-                    <div class="pop-row">
-                      <span data-i18n="gutterLabel">拼版间距</span>
-                      <span class="num-pill"><input id="gutterInput" type="number" min="0" max="30" step="1" value="0" /><span class="unit-txt">mm</span></span>
-                    </div>
-                  </div>
-
-                  <label id="firstCoverRow" class="pop-row hidden" style="cursor:pointer;">
-                    <span data-i18n="firstCoverAloneLabel">首张封面单独占右半页</span>
-                    <span class="switch-ctrl"><input id="firstCoverCheck" type="checkbox" /><span class="switch-track"></span></span>
-                  </label>
-
-                  <label class="pop-row" style="cursor:pointer;">
-                    <span data-i18n="cropMarksLabel">绘制 K100 标准印刷裁切角线</span>
-                    <span class="switch-ctrl"><input id="cropMarksCheck" type="checkbox" checked /><span class="switch-track"></span></span>
-                  </label>
-
-                  <label class="pop-row" style="cursor:pointer;">
-                    <span data-i18n="pureBlackShort">同步转为印刷单色黑 K100</span>
-                    <span class="switch-ctrl"><input id="imposeK100Check" type="checkbox" checked /><span class="switch-track"></span></span>
-                  </label>
-                </div>
-              </div>
+              <button id="toggleImposeDrawerBtn" class="ghost-btn active" type="button">
+                <i data-lucide="panel-right"></i>
+                <span data-i18n="imposeSidebarBtn">拼版侧栏</span>
+              </button>
             </div>
 
             <!-- Sub: Split Spreads Controls -->
@@ -496,6 +432,10 @@
 
         <div id="stripRightGroup" class="strip-right">
           <span id="dimSummaryText" style="font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;cursor:pointer;" title="查看 PDF 文档属性与字体信息 (Ctrl+D)"></span>
+          <button id="openFlipbookBtn" class="ghost-btn active" type="button" title="F5 · 拟真画册翻页与 3D 场景预览">
+            <i data-lucide="play"></i>
+            <span data-i18n="playFlipbookBtn">画册播放</span>
+          </button>
           <button id="docInfoBtn" class="ghost-btn" type="button" title="Ctrl+D">
             <i data-lucide="info"></i>
             <span data-i18n="docInfoBtn">文档属性</span>
@@ -866,6 +806,170 @@
           </div>
         </aside>
 
+        <!-- Dedicated Print Imposition Sidebar (Dockable Left or Right, with 6 Visual SVG Binding Mode Cards) -->
+        <aside id="imposeDrawer" class="impose-drawer hidden">
+          <div class="org-preview-head">
+            <span class="org-preview-title" data-i18n="imposeDrawerTitle">装订与拼版方案</span>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <button id="imposeDockSideBtn" class="ghost-btn" style="height:25px;padding:0 7px;font-size:11px;" type="button" title="切换侧栏至左侧 / 右侧">
+                <i data-lucide="panel-left" style="width:12px;height:12px;"></i>
+                <span id="imposeDockSideText" data-i18n="imposeDockLeftShort">移至左栏</span>
+              </button>
+              <button id="closeImposeDrawerBtn" class="ghost-btn icon-only-btn" type="button" title="Collapse">
+                <i data-lucide="panel-right-close"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- 1. Six Visual SVG Binding & Imposition Method Cards -->
+          <div class="prop-card">
+            <div class="prop-sec-head"><span data-i18n="imposeSecMethods">选择装订 / 拼版方式</span></div>
+            <div id="imposeMethodGrid" class="impose-method-grid">
+              <button class="impose-method-card active" data-impose-mode="booklet" type="button">
+                <div class="impose-svg-slot" data-svg-key="booklet"></div>
+                <div class="impose-card-title" data-i18n="bindBooklet">骑马钉画册</div>
+                <div class="impose-card-sub" data-i18n="bindBookletSub">整本套帖对折 · 书脊钉装</div>
+              </button>
+
+              <button class="impose-method-card" data-impose-mode="perfect" type="button">
+                <div class="impose-svg-slot" data-svg-key="perfect"></div>
+                <div class="impose-card-title" data-i18n="bindPerfect">无线胶装 / 锁线</div>
+                <div class="impose-card-sub" data-i18n="bindPerfectSub">分帖叠装 · 铣背胶订</div>
+              </button>
+
+              <button class="impose-method-card" data-impose-mode="spread2up" type="button">
+                <div class="impose-svg-slot" data-svg-key="spread2up"></div>
+                <div class="impose-card-title" data-i18n="bindSpread">蝴蝶对裱跨页</div>
+                <div class="impose-card-sub" data-i18n="bindSpreadSub">180°平摊 · 相册画册</div>
+              </button>
+
+              <button class="impose-method-card" data-impose-mode="fold" type="button">
+                <div class="impose-svg-slot" data-svg-key="fold"></div>
+                <div class="impose-card-title" data-i18n="bindFold">折页宣传单</div>
+                <div class="impose-card-sub" data-i18n="bindFoldSub">对折/三折/四折 · 折线</div>
+              </button>
+
+              <button class="impose-method-card" data-impose-mode="nup" type="button">
+                <div class="impose-svg-slot" data-svg-key="nup"></div>
+                <div class="impose-card-title" data-i18n="bindNup">多联顺序拼</div>
+                <div class="impose-card-sub" data-i18n="bindNupSub">P1~Pn 排版 · 讲义卡片</div>
+              </button>
+
+              <button class="impose-method-card" data-impose-mode="steprepeat" type="button">
+                <div class="impose-svg-slot" data-svg-key="steprepeat"></div>
+                <div class="impose-card-title" data-i18n="bindRepeat">同版连晒拼</div>
+                <div class="impose-card-sub" data-i18n="bindRepeatSub">单页重复 · 名片传单</div>
+              </button>
+            </div>
+          </div>
+
+          <!-- 2. Mode-Specific Binding & Sheet Parameters -->
+          <div class="prop-card">
+            <div class="prop-sec-head"><span data-i18n="imposeSecSpec">装订规格与纸张参数</span></div>
+
+            <!-- Perfect Binding Signature Rows -->
+            <div id="perfectOnlyRows" class="hidden" style="display:flex;flex-direction:column;gap:9px;">
+              <div class="pop-row">
+                <span data-i18n="sigPagesLabel">每帖折手页数</span>
+                <div class="soft-pills">
+                  <button class="soft-pill sig-chip" data-sig="4" type="button">4P</button>
+                  <button class="soft-pill sig-chip active" data-sig="8" type="button">8P</button>
+                  <button class="soft-pill sig-chip" data-sig="16" type="button">16P</button>
+                  <button class="soft-pill sig-chip" data-sig="32" type="button">32P</button>
+                </div>
+              </div>
+              <div class="pop-row">
+                <span data-i18n="spineGrindLabel">铣背预留位</span>
+                <span class="num-pill"><input id="spineGrindInput" type="number" min="0" max="10" step="0.5" value="0" /><span class="unit-txt">mm</span></span>
+              </div>
+            </div>
+
+            <!-- Spread 2-Up Cover Row -->
+            <label id="firstCoverRow" class="pop-row hidden" style="cursor:pointer;">
+              <span data-i18n="firstCoverAloneLabel">首张封面单独占右半页</span>
+              <span class="switch-ctrl"><input id="firstCoverCheck" type="checkbox" /><span class="switch-track"></span></span>
+            </label>
+
+            <!-- Brochure Fold Panels Row -->
+            <div id="foldOnlyRows" class="hidden" style="display:flex;flex-direction:column;gap:8px;">
+              <span style="font-size:11.5px;color:var(--text-2);" data-i18n="foldPanelsLabel">折页折数规格</span>
+              <div class="soft-pills" style="display:grid;grid-template-columns:repeat(3,1fr);">
+                <button class="soft-pill fold-chip" data-fold="2" type="button" data-i18n="fold2Panel">对折页 (4P)</button>
+                <button class="soft-pill fold-chip active" data-fold="3" type="button" data-i18n="fold3Panel">三折页 (6P)</button>
+                <button class="soft-pill fold-chip" data-fold="4" type="button" data-i18n="fold4Panel">四折页 (8P)</button>
+              </div>
+            </div>
+
+            <!-- N-Up & Step-Repeat Count + Gutter Rows -->
+            <div id="nupOnlyRows" class="hidden" style="display:flex;flex-direction:column;gap:9px;">
+              <div style="display:flex;flex-direction:column;gap:5px;">
+                <span style="font-size:11.5px;color:var(--text-2);" data-i18n="nupCountLabel">每张拼数</span>
+                <div class="soft-pills" style="display:grid;grid-template-columns:repeat(6,1fr);">
+                  <button class="soft-pill nup-chip" data-nup="2" type="button">2</button>
+                  <button class="soft-pill nup-chip active" data-nup="4" type="button">4</button>
+                  <button class="soft-pill nup-chip" data-nup="6" type="button">6</button>
+                  <button class="soft-pill nup-chip" data-nup="8" type="button">8</button>
+                  <button class="soft-pill nup-chip" data-nup="9" type="button">9</button>
+                  <button class="soft-pill nup-chip" data-nup="16" type="button">16</button>
+                </div>
+              </div>
+              <div class="pop-row">
+                <span data-i18n="gutterLabel">拼版间距</span>
+                <span class="num-pill"><input id="gutterInput" type="number" min="0" max="30" step="1" value="0" /><span class="unit-txt">mm</span></span>
+              </div>
+            </div>
+
+            <!-- Press Sheet Paper Preset (Available for All Imposition Modes!) -->
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <span style="font-size:11.5px;color:var(--text-2);" data-i18n="sheetSizeLabel">印张尺寸</span>
+              <select id="sheetPresetSelect" class="prop-select">
+                <option value="auto" data-i18n="sheetAuto">自动贴合原尺寸倍数</option>
+                <option value="sra3" data-i18n="sheetSra3">SRA3 数码大纸 (450×320mm)</option>
+                <option value="a3" data-i18n="sheetA3">A3 标准 (420×297mm)</option>
+                <option value="dadu4" data-i18n="sheetDadu4">大度四开 (595×440mm)</option>
+                <option value="zhengdu4" data-i18n="sheetZhengdu4">正度四开 (543×390mm)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 3. Source Spread Splitting & Prepress Crop Marks / Pure K100 -->
+          <div class="prop-card">
+            <div class="prop-sec-head"><span data-i18n="imposeSecSource">跨页原稿与印前输出</span></div>
+
+            <label class="pop-row" style="cursor:pointer;">
+              <span data-i18n="impAutoSplitLabel">自动将横向跨页原稿拆为单页再拼版</span>
+              <span class="switch-ctrl"><input id="impAutoSplitCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+            </label>
+
+            <div id="impSpreadDetailRows" style="display:flex;flex-direction:column;gap:8px;padding-left:8px;border-left:2px solid var(--bg-pill);">
+              <label class="pop-row" style="cursor:pointer;">
+                <span data-i18n="impSpreadCoverLabel">首张跨页为「左封底 · 右封面」</span>
+                <span class="switch-ctrl"><input id="impSpreadCoverCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+              </label>
+              <div class="pop-row">
+                <span data-i18n="impSpreadBleedLabel">跨页外出血裁除</span>
+                <span class="num-pill"><input id="impSpreadBleedInput" type="number" min="0" max="30" step="0.5" value="0" /><span class="unit-txt">mm</span></span>
+              </div>
+            </div>
+
+            <label class="pop-row" style="cursor:pointer;">
+              <span data-i18n="cropMarksLabel">绘制 K100 标准印刷裁切角线</span>
+              <span class="switch-ctrl"><input id="cropMarksCheck" type="checkbox" checked /><span class="switch-track"></span></span>
+            </label>
+
+            <label class="pop-row" style="cursor:pointer;">
+              <span data-i18n="pureBlackShort">同步转为印刷单色黑 K100</span>
+              <span class="switch-ctrl"><input id="imposeK100Check" type="checkbox" checked /><span class="switch-track"></span></span>
+            </label>
+          </div>
+
+          <!-- 4. Quick Export CTA inside Impose Sidebar -->
+          <button id="imposeDrawerExportBtn" class="primary-btn" style="height:38px;width:100%;justify-content:center;flex-shrink:0;" type="button">
+            <i data-lucide="download"></i>
+            <span data-i18n="imposeExportBtn">导出拼版 PDF</span>
+          </button>
+        </aside>
+
         <!-- Floating Edge Reopen Tab When Organize Preview Drawer Is Collapsed -->
         <button id="reopenOrgPreviewTab" class="reopen-preview-tab hidden" type="button" title="Expand Preview Pane">
           <i data-lucide="panel-right-open"></i>
@@ -1023,6 +1127,124 @@
             <button id="closePdfInfoFootBtn" class="primary-btn" style="height:32px;" type="button" data-i18n="infoCloseBtn">关闭</button>
           </div>
         </div>
+      </div>
+
+      <!-- Maximized Realistic 3D & Real-Scene Catalog Flipbook Showcase Player -->
+      <div id="flipbookModal" class="flipbook-modal hidden" data-fb-scene="studio3d" role="dialog" aria-modal="true">
+        <!-- Floating Top Scene & Camera Bar -->
+        <header class="fb-hud-top">
+          <div class="fb-scene-pills">
+            <button class="fb-scene-btn active" data-scene="studio3d" type="button">
+              <i data-lucide="sparkles"></i><span data-i18n="fbSceneStudio">3D 暗厅聚光</span>
+            </button>
+            <button class="fb-scene-btn" data-scene="wood3d" type="button">
+              <i data-lucide="box"></i><span data-i18n="fbSceneWood">3D 胡桃木桌</span>
+            </button>
+            <button class="fb-scene-btn" data-scene="marble3d" type="button">
+              <i data-lucide="layers"></i><span data-i18n="fbSceneMarble">3D 艺术展台</span>
+            </button>
+            <button class="fb-scene-btn" data-scene="flatmax" type="button">
+              <i data-lucide="book-open"></i><span data-i18n="fbSceneFlat">2D 巨幕正视</span>
+            </button>
+          </div>
+
+          <div class="fb-top-actions">
+            <button id="fbSplitToggleBtn" class="fb-glass-btn active hidden" type="button">
+              <i data-lucide="scissors"></i><span data-i18n="fbSplitToggle">跨页拆单翻阅</span>
+            </button>
+            <button id="fbResetCamBtn" class="fb-glass-btn" type="button">
+              <i data-lucide="rotate-ccw"></i><span data-i18n="fbResetCam">重置 3D 视角</span>
+            </button>
+            <button id="fbSoundBtn" class="fb-glass-btn icon-only" type="button" title="翻书音效开关">
+              <span id="fbSoundOnIcon"><i data-lucide="volume-2"></i></span>
+              <span id="fbSoundOffIcon" class="hidden"><i data-lucide="volume-x"></i></span>
+            </button>
+            <button id="fbFullscreenBtn" class="fb-glass-btn icon-only" type="button" title="全屏最大化显示">
+              <i data-lucide="maximize"></i>
+            </button>
+            <button id="fbCloseBtn" class="fb-glass-btn close-btn" type="button" title="Esc">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+        </header>
+
+        <!-- Interactive 3D Perspective Viewport -->
+        <div id="fbStage" class="fb-stage">
+          <div class="fb-ambient-light"></div>
+          <div id="fbWorld" class="fb-world">
+            <!-- 3D Tabletop / Plinth Surface with Ambient Gobo Lighting -->
+            <div id="fbTableSurface" class="fb-table-surface">
+              <div class="fb-table-gobo"></div>
+            </div>
+
+            <!-- Book Assembly in 3D Space -->
+            <div id="fbBookRig" class="fb-book-rig">
+              <div id="fbBookShadow" class="fb-book-shadow"></div>
+              <div id="fbStackLeft" class="fb-page-stack left"></div>
+              <div id="fbStackRight" class="fb-page-stack right"></div>
+
+              <!-- Static Left Half -->
+              <div id="fbLeftPage" class="fb-half-page left">
+                <img id="fbLeftImg" class="fb-page-img hidden" alt="" draggable="false" />
+                <div class="fb-gutter-ao left"></div>
+                <div id="fbLeftShade" class="fb-cast-shade"></div>
+                <span id="fbLeftNum" class="fb-corner-num left"></span>
+              </div>
+
+              <!-- Static Right Half -->
+              <div id="fbRightPage" class="fb-half-page right">
+                <img id="fbRightImg" class="fb-page-img hidden" alt="" draggable="false" />
+                <div class="fb-gutter-ao right"></div>
+                <div id="fbRightShade" class="fb-cast-shade"></div>
+                <span id="fbRightNum" class="fb-corner-num right"></span>
+              </div>
+
+              <!-- Center Spine Crease -->
+              <div id="fbSpineCrease" class="fb-spine-crease"></div>
+
+              <!-- Active 3D Turning Leaf (Front & Back Faces) -->
+              <div id="fbFlipLeaf" class="fb-flip-leaf hidden">
+                <div class="fb-leaf-face front">
+                  <img id="fbFlipFrontImg" class="fb-page-img hidden" alt="" draggable="false" />
+                  <div id="fbFlipFrontLight" class="fb-leaf-lighting"></div>
+                  <span id="fbFlipFrontNum" class="fb-corner-num right"></span>
+                </div>
+                <div class="fb-leaf-face back">
+                  <img id="fbFlipBackImg" class="fb-page-img hidden" alt="" draggable="false" />
+                  <div id="fbFlipBackLight" class="fb-leaf-lighting"></div>
+                  <span id="fbFlipBackNum" class="fb-corner-num left"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div id="fbOrbitHint" class="fb-orbit-hint" data-i18n="fbOrbitHint">拖拽书页边缘可真实翻页 · 拖拽桌面空白处可 3D 旋转视角 · 滚轮翻页 / Ctrl+滚轮缩放</div>
+        </div>
+
+        <!-- Floating Bottom Playback & Scrubber Bar -->
+        <footer class="fb-hud-bottom">
+          <button id="fbPrevBtn" class="fb-glass-btn icon-only" type="button" title="Previous Page">
+            <i data-lucide="chevron-left"></i>
+          </button>
+
+          <button id="fbPlayBtn" class="fb-play-btn" type="button">
+            <span id="fbPlayIcon"><i data-lucide="play"></i></span>
+            <span id="fbPauseIcon" class="hidden"><i data-lucide="pause"></i></span>
+            <span id="fbPlayText" data-i18n="fbAutoPlay">自动翻页</span>
+          </button>
+
+          <select id="fbSpeedSelect" class="fb-speed-select" title="Flip Interval">
+            <option value="2000">2.0s</option>
+            <option value="3200" selected>3.2s</option>
+            <option value="5000">5.0s</option>
+          </select>
+
+          <input id="fbSlider" class="fb-scrubber" type="range" min="0" max="1" step="1" value="0" />
+          <span id="fbPageLabel" class="fb-page-label">P1 / 1</span>
+
+          <button id="fbNextBtn" class="fb-glass-btn icon-only" type="button" title="Next Page">
+            <i data-lucide="chevron-right"></i>
+          </button>
+        </footer>
       </div>
 
       <!-- Fixed Right Workspace Contextual Status Bar -->

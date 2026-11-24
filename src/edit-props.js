@@ -101,9 +101,10 @@ window.ShibaEditProps = (function () {
     const align = ed.textAlign || "left";
     const opacity = typeof ed.opacity === "number" ? Math.max(0.08, Math.min(1, ed.opacity)) : 1;
 
+    const fwStr = ed.bold ? "700" : String(ed.fontWeight && ed.fontWeight !== 700 ? ed.fontWeight : 400);
     ctx.save();
     ctx.globalAlpha = opacity;
-    ctx.font = `${ed.italic ? "italic " : ""}${ed.bold ? "700" : "400"} ${fontPx}px ${getCssFontStackFn(ed.fontKey)}`;
+    ctx.font = `${ed.italic ? "italic " : ""}${fwStr} ${fontPx}px ${getCssFontStackFn(ed.fontKey)}`;
     ctx.textBaseline = "alphabetic";
 
     const explicitBoxW =
@@ -182,7 +183,8 @@ window.ShibaEditProps = (function () {
     const lineH = fontPx * lineRatio;
     const letterSpPx = (ed.letterSpacing || 0) * scale;
     const padPx = Math.ceil(fontPx * 0.16);
-    const fontSpec = `${ed.italic ? "italic " : ""}${ed.bold ? "700" : "400"} ${fontPx}px ${getCssFontStackFn(ed.fontKey)}`;
+    const fwStr = ed.bold ? "700" : String(ed.fontWeight && ed.fontWeight !== 700 ? ed.fontWeight : 400);
+    const fontSpec = `${ed.italic ? "italic " : ""}${fwStr} ${fontPx}px ${getCssFontStackFn(ed.fontKey)}`;
 
     const mCv = document.createElement("canvas");
     const mCtx = mCv.getContext("2d");

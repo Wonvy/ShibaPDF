@@ -187,7 +187,7 @@ window.ShibaPrepress = (function () {
       const safeId = `ShibaPdfEmb_${registeredEmbeddedFaces.size}_${cleanName.replace(/[^A-Za-z0-9]/g, "")}`;
       const copyBuf = decoded.slice().buffer;
       const face = new FontFace(safeId, copyBuf, {
-        weight: fMeta.bold ? "700" : "400",
+        weight: String(fMeta.fontWeight || (fMeta.bold ? 700 : 400)),
         style: fMeta.italic ? "italic" : "normal"
       });
       await face.load();
@@ -198,7 +198,19 @@ window.ShibaPrepress = (function () {
 
   function classifyPdfFontStyle(fontName, styleObj) {
     const raw = `${fontName || ""} ${(styleObj && styleObj.fontFamily) || ""}`;
-    const bold = /bold|heavy|black|demi|semibold|extrabold|-b\b|-db\b|-eb\b|-h\b|w[6789]|粗|中黑|大黑|特黑|浓/i.test(raw);
+    let fontWeight = 400;
+    if (/extrabold|heavy|black|ultra|-eb\b|-h\b|w[89]|大黑|特黑|浓/i.test(raw)) {
+      fontWeight = 700;
+    } else if (/\bbold\b|-bold|-b\b|w7|粗体|粗宋|粗黑|粗楷/i.test(raw) && !/semibold|demibold/i.test(raw)) {
+      fontWeight = 700;
+    } else if (/semibold|demibold|demi|-db\b|-sb\b|w6|中黑|中粗|半粗/i.test(raw)) {
+      fontWeight = 600;
+    } else if (/\bmedium\b|-medium|-m\b|w5|中等/i.test(raw)) {
+      fontWeight = 500;
+    } else if (/\blight\b|\bthin\b|-light|-l\b|w[123]|细体|极细/i.test(raw)) {
+      fontWeight = 300;
+    }
+    const bold = fontWeight >= 700;
     const italic = /italic|oblique|倾斜/i.test(raw);
     let fontKey = "sans";
     if (/mono|consolas|courier|menlo|fira\s*code|jetbrains|等宽/i.test(raw)) {
@@ -216,7 +228,7 @@ window.ShibaPrepress = (function () {
     } else if (/arial|helvetica|calibri|roboto|inter|segoe/i.test(raw)) {
       fontKey = "helvetica";
     }
-    return { bold, italic, fontKey };
+    return { bold, fontWeight, italic, fontKey };
   }
 
   function expandPdfFontAliases(origName) {
@@ -330,7 +342,9 @@ window.ShibaPrepress = (function () {
               : null;
         if (fObj) {
           if (fObj.name) realPdfFontName = decodePdfFontBaseName(fObj.name).cleanName;
-          if (fObj.bold || fObj.black) fontObjBold = true;
+          // Note: pdf.js sets fObj.bold = true whenever FontDescriptor /StemV >= 70, which is true for ~90% of Regular CJK fonts!
+          // Only trust explicit fObj.black or real font-name weight tokens in classifyPdfFontStyle.
+          if (fObj.black) fontObjBold = true;
           if (fObj.italic) fontObjItalic = true;
         }
       } catch (_) {}
@@ -373,6 +387,7 @@ window.ShibaPrepress = (function () {
         },
         fontPt: Math.round(fontH * 100) / 100,
         ascent: Math.round(ascent * 1000) / 1000,
+        fontWeight: fontObjBold ? 700 : (fMeta.fontWeight || 400),
         bold: Boolean(fontObjBold || fMeta.bold),
         italic: Boolean(fontObjItalic || fMeta.italic),
         origFontName: realPdfFontName || "",

@@ -1330,6 +1330,9 @@ svg.lucide {
   outline: none;
   border: none;
   cursor: grab;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
 }
 
 .text-box-wrap.selected .editable-text-node {
@@ -2024,7 +2027,8 @@ svg.lucide {
   }
   .preflight-drawer,
   .org-preview-drawer,
-  .edit-props-drawer {
+  .edit-props-drawer,
+  .impose-drawer {
     width: 100% !important;
     max-height: 38vh;
     padding: 10px 12px 16px;
@@ -2654,4 +2658,625 @@ svg.lucide {
   justify-content: space-between;
   gap: 10px;
   flex-shrink: 0;
+}
+
+/* ============================================================================
+   v2.0 Dedicated Visual Imposition Sidebar (Dockable Right or Left)
+   ============================================================================ */
+.impose-drawer {
+  width: var(--right-w);
+  background: var(--bg-rail);
+  padding: 14px 15px 22px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 11px;
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+@media (min-width: 901px) {
+  .workspace-body.impose-dock-left #imposeDrawer {
+    order: -2;
+    border-right: 1px solid var(--status-border);
+  }
+}
+
+.impose-method-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.impose-method-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 9px 7px 9px;
+  border-radius: 10px;
+  border: 1.5px solid transparent;
+  background: var(--bg-rail);
+  color: var(--text-1);
+  cursor: pointer;
+  transition: background-color 0.14s, border-color 0.14s, transform 0.12s, box-shadow 0.14s;
+  gap: 4px;
+}
+
+.impose-method-card:hover {
+  background: var(--bg-hover);
+  border-color: rgba(35, 131, 226, 0.35);
+}
+
+.impose-method-card.active {
+  background: rgba(35, 131, 226, 0.08);
+  border-color: #2383e2;
+  box-shadow: 0 2px 10px rgba(35, 131, 226, 0.12);
+}
+
+.impose-svg-slot {
+  width: 78px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-1);
+}
+
+.impose-svg-slot svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.impose-card-title {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--text-1);
+  line-height: 1.2;
+}
+
+.impose-method-card.active .impose-card-title {
+  color: #2383e2;
+}
+
+.impose-card-sub {
+  font-size: 10.5px;
+  color: var(--text-3);
+  line-height: 1.25;
+}
+
+/* ============================================================================
+   v2.0 Maximized Realistic 3D & Real-Scene Catalog Flipbook Showcase Player
+   ============================================================================ */
+.flipbook-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 260;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  user-select: none;
+  color: #f5f5f3;
+  background: radial-gradient(circle at 50% 34%, #2c2d31 0%, #141518 68%, #0b0c0e 100%);
+  transition: background 0.35s ease;
+}
+
+.flipbook-modal[data-fb-scene="wood3d"] {
+  background: radial-gradient(circle at 38% 22%, #4a3728 0%, #261b14 66%, #140e0a 100%);
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] {
+  color: #1f2023;
+  background: radial-gradient(circle at 46% 24%, #f7f6f2 0%, #e4e2dc 68%, #cfcdc6 100%);
+}
+
+.flipbook-modal[data-fb-scene="flatmax"] {
+  background: #141517;
+}
+
+.fb-hud-top,
+.fb-hud-bottom {
+  position: relative;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  gap: 12px;
+  pointer-events: none;
+}
+
+.fb-hud-bottom {
+  justify-content: center;
+  padding-bottom: 14px;
+}
+
+.fb-scene-pills,
+.fb-top-actions,
+.fb-hud-bottom > * {
+  pointer-events: auto;
+}
+
+.fb-scene-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: rgba(20, 21, 24, 0.68);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-scene-pills {
+  background: rgba(255, 255, 255, 0.78);
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+.fb-scene-btn {
+  height: 30px;
+  padding: 0 11px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.78);
+  font-size: 12px;
+  font-weight: 550;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.fb-scene-btn svg {
+  width: 13.5px;
+  height: 13.5px;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-scene-btn {
+  color: rgba(24, 24, 23, 0.75);
+}
+
+.fb-scene-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-scene-btn:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #181817;
+}
+
+.fb-scene-btn.active {
+  background: #2383e2 !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 8px rgba(35, 131, 226, 0.35);
+}
+
+.fb-top-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.fb-glass-btn {
+  height: 32px;
+  padding: 0 11px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  background: rgba(20, 21, 24, 0.66);
+  backdrop-filter: blur(12px);
+  color: #f3f3f1;
+  font-size: 12px;
+  font-weight: 550;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background-color 0.15s, transform 0.1s;
+}
+
+.fb-glass-btn svg {
+  width: 14px;
+  height: 14px;
+}
+
+.fb-glass-btn.icon-only {
+  width: 34px;
+  padding: 0;
+}
+
+.fb-glass-btn.active {
+  border-color: rgba(35, 131, 226, 0.7);
+  background: rgba(35, 131, 226, 0.25);
+}
+
+.fb-glass-btn.close-btn:hover {
+  background: #e03e3e;
+  border-color: #e03e3e;
+  color: #ffffff;
+}
+
+.fb-glass-btn:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-glass-btn {
+  background: rgba(255, 255, 255, 0.82);
+  color: #181817;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.fb-stage {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  perspective: 2400px;
+  overflow: hidden;
+  cursor: grab;
+}
+
+.fb-stage:active {
+  cursor: grabbing;
+}
+
+.flipbook-modal[data-fb-scene="flatmax"] .fb-stage {
+  cursor: default;
+}
+
+.fb-ambient-light {
+  position: absolute;
+  inset: -15%;
+  pointer-events: none;
+  background: radial-gradient(ellipse 56% 42% at 50% 42%, rgba(255, 247, 230, 0.13) 0%, rgba(255, 247, 230, 0) 72%);
+}
+
+.fb-world {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  transition: transform 0.08s ease-out;
+}
+
+/* 3D Real-World Tabletop / Plinth Surface */
+.fb-table-surface {
+  position: absolute;
+  width: 170vw;
+  height: 150vh;
+  border-radius: 36px;
+  transform: translateZ(-6px);
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 48% 45% at 50% 50%, rgba(255, 255, 255, 0.06) 0%, rgba(0, 0, 0, 0.55) 78%),
+    linear-gradient(145deg, #25272c 0%, #17181c 100%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 50px 120px rgba(0, 0, 0, 0.75);
+}
+
+/* Warm Walnut Wood Grain Tabletop */
+.flipbook-modal[data-fb-scene="wood3d"] .fb-table-surface {
+  background:
+    radial-gradient(ellipse 54% 48% at 46% 48%, rgba(255, 226, 182, 0.16) 0%, rgba(16, 10, 6, 0.62) 82%),
+    repeating-linear-gradient(
+      92deg,
+      rgba(28, 16, 9, 0.16) 0px,
+      rgba(28, 16, 9, 0.16) 3px,
+      rgba(86, 54, 34, 0.12) 4px,
+      rgba(62, 39, 24, 0.18) 11px,
+      rgba(42, 25, 15, 0.14) 19px
+    ),
+    linear-gradient(160deg, #5c3d28 0%, #3f2819 52%, #2b1b10 100%);
+}
+
+/* Sunlit Window Blind / Leaf Gobo Shadow on Walnut & Marble Tables */
+.fb-table-gobo {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s;
+}
+
+.flipbook-modal[data-fb-scene="wood3d"] .fb-table-gobo {
+  opacity: 1;
+  background:
+    linear-gradient(122deg, rgba(255, 232, 190, 0.14) 0%, transparent 38%, rgba(0, 0, 0, 0.24) 64%, transparent 82%);
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-table-surface {
+  background:
+    radial-gradient(ellipse 56% 50% at 48% 48%, rgba(255, 255, 255, 0.92) 0%, rgba(218, 215, 208, 0.95) 84%),
+    linear-gradient(135deg, #f5f4f0 0%, #dedbd3 100%);
+  box-shadow: inset 0 1px 0 #ffffff, 0 40px 90px rgba(0, 0, 0, 0.18);
+}
+
+/* Book Assembly & Realistic Contact Shadow */
+.fb-book-rig {
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.22s ease-out;
+}
+
+.fb-book-shadow {
+  position: absolute;
+  top: 2%;
+  height: 98%;
+  left: 0;
+  width: 100%;
+  transform: translateZ(-13px);
+  background: rgba(0, 0, 0, 0.56);
+  filter: blur(22px);
+  border-radius: 8px;
+  pointer-events: none;
+  transition: left 0.18s ease, width 0.18s ease;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-book-shadow {
+  background: rgba(30, 28, 24, 0.28);
+  filter: blur(26px);
+}
+
+/* 3D Paper-Block Fore-Edge Stack Thickness */
+.fb-page-stack {
+  position: absolute;
+  top: 1px;
+  bottom: 1px;
+  background: repeating-linear-gradient(
+    90deg,
+    #f3f1ec 0px,
+    #e2dfd7 1.5px,
+    #faf9f5 3px
+  );
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28);
+  transform: translateZ(-4px);
+  pointer-events: none;
+}
+
+.fb-page-stack.left {
+  border-radius: 2px 0 0 2px;
+}
+
+.fb-page-stack.right {
+  border-radius: 0 2px 2px 0;
+}
+
+.fb-half-page {
+  position: absolute;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  background: #fbfaf7;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.22);
+}
+
+.fb-half-page.left {
+  left: 0;
+  border-radius: 3px 0 0 3px;
+}
+
+.fb-half-page.right {
+  left: 50%;
+  border-radius: 0 3px 3px 0;
+}
+
+.fb-half-page.empty-half {
+  background: transparent;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.fb-page-img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+  pointer-events: none;
+}
+
+/* Spine Crease Ambient Occlusion */
+.fb-gutter-ao {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 11%;
+  pointer-events: none;
+}
+
+.fb-gutter-ao.left {
+  right: 0;
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.05) 68%, rgba(0, 0, 0, 0.19) 100%);
+}
+
+.fb-gutter-ao.right {
+  left: 0;
+  background: linear-gradient(270deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.05) 68%, rgba(0, 0, 0, 0.19) 100%);
+}
+
+.fb-half-page.empty-half .fb-gutter-ao {
+  display: none;
+}
+
+.fb-spine-crease {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  margin-left: -1px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.32), rgba(255,255,255,0.18) 50%, rgba(0,0,0,0.32));
+  transform: translateZ(1px);
+  pointer-events: none;
+  transition: opacity 0.15s;
+}
+
+.fb-cast-shade {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.fb-corner-num {
+  position: absolute;
+  bottom: 8px;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: rgba(60, 60, 56, 0.55);
+  pointer-events: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.fb-corner-num.left {
+  left: 12px;
+}
+
+.fb-corner-num.right {
+  right: 12px;
+}
+
+/* 3D Turning Page Leaf */
+.fb-flip-leaf {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 50%;
+  height: 100%;
+  transform-origin: left center;
+  transform-style: preserve-3d;
+  pointer-events: none;
+  z-index: 12;
+}
+
+.fb-leaf-face {
+  position: absolute;
+  inset: 0;
+  background: #fbfaf7;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  overflow: hidden;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+}
+
+.fb-leaf-face.front {
+  border-radius: 0 3px 3px 0;
+}
+
+.fb-leaf-face.back {
+  transform: rotateY(180deg);
+  border-radius: 3px 0 0 3px;
+}
+
+.fb-leaf-lighting {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.fb-orbit-hint {
+  position: absolute;
+  bottom: 62px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.52);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-orbit-hint {
+  color: rgba(24, 24, 23, 0.52);
+}
+
+/* Bottom Playback Controls Pill */
+.fb-hud-bottom {
+  gap: 8px;
+}
+
+.fb-play-btn {
+  height: 34px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: none;
+  background: #2383e2;
+  color: #ffffff;
+  font-size: 12.5px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  box-shadow: 0 3px 12px rgba(35, 131, 226, 0.38);
+}
+
+.fb-play-btn svg {
+  width: 13.5px;
+  height: 13.5px;
+}
+
+.fb-play-btn.active {
+  background: #f59e0b;
+  box-shadow: 0 3px 12px rgba(245, 158, 11, 0.4);
+}
+
+.fb-speed-select {
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(20, 21, 24, 0.72);
+  color: #f3f3f1;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-speed-select {
+  background: rgba(255, 255, 255, 0.85);
+  color: #181817;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.fb-scrubber {
+  width: 220px;
+  accent-color: #2383e2;
+  cursor: pointer;
+}
+
+.fb-page-label {
+  min-width: 82px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(20, 21, 24, 0.68);
+  color: #f3f3f1;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.flipbook-modal[data-fb-scene="marble3d"] .fb-page-label {
+  background: rgba(255, 255, 255, 0.85);
+  color: #181817;
+}
+
+@media (max-width: 860px) {
+  .fb-hud-top {
+    flex-wrap: wrap;
+    padding: 8px 10px;
+  }
+  .fb-scrubber {
+    width: 110px;
+  }
+  .fb-orbit-hint {
+    display: none;
+  }
 }

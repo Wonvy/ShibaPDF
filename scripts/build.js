@@ -10,6 +10,7 @@ const jsModules = [
   "src/prepress-k100.js",
   "src/pdf-info.js",
   "src/imposition.js",
+  "src/flipbook-3d.js",
   "src/convert-compress.js",
   "src/image-edit.js",
   "src/edit-props.js",
