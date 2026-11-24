@@ -1437,9 +1437,84 @@
         refreshWorkspace(true);
       });
 
-      // Drag & Drop Page Reordering with dynamic grabbing cursor
+      // Drag & Drop Page Reordering with between-page insertion marker
+      const clearDropMarkers = () => {
+        el.sequenceGrid.querySelectorAll(".org-card.drop-before, .org-card.drop-after").forEach((n) => {
+          n.classList.remove("drop-before", "drop-after");
+        });
+      };
+
+      const applyDropMarkerAtCard = (targetCard, targetIdx, clientX) => {
+        const fromIdx = state.draggingOrgIdx;
+        if (fromIdx < 0) return;
+        const rect = targetCard.getBoundingClientRect();
+        const pos = clientX < rect.left + rect.width / 2 ? "before" : "after";
+        const rawInsertIdx = pos === "before" ? targetIdx : targetIdx + 1;
+        clearDropMarkers();
+        if (rawInsertIdx === fromIdx || rawInsertIdx === fromIdx + 1) {
+          state.dragInsertIdx = -1;
+          return;
+        }
+        state.dragInsertIdx = rawInsertIdx;
+        targetCard.classList.add(pos === "before" ? "drop-before" : "drop-after");
+      };
+
+      const commitOrgDrop = () => {
+        const fromIdx = state.draggingOrgIdx;
+        let insertIdx = state.dragInsertIdx;
+        state.draggingOrgIdx = -1;
+        state.dragInsertIdx = -1;
+        clearDropMarkers();
+        document.body.classList.remove("is-sorting-pages");
+        if (fromIdx < 0 || insertIdx < 0) return;
+        let targetIdx = insertIdx;
+        if (fromIdx < targetIdx) targetIdx -= 1;
+        targetIdx = Math.max(0, Math.min(state.pages.length - 1, targetIdx));
+        if (targetIdx === fromIdx) return;
+        pushUndo();
+        const [moved] = state.pages.splice(fromIdx, 1);
+        state.pages.splice(targetIdx, 0, moved);
+        state.activeSlotIdx = targetIdx;
+        refreshWorkspace(true);
+      };
+
+      if (!el.sequenceGrid._orgGapDropBound) {
+        el.sequenceGrid._orgGapDropBound = true;
+        el.sequenceGrid.addEventListener("dragover", (ev) => {
+          if (state.draggingOrgIdx < 0) return;
+          ev.preventDefault();
+          if (ev.target === el.sequenceGrid) {
+            const cards = Array.from(el.sequenceGrid.querySelectorAll(".org-card"));
+            let bestCard = null;
+            let bestIdx = -1;
+            let bestDist = Infinity;
+            cards.forEach((c, idx) => {
+              const r = c.getBoundingClientRect();
+              const cx = (r.left + r.right) / 2;
+              const cy = (r.top + r.bottom) / 2;
+              const dy = Math.abs(ev.clientY - cy);
+              const dx = Math.abs(ev.clientX - cx);
+              const dist = dy * 4 + dx;
+              if (dist < bestDist) {
+                bestDist = dist;
+                bestCard = c;
+                bestIdx = idx;
+              }
+            });
+            if (bestCard) applyDropMarkerAtCard(bestCard, bestIdx, ev.clientX);
+          }
+        });
+        el.sequenceGrid.addEventListener("drop", (ev) => {
+          if (state.draggingOrgIdx < 0) return;
+          ev.preventDefault();
+          ev.stopPropagation();
+          commitOrgDrop();
+        });
+      }
+
       card.addEventListener("dragstart", (ev) => {
         state.draggingOrgIdx = i;
+        state.dragInsertIdx = -1;
         card.classList.add("dragging");
         document.body.classList.add("is-sorting-pages");
         if (ev.dataTransfer) {
@@ -1450,35 +1525,23 @@
 
       card.addEventListener("dragend", () => {
         state.draggingOrgIdx = -1;
+        state.dragInsertIdx = -1;
         card.classList.remove("dragging");
         document.body.classList.remove("is-sorting-pages");
-        el.sequenceGrid.querySelectorAll(".org-card.drag-over").forEach((n) => n.classList.remove("drag-over"));
+        clearDropMarkers();
       });
 
       card.addEventListener("dragover", (ev) => {
-        if (state.draggingOrgIdx < 0 || state.draggingOrgIdx === i) return;
+        if (state.draggingOrgIdx < 0) return;
         ev.preventDefault();
-        card.classList.add("drag-over");
-      });
-
-      card.addEventListener("dragleave", () => {
-        card.classList.remove("drag-over");
+        applyDropMarkerAtCard(card, i, ev.clientX);
       });
 
       card.addEventListener("drop", (ev) => {
         if (state.draggingOrgIdx < 0) return;
         ev.preventDefault();
         ev.stopPropagation();
-        card.classList.remove("drag-over");
-        document.body.classList.remove("is-sorting-pages");
-        const fromIdx = state.draggingOrgIdx;
-        state.draggingOrgIdx = -1;
-        if (fromIdx === i) return;
-        pushUndo();
-        const [moved] = state.pages.splice(fromIdx, 1);
-        state.pages.splice(i, 0, moved);
-        state.activeSlotIdx = i;
-        refreshWorkspace(true);
+        commitOrgDrop();
       });
 
       el.sequenceGrid.appendChild(card);

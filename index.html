@@ -1595,8 +1595,37 @@ svg.lucide {
 .org-card:active { cursor: grabbing; }
 .org-card:hover { background: var(--bg-surface); border-color: var(--border-subtle); }
 .org-card.selected { background: var(--accent-soft); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.org-card.dragging { opacity: 0.4; cursor: grabbing; }
-.org-card.drag-over { outline: 2px dashed var(--accent); background: var(--bg-hover); }
+.org-card.dragging { opacity: 0.32; cursor: grabbing; }
+.org-card.drop-before::before,
+.org-card.drop-after::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 28px;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--text-active);
+  box-shadow: 0 0 8px var(--accent-ring);
+  pointer-events: none;
+  z-index: 25;
+}
+.org-card.drop-before::after,
+.org-card.drop-after::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-active);
+  box-shadow: 0 0 6px var(--accent-ring);
+  pointer-events: none;
+  z-index: 26;
+}
+.org-card.drop-before::before { left: -10px; }
+.org-card.drop-before::after { left: -13px; }
+.org-card.drop-after::before { right: -10px; }
+.org-card.drop-after::after { right: -13px; }
 
 .org-check {
   position: absolute;
@@ -3547,7 +3576,7 @@ svg.lucide {
         <div class="brand-mark">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /> </svg>
           <span>ShibaPDF</span>
-          <span class="version-pill">v2.1.6</span>
+          <span class="version-pill">v2.1.7</span>
         </div>
         <div class="header-mini-btns">
           <button id="langBtn" class="ghost-btn" type="button" title="Switch Language">
@@ -3710,7 +3739,7 @@ svg.lucide {
         <button id="mobileMenuBtn" class="ghost-btn" type="button">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /> </svg>
           <span style="font-weight:700;">ShibaPDF</span>
-          <span class="version-pill">v2.1.6</span>
+          <span class="version-pill">v2.1.7</span>
         </button>
         <div style="display:flex;align-items:center;gap:4px;">
           <button id="mobileQuickOpenBtn" class="ghost-btn" type="button">
@@ -11915,9 +11944,84 @@ window.ShibaUX = (function () {
         refreshWorkspace(true);
       });
 
-      // Drag & Drop Page Reordering with dynamic grabbing cursor
+      // Drag & Drop Page Reordering with between-page insertion marker
+      const clearDropMarkers = () => {
+        el.sequenceGrid.querySelectorAll(".org-card.drop-before, .org-card.drop-after").forEach((n) => {
+          n.classList.remove("drop-before", "drop-after");
+        });
+      };
+
+      const applyDropMarkerAtCard = (targetCard, targetIdx, clientX) => {
+        const fromIdx = state.draggingOrgIdx;
+        if (fromIdx < 0) return;
+        const rect = targetCard.getBoundingClientRect();
+        const pos = clientX < rect.left + rect.width / 2 ? "before" : "after";
+        const rawInsertIdx = pos === "before" ? targetIdx : targetIdx + 1;
+        clearDropMarkers();
+        if (rawInsertIdx === fromIdx || rawInsertIdx === fromIdx + 1) {
+          state.dragInsertIdx = -1;
+          return;
+        }
+        state.dragInsertIdx = rawInsertIdx;
+        targetCard.classList.add(pos === "before" ? "drop-before" : "drop-after");
+      };
+
+      const commitOrgDrop = () => {
+        const fromIdx = state.draggingOrgIdx;
+        let insertIdx = state.dragInsertIdx;
+        state.draggingOrgIdx = -1;
+        state.dragInsertIdx = -1;
+        clearDropMarkers();
+        document.body.classList.remove("is-sorting-pages");
+        if (fromIdx < 0 || insertIdx < 0) return;
+        let targetIdx = insertIdx;
+        if (fromIdx < targetIdx) targetIdx -= 1;
+        targetIdx = Math.max(0, Math.min(state.pages.length - 1, targetIdx));
+        if (targetIdx === fromIdx) return;
+        pushUndo();
+        const [moved] = state.pages.splice(fromIdx, 1);
+        state.pages.splice(targetIdx, 0, moved);
+        state.activeSlotIdx = targetIdx;
+        refreshWorkspace(true);
+      };
+
+      if (!el.sequenceGrid._orgGapDropBound) {
+        el.sequenceGrid._orgGapDropBound = true;
+        el.sequenceGrid.addEventListener("dragover", (ev) => {
+          if (state.draggingOrgIdx < 0) return;
+          ev.preventDefault();
+          if (ev.target === el.sequenceGrid) {
+            const cards = Array.from(el.sequenceGrid.querySelectorAll(".org-card"));
+            let bestCard = null;
+            let bestIdx = -1;
+            let bestDist = Infinity;
+            cards.forEach((c, idx) => {
+              const r = c.getBoundingClientRect();
+              const cx = (r.left + r.right) / 2;
+              const cy = (r.top + r.bottom) / 2;
+              const dy = Math.abs(ev.clientY - cy);
+              const dx = Math.abs(ev.clientX - cx);
+              const dist = dy * 4 + dx;
+              if (dist < bestDist) {
+                bestDist = dist;
+                bestCard = c;
+                bestIdx = idx;
+              }
+            });
+            if (bestCard) applyDropMarkerAtCard(bestCard, bestIdx, ev.clientX);
+          }
+        });
+        el.sequenceGrid.addEventListener("drop", (ev) => {
+          if (state.draggingOrgIdx < 0) return;
+          ev.preventDefault();
+          ev.stopPropagation();
+          commitOrgDrop();
+        });
+      }
+
       card.addEventListener("dragstart", (ev) => {
         state.draggingOrgIdx = i;
+        state.dragInsertIdx = -1;
         card.classList.add("dragging");
         document.body.classList.add("is-sorting-pages");
         if (ev.dataTransfer) {
@@ -11928,35 +12032,23 @@ window.ShibaUX = (function () {
 
       card.addEventListener("dragend", () => {
         state.draggingOrgIdx = -1;
+        state.dragInsertIdx = -1;
         card.classList.remove("dragging");
         document.body.classList.remove("is-sorting-pages");
-        el.sequenceGrid.querySelectorAll(".org-card.drag-over").forEach((n) => n.classList.remove("drag-over"));
+        clearDropMarkers();
       });
 
       card.addEventListener("dragover", (ev) => {
-        if (state.draggingOrgIdx < 0 || state.draggingOrgIdx === i) return;
+        if (state.draggingOrgIdx < 0) return;
         ev.preventDefault();
-        card.classList.add("drag-over");
-      });
-
-      card.addEventListener("dragleave", () => {
-        card.classList.remove("drag-over");
+        applyDropMarkerAtCard(card, i, ev.clientX);
       });
 
       card.addEventListener("drop", (ev) => {
         if (state.draggingOrgIdx < 0) return;
         ev.preventDefault();
         ev.stopPropagation();
-        card.classList.remove("drag-over");
-        document.body.classList.remove("is-sorting-pages");
-        const fromIdx = state.draggingOrgIdx;
-        state.draggingOrgIdx = -1;
-        if (fromIdx === i) return;
-        pushUndo();
-        const [moved] = state.pages.splice(fromIdx, 1);
-        state.pages.splice(i, 0, moved);
-        state.activeSlotIdx = i;
-        refreshWorkspace(true);
+        commitOrgDrop();
       });
 
       el.sequenceGrid.appendChild(card);

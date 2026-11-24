@@ -1577,8 +1577,37 @@ svg.lucide {
 .org-card:active { cursor: grabbing; }
 .org-card:hover { background: var(--bg-surface); border-color: var(--border-subtle); }
 .org-card.selected { background: var(--accent-soft); border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-.org-card.dragging { opacity: 0.4; cursor: grabbing; }
-.org-card.drag-over { outline: 2px dashed var(--accent); background: var(--bg-hover); }
+.org-card.dragging { opacity: 0.32; cursor: grabbing; }
+.org-card.drop-before::before,
+.org-card.drop-after::before {
+  content: "";
+  position: absolute;
+  top: 14px;
+  bottom: 28px;
+  width: 2px;
+  border-radius: 999px;
+  background: var(--text-active);
+  box-shadow: 0 0 8px var(--accent-ring);
+  pointer-events: none;
+  z-index: 25;
+}
+.org-card.drop-before::after,
+.org-card.drop-after::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-active);
+  box-shadow: 0 0 6px var(--accent-ring);
+  pointer-events: none;
+  z-index: 26;
+}
+.org-card.drop-before::before { left: -10px; }
+.org-card.drop-before::after { left: -13px; }
+.org-card.drop-after::before { right: -10px; }
+.org-card.drop-after::after { right: -13px; }
 
 .org-check {
   position: absolute;
