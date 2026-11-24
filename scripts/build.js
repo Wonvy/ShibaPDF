@@ -10,6 +10,7 @@ const jsModules = [
   "src/imposition.js",
   "src/convert-compress.js",
   "src/image-edit.js",
+  "src/annotate.js",
   "src/app.js"
 ];
 

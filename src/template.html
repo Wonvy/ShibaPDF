@@ -31,28 +31,44 @@
         </div>
       </header>
 
-      <nav class="rail-tools" aria-label="PDF Studio Pillars">
-        <!-- Pillar 1: Pages & Edit -->
-        <button id="navPagesBtn" class="big-tool-btn active" type="button">
-          <span class="tool-icon-box"><i data-lucide="square-pen"></i></span>
-          <span class="tool-btn-copy">
-            <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="pillarPages">页面与编辑</span>
+      <nav class="rail-tools" aria-label="PDF Studio Navigation">
+        <!-- Group 1: Pages, Edit & Design Markup -->
+        <div id="grpPages" class="rail-group open">
+          <button id="navPagesBtn" class="big-tool-btn active" type="button">
+            <span class="tool-icon-box"><i data-lucide="square-pen"></i></span>
+            <span class="tool-btn-copy">
+              <span class="tool-btn-title-row">
+                <span class="tool-btn-title" data-i18n="pillarPages">页面与编辑</span>
+                <span class="group-chevron"><i data-lucide="chevron-down"></i></span>
+              </span>
+              <span class="tool-btn-desc" data-i18n="pillarPagesSub">合并提取 · 原位改字 · 设计批注</span>
             </span>
-            <span class="tool-btn-desc" data-i18n="pillarPagesSub">合并提取 · 排序旋转 · 原位改字</span>
-          </span>
-        </button>
+          </button>
+          <div class="rail-sub-list">
+            <button id="subOrgBtn" class="rail-sub-btn active" type="button" data-i18n="navSubOrg">页面管理</button>
+            <button id="subTextBtn" class="rail-sub-btn" type="button" data-i18n="navSubEdit">图文编辑</button>
+            <button id="subAnnotateBtn" class="rail-sub-btn" type="button" data-i18n="navSubAnnotate">设计批注</button>
+          </div>
+        </div>
 
-        <!-- Pillar 2: Prepress & Impose -->
-        <button id="navPrepressBtn" class="big-tool-btn" type="button">
-          <span class="tool-icon-box"><i data-lucide="layers"></i></span>
-          <span class="tool-btn-copy">
-            <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="pillarPrepress">印前与拼版</span>
+        <!-- Group 2: Prepress & Impose -->
+        <div id="grpPrepress" class="rail-group">
+          <button id="navPrepressBtn" class="big-tool-btn" type="button">
+            <span class="tool-icon-box"><i data-lucide="layers"></i></span>
+            <span class="tool-btn-copy">
+              <span class="tool-btn-title-row">
+                <span class="tool-btn-title" data-i18n="pillarPrepress">印前与拼版</span>
+                <span class="group-chevron"><i data-lucide="chevron-down"></i></span>
+              </span>
+              <span class="tool-btn-desc" data-i18n="pillarPrepressSub">骑马钉/多联拼版 · 拆单页 · 单黑</span>
             </span>
-            <span class="tool-btn-desc" data-i18n="pillarPrepressSub">骑马钉/多联拼版 · 拆单页 · 单黑</span>
-          </span>
-        </button>
+          </button>
+          <div class="rail-sub-list">
+            <button id="subImposeBtn" class="rail-sub-btn active" type="button" data-i18n="navSubImpose">印刷拼版</button>
+            <button id="subSplitBtn" class="rail-sub-btn" type="button" data-i18n="navSubSplit">跨页拆单页</button>
+            <button id="subK100Btn" class="rail-sub-btn" type="button" data-i18n="navSubK100">印前单黑 K100</button>
+          </div>
+        </div>
 
         <!-- Pillar 3: Preflight Check -->
         <button id="navPreflightBtn" class="big-tool-btn" type="button">
@@ -66,16 +82,24 @@
           </span>
         </button>
 
-        <!-- Pillar 4: Convert & Compress -->
-        <button id="navConvertBtn" class="big-tool-btn" type="button">
-          <span class="tool-icon-box"><i data-lucide="sparkles"></i></span>
-          <span class="tool-btn-copy">
-            <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="pillarConvert">转换与压缩</span>
+        <!-- Group 4: Convert & Compress -->
+        <div id="grpConvert" class="rail-group">
+          <button id="navConvertBtn" class="big-tool-btn" type="button">
+            <span class="tool-icon-box"><i data-lucide="sparkles"></i></span>
+            <span class="tool-btn-copy">
+              <span class="tool-btn-title-row">
+                <span class="tool-btn-title" data-i18n="pillarConvert">转换与压缩</span>
+                <span class="group-chevron"><i data-lucide="chevron-down"></i></span>
+              </span>
+              <span class="tool-btn-desc" data-i18n="pillarConvertSub">减小体积 · 导出图片 · 转图版PDF</span>
             </span>
-            <span class="tool-btn-desc" data-i18n="pillarConvertSub">减小体积 · 导出图片 · 转图版PDF</span>
-          </span>
-        </button>
+          </button>
+          <div class="rail-sub-list">
+            <button id="subCompBtn" class="rail-sub-btn active" type="button" data-i18n="navSubCompress">减小 PDF 体积</button>
+            <button id="subImgBtn" class="rail-sub-btn" type="button" data-i18n="navSubExportImg">导出高清图片</button>
+            <button id="subImgPdfBtn" class="rail-sub-btn" type="button" data-i18n="navSubImgPdf">转为图片版 PDF</button>
+          </div>
+        </div>
       </nav>
 
       <div class="rail-footer">
@@ -114,13 +138,8 @@
       <!-- Progressive Top Action Strip -->
       <header id="topStrip" class="top-action-strip hidden">
         <div class="strip-left">
-          <!-- Pillar 1: Pages & Edit Sub-controls -->
+          <!-- Pillar 1 Parameter & Tool Controls -->
           <div id="stripPages" class="strip-left">
-            <div class="soft-pills">
-              <button id="subOrgBtn" class="soft-pill active" type="button" data-i18n="subOrganize">页面管理 (合并/提取)</button>
-              <button id="subTextBtn" class="soft-pill" type="button" data-i18n="subTextEdit">文字编辑</button>
-            </div>
-
             <!-- Organize sub-controls -->
             <div id="orgControls" class="strip-left">
               <button id="selAllBtn" class="ghost-btn" type="button" data-i18n="selAll">全选</button>
@@ -162,16 +181,58 @@
               </button>
               <span id="editHintLabel" style="font-size:12px;color:var(--text-3);" data-i18n="editClickHint">点选文字或图片即可修改/拖入替换</span>
             </div>
+
+            <!-- Designer Freeform Annotation Controls -->
+            <div id="annotateControls" class="strip-left hidden">
+              <div class="soft-pills">
+                <button class="soft-pill ann-tool-btn" data-tool="pan" type="button">
+                  <i data-lucide="hand" style="width:13px;height:13px;"></i><span data-i18n="annPan">漫游</span>
+                </button>
+                <button class="soft-pill ann-tool-btn" data-tool="select" type="button">
+                  <i data-lucide="mouse-pointer-2" style="width:13px;height:13px;"></i><span data-i18n="annSelect">选择</span>
+                </button>
+                <button class="soft-pill ann-tool-btn active" data-tool="rect" type="button">
+                  <i data-lucide="square" style="width:13px;height:13px;"></i><span data-i18n="annRect">框选</span>
+                </button>
+                <button class="soft-pill ann-tool-btn" data-tool="ellipse" type="button">
+                  <i data-lucide="circle" style="width:13px;height:13px;"></i><span data-i18n="annEllipse">圈选</span>
+                </button>
+                <button class="soft-pill ann-tool-btn" data-tool="arrow" type="button">
+                  <i data-lucide="move-up-right" style="width:13px;height:13px;"></i><span data-i18n="annArrow">箭头</span>
+                </button>
+                <button class="soft-pill ann-tool-btn" data-tool="pen" type="button">
+                  <i data-lucide="pencil" style="width:13px;height:13px;"></i><span data-i18n="annPen">画笔</span>
+                </button>
+                <button class="soft-pill ann-tool-btn" data-tool="note" type="button">
+                  <i data-lucide="message-square-plus" style="width:13px;height:13px;"></i><span data-i18n="annNote">文字批注</span>
+                </button>
+              </div>
+
+              <div class="ann-color-row">
+                <button class="ann-color-dot active" data-color="#e03e3e" style="background:#e03e3e;" type="button" title="Red"></button>
+                <button class="ann-color-dot" data-color="#f59e0b" style="background:#f59e0b;" type="button" title="Amber"></button>
+                <button class="ann-color-dot" data-color="#2383e2" style="background:#2383e2;" type="button" title="Blue"></button>
+                <button class="ann-color-dot" data-color="#10b981" style="background:#10b981;" type="button" title="Green"></button>
+                <input id="annColorInput" class="fmt-color-input" type="color" value="#e03e3e" title="Custom Color" />
+              </div>
+
+              <div class="soft-pills">
+                <button class="soft-pill ann-width-btn" data-w="2" type="button" data-i18n="annStrokeThin">细</button>
+                <button class="soft-pill ann-width-btn active" data-w="3.5" type="button" data-i18n="annStrokeMid">中</button>
+                <button class="soft-pill ann-width-btn" data-w="6" type="button" data-i18n="annStrokeBold">粗</button>
+              </div>
+
+              <button id="annUndoBtn" class="ghost-btn hidden" type="button">
+                <i data-lucide="undo-2"></i><span data-i18n="undoBtn">撤销</span>
+              </button>
+              <button id="annClearBtn" class="ghost-btn hidden" type="button">
+                <i data-lucide="eraser"></i><span data-i18n="annClearBtn">清空批注</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Pillar 2: Prepress & Impose Sub-controls -->
+          <!-- Pillar 2 Parameter Controls -->
           <div id="stripPrepress" class="strip-left hidden">
-            <div class="soft-pills">
-              <button id="subImposeBtn" class="soft-pill active" type="button" data-i18n="subImpose">印刷拼版</button>
-              <button id="subSplitBtn" class="soft-pill" type="button" data-i18n="subSplit">跨页拆单页</button>
-              <button id="subK100Btn" class="soft-pill" type="button" data-i18n="subK100">原尺寸转单黑</button>
-            </div>
-
             <!-- Sub: Imposition Controls -->
             <div id="imposeControls" class="strip-left">
               <div class="soft-pills">
@@ -291,19 +352,14 @@
             <span style="font-size:13.5px;font-weight:600;" data-i18n="preflightReportTitle">印前规范检查</span>
             <div id="pfScorePills" style="display:flex;gap:6px;"></div>
           </div>
-
-          <!-- Pillar 4: Convert & Compress Sub-tabs -->
-          <div id="stripConvert" class="strip-left hidden">
-            <div class="soft-pills">
-              <button id="subCompBtn" class="soft-pill active" type="button" data-i18n="subCompress">减小 PDF 体积</button>
-              <button id="subImgBtn" class="soft-pill" type="button" data-i18n="subExportImg">导出为图片</button>
-              <button id="subImgPdfBtn" class="soft-pill" type="button" data-i18n="subImgPdf">转为图片版 PDF</button>
-            </div>
-          </div>
         </div>
 
         <div id="stripRightGroup" class="strip-right">
           <span id="dimSummaryText" style="font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;"></span>
+          <button id="annExportPngBtn" class="ghost-btn active hidden" type="button">
+            <i data-lucide="image"></i>
+            <span data-i18n="annExportPngBtn">导出审稿长图</span>
+          </button>
           <button id="exportBtn" class="primary-btn" type="button" disabled>
             <i data-lucide="download"></i>
             <span id="exportBtnText" data-i18n="exportPdfBtn">导出 PDF</span>
@@ -348,6 +404,15 @@
 
           <!-- Grid View (Used by Organize/Merge/Select & Split Overview) -->
           <div id="sequenceGrid" class="clean-grid hidden"></div>
+
+          <!-- Freeform Infinite Pan & Zoom Designer Annotation Artboard -->
+          <div id="annotateBoardWrap" class="annotate-board-wrap hidden">
+            <div id="annotateStageInner" class="annotate-stage-inner">
+              <canvas id="annotateBaseCanvas"></canvas>
+              <canvas id="annotateDrawCanvas"></canvas>
+              <div id="annotateNotesLayer" class="annotate-notes-layer"></div>
+            </div>
+          </div>
 
           <!-- Convert & Compress Panel -->
           <div id="convertViewPanel" class="convert-panel hidden">
@@ -484,6 +549,29 @@
           <span id="zoomLabel">100%</span>
         </button>
         <button id="zoomInBtn" class="pager-btn" type="button"><i data-lucide="plus"></i></button>
+      </div>
+
+      <!-- Full-Workspace Drag-Over Feedback Overlay -->
+      <div id="dragOverlay" class="drag-global-overlay hidden">
+        <div class="drag-global-card">
+          <i data-lucide="upload"></i>
+          <span id="dragOverlayText" data-i18n="dragDropTitle">松开鼠标导入或追加合并 PDF</span>
+        </div>
+      </div>
+
+      <!-- Real-Time PDF Import & Parsing Progress Modal -->
+      <div id="loadProgressOverlay" class="load-progress-overlay hidden">
+        <div class="load-progress-card">
+          <div class="load-progress-head">
+            <span id="loadProgressTitle" class="load-progress-title">正在解析文档</span>
+            <span id="loadProgressPct" class="load-progress-pct">0%</span>
+          </div>
+          <div id="loadProgressFile" class="load-progress-file"></div>
+          <div class="load-progress-track">
+            <div id="loadProgressFill" class="load-progress-fill"></div>
+          </div>
+          <div id="loadProgressStep" class="load-progress-step"></div>
+        </div>
       </div>
     </main>
   </div>

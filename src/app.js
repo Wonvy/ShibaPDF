@@ -27,9 +27,10 @@
       localStorage.getItem("shibapdf_theme") ||
       (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
 
-    // Navigation: 4 Pillars ('pages' | 'prepress' | 'preflight' | 'convert')
+    // Navigation: 4 Collapsible Left Groups ('pages' | 'prepress' | 'preflight' | 'convert')
     pillar: "pages",
-    pagesSub: "organize", // 'organize' | 'text'
+    openGroups: { pages: true, prepress: false, convert: false },
+    pagesSub: "organize", // 'organize' | 'text' | 'annotate'
     prepressSub: "impose", // 'impose' | 'split' | 'k100'
     convertSub: "compress", // 'compress' | 'img' | 'imgpdf'
 
@@ -49,6 +50,20 @@
     selectedOrigImgId: null,
     selectedImgEditId: null,
     imgInputMode: "replace",
+
+    // Freeform Designer Annotation Board State
+    annotations: [],
+    annUndoStack: [],
+    annTool: "rect", // 'pan' | 'select' | 'rect' | 'ellipse' | 'arrow' | 'pen' | 'note'
+    annColor: "#e03e3e",
+    annStrokeW: 3.5,
+    selectedAnnId: null,
+    annPanX: 48,
+    annPanY: 36,
+    annScale: 0.72,
+    annNeedsFit: true,
+    spacePressed: false,
+    dragDepth: 0,
 
     // Imposition State
     imposeType: "booklet", // 'booklet' | 'spread2up' | 'nup'
@@ -97,7 +112,10 @@
     iconMoon: document.getElementById("iconMoon"),
     iconSun: document.getElementById("iconSun"),
 
-    // Left 4 Pillars
+    // Left Collapsible Groups & Pillars
+    grpPages: document.getElementById("grpPages"),
+    grpPrepress: document.getElementById("grpPrepress"),
+    grpConvert: document.getElementById("grpConvert"),
     navPagesBtn: document.getElementById("navPagesBtn"),
     navPrepressBtn: document.getElementById("navPrepressBtn"),
     navPreflightBtn: document.getElementById("navPreflightBtn"),
@@ -113,11 +131,12 @@
     sidebarUploadBtn: document.getElementById("sidebarUploadBtn"),
     downloadOfflineBtn: document.getElementById("downloadOfflineBtn"),
 
-    // Top Action Strip
+    // Top Action Strip & Left Sub-Items
     topStrip: document.getElementById("topStrip"),
     stripPages: document.getElementById("stripPages"),
     subOrgBtn: document.getElementById("subOrgBtn"),
     subTextBtn: document.getElementById("subTextBtn"),
+    subAnnotateBtn: document.getElementById("subAnnotateBtn"),
     orgControls: document.getElementById("orgControls"),
     selAllBtn: document.getElementById("selAllBtn"),
     selNoneBtn: document.getElementById("selNoneBtn"),
@@ -136,6 +155,15 @@
     deletePageBtn: document.getElementById("deletePageBtn"),
     undoEditBtn: document.getElementById("undoEditBtn"),
     editHintLabel: document.getElementById("editHintLabel"),
+
+    annotateControls: document.getElementById("annotateControls"),
+    annToolBtns: Array.from(document.querySelectorAll(".ann-tool-btn")),
+    annColorDots: Array.from(document.querySelectorAll(".ann-color-dot")),
+    annColorInput: document.getElementById("annColorInput"),
+    annWidthBtns: Array.from(document.querySelectorAll(".ann-width-btn")),
+    annUndoBtn: document.getElementById("annUndoBtn"),
+    annClearBtn: document.getElementById("annClearBtn"),
+    annExportPngBtn: document.getElementById("annExportPngBtn"),
 
     stripPrepress: document.getElementById("stripPrepress"),
     subImposeBtn: document.getElementById("subImposeBtn"),
@@ -211,6 +239,20 @@
     pfHighlightOverlay: document.getElementById("pfHighlightOverlay"),
     textEditOverlay: document.getElementById("textEditOverlay"),
     sequenceGrid: document.getElementById("sequenceGrid"),
+    annotateBoardWrap: document.getElementById("annotateBoardWrap"),
+    annotateStageInner: document.getElementById("annotateStageInner"),
+    annotateBaseCanvas: document.getElementById("annotateBaseCanvas"),
+    annotateDrawCanvas: document.getElementById("annotateDrawCanvas"),
+    annotateNotesLayer: document.getElementById("annotateNotesLayer"),
+
+    dragOverlay: document.getElementById("dragOverlay"),
+    dragOverlayText: document.getElementById("dragOverlayText"),
+    loadProgressOverlay: document.getElementById("loadProgressOverlay"),
+    loadProgressTitle: document.getElementById("loadProgressTitle"),
+    loadProgressPct: document.getElementById("loadProgressPct"),
+    loadProgressFile: document.getElementById("loadProgressFile"),
+    loadProgressFill: document.getElementById("loadProgressFill"),
+    loadProgressStep: document.getElementById("loadProgressStep"),
 
     // Convert & Compress Cards
     convertViewPanel: document.getElementById("convertViewPanel"),
@@ -356,12 +398,33 @@
     refreshWorkspace(true);
   }
 
+  function isAnnotateMode() {
+    return state.pillar === "pages" && state.pagesSub === "annotate";
+  }
+
   function updateZoomReadout() {
+    if (isAnnotateMode()) {
+      el.zoomLabel.textContent = `${Math.round(state.annScale * 100)}%`;
+      return;
+    }
     el.zoomLabel.textContent =
       Math.abs(state.zoomFactor - 1.0) < 0.01 ? t("fitZoom") : `${Math.round(state.zoomFactor * 100)}%`;
   }
 
   function setSmoothZoom(newFactor) {
+    if (isAnnotateMode()) {
+      const clampedAnn = Math.min(4.0, Math.max(0.18, newFactor));
+      const wrapRect = el.annotateBoardWrap.getBoundingClientRect();
+      const cx = wrapRect.width / 2;
+      const cy = wrapRect.height / 2;
+      state.annPanX = cx - (cx - state.annPanX) * (clampedAnn / state.annScale);
+      state.annPanY = cy - (cy - state.annPanY) * (clampedAnn / state.annScale);
+      state.annScale = clampedAnn;
+      applyAnnotateTransform();
+      updateZoomReadout();
+      return;
+    }
+
     const clamped = Math.min(4.0, Math.max(0.35, Math.round(newFactor * 100) / 100));
     if (Math.abs(clamped - state.zoomFactor) < 0.005) return;
     state.zoomFactor = clamped;
@@ -398,6 +461,28 @@
   window.addEventListener(
     "wheel",
     (e) => {
+      if (isAnnotateMode() && hasPages() && !el.annotateBoardWrap.classList.contains("hidden")) {
+        e.preventDefault();
+        e.stopPropagation();
+        const rect = el.annotateBoardWrap.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        if (e.ctrlKey || e.metaKey) {
+          const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+          const nextSc = Math.min(4.0, Math.max(0.18, state.annScale * factor));
+          state.annPanX = mx - (mx - state.annPanX) * (nextSc / state.annScale);
+          state.annPanY = my - (my - state.annPanY) * (nextSc / state.annScale);
+          state.annScale = nextSc;
+          applyAnnotateTransform();
+          updateZoomReadout();
+        } else {
+          state.annPanX -= e.deltaX;
+          state.annPanY -= e.deltaY;
+          applyAnnotateTransform();
+        }
+        return;
+      }
+
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         e.stopPropagation();
@@ -410,12 +495,50 @@
   );
 
   window.addEventListener("keydown", (e) => {
+    const activeTag = document.activeElement ? document.activeElement.tagName : "";
+    const inEditable =
+      activeTag === "INPUT" ||
+      activeTag === "TEXTAREA" ||
+      (document.activeElement && document.activeElement.isContentEditable);
+
+    if (e.code === "Space" && !inEditable && isAnnotateMode()) {
+      e.preventDefault();
+      if (!state.spacePressed) {
+        state.spacePressed = true;
+        syncAnnotateCursor();
+      }
+      return;
+    }
+
+    if ((e.key === "Delete" || e.key === "Backspace") && !inEditable && isAnnotateMode() && state.selectedAnnId) {
+      e.preventDefault();
+      pushAnnUndo();
+      state.annotations = state.annotations.filter((a) => a.id !== state.selectedAnnId);
+      state.selectedAnnId = null;
+      redrawAnnotateLayer();
+      updateTopStripControls();
+      return;
+    }
+
     if ((e.ctrlKey || e.metaKey) && (e.key === "=" || e.key === "+" || e.key === "-" || e.key === "_" || e.key === "0")) {
       e.preventDefault();
       if (!hasPages()) return;
+      if (isAnnotateMode()) {
+        if (e.key === "0") fitAnnotateBoard();
+        else if (e.key === "-" || e.key === "_") setSmoothZoom(state.annScale / 1.18);
+        else setSmoothZoom(state.annScale * 1.18);
+        return;
+      }
       if (e.key === "0") setSmoothZoom(1.0);
       else if (e.key === "-" || e.key === "_") setSmoothZoom(state.zoomFactor / 1.18);
       else setSmoothZoom(state.zoomFactor * 1.18);
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (e.code === "Space" && state.spacePressed) {
+      state.spacePressed = false;
+      syncAnnotateCursor();
     }
   });
 
@@ -424,8 +547,22 @@
   });
 
   // =========================================================================
-  // Loading & Merging Multiple PDFs into Unified Page Workspace
+  // Loading & Merging Multiple PDFs with Smooth Real-Time Progress Modal
   // =========================================================================
+  function nextUiFrame() {
+    return new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+  }
+
+  function updateLoadModal(pct, titleStr, fileName, stepStr) {
+    const clamped = Math.max(0, Math.min(100, Math.round(pct)));
+    el.loadProgressOverlay.classList.remove("hidden");
+    el.loadProgressTitle.textContent = titleStr;
+    el.loadProgressPct.textContent = `${clamped}%`;
+    el.loadProgressFile.textContent = fileName || "";
+    el.loadProgressFill.style.width = `${clamped}%`;
+    el.loadProgressStep.textContent = stepStr || "";
+  }
+
   async function loadPdfFiles(fileListObj) {
     const incoming = Array.from(fileListObj).filter(
       (f) => f.name.toLowerCase().endsWith(".pdf") || f.type === "application/pdf"
@@ -435,51 +572,83 @@
     const wasEmpty = !hasPages();
     if (!wasEmpty) pushUndo();
 
-    for (const file of incoming) {
-      try {
-        const buf = await file.arrayBuffer();
-        const rawBytes = new Uint8Array(buf);
-        const pdfJsDoc = await pdfjsLib.getDocument({ data: rawBytes.slice() }).promise;
-        const origPages = [];
-        const docId = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    updateLoadModal(2, t("loadModalTitle", { c: 1, t: incoming.length }), incoming[0].name, t("loadStepRead"));
+    await nextUiFrame();
 
-        for (let p = 1; p <= pdfJsDoc.numPages; p++) {
-          const pg = await pdfJsDoc.getPage(p);
-          const vp = pg.getViewport({ scale: 1 });
-          const textSpans = await window.ShibaPrepress.extractPageTextSpans(pdfJsDoc, p);
-          origPages.push({
-            wPt: vp.width,
-            hPt: vp.height,
-            wMm: vp.width / MM_TO_PT,
-            hMm: vp.height / MM_TO_PT,
-            rot: pg.rotate || 0,
-            textSpans
+    try {
+      for (let fIdx = 0; fIdx < incoming.length; fIdx++) {
+        const file = incoming[fIdx];
+        const basePct = (fIdx / incoming.length) * 100;
+        const spanPct = 100 / incoming.length;
+        const modalTitle = t("loadModalTitle", { c: fIdx + 1, t: incoming.length });
+
+        try {
+          updateLoadModal(basePct + spanPct * 0.05, modalTitle, file.name, t("loadStepRead"));
+          await nextUiFrame();
+
+          const buf = await file.arrayBuffer();
+          const rawBytes = new Uint8Array(buf);
+          const pdfJsDoc = await pdfjsLib.getDocument({ data: rawBytes.slice() }).promise;
+          const origPages = [];
+          const docId = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+          const totalP = pdfJsDoc.numPages;
+          const yieldEvery = totalP > 24 ? 2 : 1;
+
+          for (let p = 1; p <= totalP; p++) {
+            if (p === 1 || p % yieldEvery === 0 || p === totalP) {
+              updateLoadModal(
+                basePct + spanPct * (0.10 + 0.65 * (p / totalP)),
+                modalTitle,
+                file.name,
+                t("loadStepPage", { p, n: totalP })
+              );
+              await nextUiFrame();
+            }
+            const pg = await pdfJsDoc.getPage(p);
+            const vp = pg.getViewport({ scale: 1 });
+            const textSpans = await window.ShibaPrepress.extractPageTextSpans(pdfJsDoc, p);
+            origPages.push({
+              wPt: vp.width,
+              hPt: vp.height,
+              wMm: vp.width / MM_TO_PT,
+              hMm: vp.height / MM_TO_PT,
+              rot: pg.rotate || 0,
+              textSpans
+            });
+            state.pages.push({
+              uid: `slot_${docId}_${p}_${Math.random().toString(36).slice(2, 6)}`,
+              docId,
+              origIdx: p - 1,
+              extraRot: 0,
+              selected: false,
+              edits: [],
+              imgEdits: []
+            });
+          }
+
+          updateLoadModal(basePct + spanPct * 0.82, modalTitle, file.name, t("loadStepPreflight"));
+          await nextUiFrame();
+
+          const preflight = await window.ShibaPrepress.runPrepressPreflight(rawBytes, pdfJsDoc, origPages);
+          state.sourceDocs.set(docId, {
+            id: docId,
+            name: file.name,
+            size: file.size,
+            rawBytes,
+            pdfJsDoc,
+            origPages,
+            preflight
           });
-          state.pages.push({
-            uid: `slot_${docId}_${p}_${Math.random().toString(36).slice(2, 6)}`,
-            docId,
-            origIdx: p - 1,
-            extraRot: 0,
-            selected: false,
-            edits: [],
-            imgEdits: []
-          });
+          state.docOrder.push(docId);
+        } catch (err) {
+          alert(t("errLoadPdf") + (err && err.message ? err.message : String(err)));
         }
-
-        const preflight = await window.ShibaPrepress.runPrepressPreflight(rawBytes, pdfJsDoc, origPages);
-        state.sourceDocs.set(docId, {
-          id: docId,
-          name: file.name,
-          size: file.size,
-          rawBytes,
-          pdfJsDoc,
-          origPages,
-          preflight
-        });
-        state.docOrder.push(docId);
-      } catch (err) {
-        alert(t("errLoadPdf") + (err && err.message ? err.message : String(err)));
       }
+
+      updateLoadModal(100, t("loadModalTitle", { c: incoming.length, t: incoming.length }), incoming[incoming.length - 1].name, t("loadStepReady"));
+      await nextUiFrame();
+    } finally {
+      el.loadProgressOverlay.classList.add("hidden");
     }
 
     if (wasEmpty) {
@@ -487,6 +656,7 @@
       state.activeSheetIdx = 0;
       state.zoomFactor = 1.0;
     }
+    state.annNeedsFit = true;
     state.selectedTextId = null;
     state.selectedOrigImgId = null;
     state.selectedImgEditId = null;
@@ -2124,9 +2294,216 @@
   }
 
   // =========================================================================
+  // Freeform Infinite Pan & Zoom Designer Annotation Artboard Controller
+  // =========================================================================
+  function getAnnotateLayout() {
+    return window.ShibaAnnotate.computeBoardLayout(state.pages, getSlotSizeInfo);
+  }
+
+  function pushAnnUndo() {
+    state.annUndoStack.push(JSON.stringify(state.annotations));
+    if (state.annUndoStack.length > 35) state.annUndoStack.shift();
+  }
+
+  function syncAnnotateCursor(isDraggingNow) {
+    if (!el.annotateBoardWrap) return;
+    if (isDraggingNow) {
+      el.annotateBoardWrap.setAttribute("data-cursor", "panning");
+      return;
+    }
+    if (state.spacePressed || state.annTool === "pan") el.annotateBoardWrap.setAttribute("data-cursor", "pan");
+    else if (state.annTool === "select") el.annotateBoardWrap.setAttribute("data-cursor", "select");
+    else if (state.annTool === "note") el.annotateBoardWrap.setAttribute("data-cursor", "note");
+    else el.annotateBoardWrap.setAttribute("data-cursor", "draw");
+  }
+
+  function applyAnnotateTransform() {
+    el.annotateStageInner.style.transform = `translate3d(${Math.round(state.annPanX)}px, ${Math.round(state.annPanY)}px, 0) scale(${state.annScale})`;
+  }
+
+  function fitAnnotateBoard() {
+    if (!hasPages()) return;
+    const layout = getAnnotateLayout();
+    const vw = Math.max(320, el.annotateBoardWrap.clientWidth || el.stageViewport.clientWidth);
+    const vh = Math.max(260, el.annotateBoardWrap.clientHeight || el.stageViewport.clientHeight);
+    const fitSc = Math.min(1.15, (vw - 48) / Math.max(1, layout.boardW), (vh - 64) / Math.max(1, layout.boardH));
+    state.annScale = Math.max(0.22, Math.round(fitSc * 100) / 100);
+    state.annPanX = (vw - layout.boardW * state.annScale) / 2;
+    state.annPanY = Math.max(18, (vh - layout.boardH * state.annScale) / 2);
+    state.annNeedsFit = false;
+    applyAnnotateTransform();
+    updateZoomReadout();
+  }
+
+  function clientToBoardCoords(clientX, clientY) {
+    const rect = el.annotateBoardWrap.getBoundingClientRect();
+    return {
+      bx: (clientX - rect.left - state.annPanX) / state.annScale,
+      by: (clientY - rect.top - state.annPanY) / state.annScale
+    };
+  }
+
+  async function renderAnnotateBoard() {
+    if (!hasPages() || !isAnnotateMode()) return;
+    const myToken = ++state.renderToken;
+    const layout = getAnnotateLayout();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    el.annotateStageInner.style.width = `${layout.boardW}px`;
+    el.annotateStageInner.style.height = `${layout.boardH}px`;
+
+    [el.annotateBaseCanvas, el.annotateDrawCanvas].forEach((cv) => {
+      cv.width = Math.max(1, Math.round(layout.boardW * dpr));
+      cv.height = Math.max(1, Math.round(layout.boardH * dpr));
+      cv.style.width = `${layout.boardW}px`;
+      cv.style.height = `${layout.boardH}px`;
+    });
+
+    if (state.annNeedsFit) fitAnnotateBoard();
+    else applyAnnotateTransform();
+
+    const ctx = el.annotateBaseCanvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, layout.boardW, layout.boardH);
+
+    for (const pl of layout.placements) {
+      if (myToken !== state.renderToken) return;
+      ctx.save();
+      ctx.shadowColor = "rgba(15,15,15,0.14)";
+      ctx.shadowBlur = 22;
+      ctx.shadowOffsetY = 6;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(pl.x, pl.y, pl.w, pl.h);
+      ctx.restore();
+
+      const bmp = await getSlotPreviewCanvas(pl.slotIdx);
+      if (myToken !== state.renderToken) return;
+      ctx.drawImage(bmp, pl.x, pl.y, pl.w, pl.h);
+
+      ctx.fillStyle = state.theme === "dark" ? "#9d9d9a" : "#63625e";
+      ctx.font = '600 12px -apple-system, "PingFang SC", sans-serif';
+      ctx.fillText(`P${pl.slotIdx + 1}`, pl.x, pl.y - 10);
+    }
+
+    syncAnnotateCursor();
+    redrawAnnotateLayer(null);
+    updatePagerUI();
+  }
+
+  function redrawAnnotateLayer(previewShape) {
+    if (!isAnnotateMode() || !hasPages()) return;
+    const layout = getAnnotateLayout();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const ctx = el.annotateDrawCanvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, layout.boardW, layout.boardH);
+
+    state.annotations.forEach((ann) => {
+      if (ann.type !== "note") {
+        window.ShibaAnnotate.drawSingleAnnotationOnCtx(ctx, ann, state.selectedAnnId === ann.id);
+      }
+    });
+
+    if (previewShape) {
+      window.ShibaAnnotate.drawSingleAnnotationOnCtx(ctx, previewShape, false);
+    }
+
+    // Sync Callout Note DOM Cards
+    el.annotateNotesLayer.innerHTML = "";
+    state.annotations
+      .filter((a) => a.type === "note")
+      .forEach((ann) => {
+        const card = document.createElement("div");
+        card.className = "ann-callout-card" + (state.selectedAnnId === ann.id ? " selected" : "");
+        card.dataset.noteId = ann.id;
+        card.style.left = `${ann.x}px`;
+        card.style.top = `${ann.y}px`;
+        card.style.borderLeftColor = ann.color || "#e03e3e";
+
+        const txt = document.createElement("div");
+        txt.className = "ann-callout-text";
+        txt.contentEditable = "true";
+        txt.spellcheck = false;
+        txt.textContent = ann.text;
+        txt.addEventListener("input", () => {
+          ann.text = txt.innerText;
+        });
+        txt.addEventListener("pointerdown", (ev) => {
+          state.selectedAnnId = ann.id;
+          ev.stopPropagation();
+        });
+
+        const del = document.createElement("button");
+        del.className = "ann-callout-del";
+        del.type = "button";
+        del.textContent = "×";
+        del.addEventListener("pointerdown", (ev) => ev.stopPropagation());
+        del.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          pushAnnUndo();
+          state.annotations = state.annotations.filter((x) => x.id !== ann.id);
+          if (state.selectedAnnId === ann.id) state.selectedAnnId = null;
+          redrawAnnotateLayer(null);
+          updateTopStripControls();
+        });
+
+        card.addEventListener("pointerdown", (ev) => {
+          if (ev.target === txt || ev.target === del) return;
+          ev.preventDefault();
+          ev.stopPropagation();
+          state.selectedAnnId = ann.id;
+          const sPt = clientToBoardCoords(ev.clientX, ev.clientY);
+          const ox = ann.x;
+          const oy = ann.y;
+          let moved = false;
+          document.body.classList.add("is-dragging-box");
+
+          function onMv(mvEv) {
+            const cPt = clientToBoardCoords(mvEv.clientX, mvEv.clientY);
+            const dx = cPt.bx - sPt.bx;
+            const dy = cPt.by - sPt.by;
+            if (!moved && Math.hypot(dx, dy) > 2) {
+              moved = true;
+              pushAnnUndo();
+            }
+            if (moved) {
+              ann.x = ox + dx;
+              ann.y = oy + dy;
+              card.style.left = `${ann.x}px`;
+              card.style.top = `${ann.y}px`;
+            }
+          }
+
+          function onUp() {
+            window.removeEventListener("pointermove", onMv);
+            window.removeEventListener("pointerup", onUp);
+            document.body.classList.remove("is-dragging-box");
+            updateTopStripControls();
+          }
+
+          window.addEventListener("pointermove", onMv);
+          window.addEventListener("pointerup", onUp);
+        });
+
+        card.appendChild(txt);
+        card.appendChild(del);
+        el.annotateNotesLayer.appendChild(card);
+      });
+  }
+
+  // =========================================================================
   // Master Progressive Workspace Synchronizer
   // =========================================================================
   function updatePagerUI() {
+    if (isAnnotateMode()) {
+      el.pageIndicator.textContent = `${state.pages.length}${t("pagesUnit")}`;
+      el.prevSpreadBtn.classList.add("hidden");
+      el.nextSpreadBtn.classList.add("hidden");
+      updateZoomReadout();
+      return;
+    }
+    el.prevSpreadBtn.classList.remove("hidden");
+    el.nextSpreadBtn.classList.remove("hidden");
     if (isImposeMode()) {
       const plan = getCurrentImpositionPlan();
       const total = Math.max(1, plan.sheets.length);
@@ -2139,14 +2516,33 @@
       el.prevSpreadBtn.disabled = state.activeSlotIdx <= 0;
       el.nextSpreadBtn.disabled = state.activeSlotIdx >= total - 1;
     }
+    updateZoomReadout();
   }
 
   function updateTopStripControls() {
     const loaded = hasPages();
+
+    // Sync Left-Rail Collapsible Groups & Sub-Items
+    el.grpPages.classList.toggle("open", Boolean(state.openGroups.pages));
+    el.grpPrepress.classList.toggle("open", Boolean(state.openGroups.prepress));
+    el.grpConvert.classList.toggle("open", Boolean(state.openGroups.convert));
+
     el.navPagesBtn.classList.toggle("active", state.pillar === "pages");
     el.navPrepressBtn.classList.toggle("active", state.pillar === "prepress");
     el.navPreflightBtn.classList.toggle("active", state.pillar === "preflight");
     el.navConvertBtn.classList.toggle("active", state.pillar === "convert");
+
+    el.subOrgBtn.classList.toggle("active", state.pillar === "pages" && state.pagesSub === "organize");
+    el.subTextBtn.classList.toggle("active", state.pillar === "pages" && state.pagesSub === "text");
+    el.subAnnotateBtn.classList.toggle("active", state.pillar === "pages" && state.pagesSub === "annotate");
+
+    el.subImposeBtn.classList.toggle("active", state.pillar === "prepress" && state.prepressSub === "impose");
+    el.subSplitBtn.classList.toggle("active", state.pillar === "prepress" && state.prepressSub === "split");
+    el.subK100Btn.classList.toggle("active", state.pillar === "prepress" && state.prepressSub === "k100");
+
+    el.subCompBtn.classList.toggle("active", state.pillar === "convert" && state.convertSub === "compress");
+    el.subImgBtn.classList.toggle("active", state.pillar === "convert" && state.convertSub === "img");
+    el.subImgPdfBtn.classList.toggle("active", state.pillar === "convert" && state.convertSub === "imgpdf");
 
     el.railFilesBox.classList.toggle("hidden", state.docOrder.length === 0);
     el.sidebarUploadBtn.classList.toggle("hidden", state.docOrder.length > 0);
@@ -2158,35 +2554,38 @@
       el.emptyStage.classList.remove("hidden");
       el.spreadViewContainer.classList.add("hidden");
       el.sequenceGrid.classList.add("hidden");
+      el.annotateBoardWrap.classList.add("hidden");
       el.convertViewPanel.classList.add("hidden");
       el.bottomPager.classList.add("hidden");
       el.textFmtBar.classList.add("hidden");
       el.imgFmtBar.classList.add("hidden");
-      el.stageViewport.classList.remove("align-top");
+      el.stageViewport.classList.remove("align-top", "freeform-mode");
       return;
     }
 
     el.emptyStage.classList.add("hidden");
-    el.topStrip.classList.remove("hidden");
-    el.exportBtn.disabled = state.busy;
-
     const isPages = state.pillar === "pages";
     const isPrep = state.pillar === "prepress";
     const isPf = state.pillar === "preflight";
     const isConv = state.pillar === "convert";
+    const isAnn = isAnnotateMode();
+
+    // Top Strip only shows parameters/tools; Convert uses clean center card so hide empty top strip!
+    el.topStrip.classList.toggle("hidden", isConv);
+    el.exportBtn.disabled = state.busy;
 
     el.stripPages.classList.toggle("hidden", !isPages);
     el.stripPrepress.classList.toggle("hidden", !isPrep);
     el.stripPreflight.classList.toggle("hidden", !isPf);
-    el.stripConvert.classList.toggle("hidden", !isConv);
     el.preflightDrawer.classList.toggle("hidden", !isPf);
     el.stripRightGroup.classList.toggle("hidden", isConv);
+    el.annExportPngBtn.classList.toggle("hidden", !isAnn);
+    el.annExportPngBtn.disabled = state.busy;
 
-    // Pillar 1 Sub-controls
-    el.subOrgBtn.classList.toggle("active", state.pagesSub === "organize");
-    el.subTextBtn.classList.toggle("active", state.pagesSub === "text");
+    // Pillar 1 Parameter Controls
     el.orgControls.classList.toggle("hidden", state.pagesSub !== "organize");
     el.textEditControls.classList.toggle("hidden", state.pagesSub !== "text");
+    el.annotateControls.classList.toggle("hidden", state.pagesSub !== "annotate");
 
     const selCount = getSelectedSlots().length;
     el.selNoneBtn.classList.toggle("hidden", selCount === 0);
@@ -2199,10 +2598,15 @@
     el.addTextBtn.classList.toggle("active", state.placingNewText);
     el.editHintLabel.textContent = state.placingNewText ? t("editPlaceHint") : t("editClickHint");
 
-    // Pillar 2 Sub-controls
-    el.subImposeBtn.classList.toggle("active", state.prepressSub === "impose");
-    el.subSplitBtn.classList.toggle("active", state.prepressSub === "split");
-    el.subK100Btn.classList.toggle("active", state.prepressSub === "k100");
+    // Designer Annotation Controls
+    el.annToolBtns.forEach((b) => b.classList.toggle("active", b.dataset.tool === state.annTool));
+    el.annColorDots.forEach((d) => d.classList.toggle("active", d.dataset.color.toLowerCase() === state.annColor.toLowerCase()));
+    el.annColorInput.value = state.annColor;
+    el.annWidthBtns.forEach((w) => w.classList.toggle("active", parseFloat(w.dataset.w) === state.annStrokeW));
+    el.annUndoBtn.classList.toggle("hidden", state.annUndoStack.length === 0);
+    el.annClearBtn.classList.toggle("hidden", state.annotations.length === 0);
+
+    // Pillar 2 Parameter Controls
     el.imposeControls.classList.toggle("hidden", state.prepressSub !== "impose");
     el.splitControls.classList.toggle("hidden", state.prepressSub !== "split");
     el.k100InlineHint.classList.toggle("hidden", state.prepressSub !== "k100");
@@ -2222,10 +2626,7 @@
     el.dirLtrBtn.classList.toggle("active", state.readingDir === "ltr");
     el.dirRtlBtn.classList.toggle("active", state.readingDir === "rtl");
 
-    // Pillar 4 Sub-controls
-    el.subCompBtn.classList.toggle("active", state.convertSub === "compress");
-    el.subImgBtn.classList.toggle("active", state.convertSub === "img");
-    el.subImgPdfBtn.classList.toggle("active", state.convertSub === "imgpdf");
+    // Pillar 4 Cards
     el.panelCompress.classList.toggle("hidden", state.convertSub !== "compress");
     el.panelExportImg.classList.toggle("hidden", state.convertSub !== "img");
     el.panelImgPdf.classList.toggle("hidden", state.convertSub !== "imgpdf");
@@ -2241,7 +2642,10 @@
     const curSlot = state.pages[state.activeSlotIdx];
     const curInfo = getSlotSizeInfo(curSlot);
 
-    if (isPages) {
+    if (isAnn) {
+      el.dimSummaryText.textContent = "";
+      el.exportBtnText.textContent = state.busy ? t("exportingBtn") : t("annExportPdfBtn");
+    } else if (isPages) {
       el.dimSummaryText.textContent = `${curInfo.wMm.toFixed(0)}×${curInfo.hMm.toFixed(0)}mm · ${state.pages.length}${t("pagesUnit")}`;
       el.exportBtnText.textContent = state.busy ? t("exportingBtn") : t("exportMergedBtn", { n: state.pages.length });
     } else if (isPrep && state.prepressSub === "impose") {
@@ -2274,15 +2678,18 @@
     if (!hasPages()) return;
 
     const showOrgGrid = state.pillar === "pages" && state.pagesSub === "organize";
+    const showAnnotate = isAnnotateMode();
     const showSplitGrid = state.pillar === "prepress" && state.prepressSub === "split" && state.splitTab === "sequence";
     const showConvert = state.pillar === "convert";
-    const showCanvas = !showOrgGrid && !showSplitGrid && !showConvert;
+    const showCanvas = !showOrgGrid && !showAnnotate && !showSplitGrid && !showConvert;
 
     el.stageViewport.classList.toggle("align-top", showOrgGrid || showSplitGrid || showConvert);
+    el.stageViewport.classList.toggle("freeform-mode", showAnnotate);
     el.spreadViewContainer.classList.toggle("hidden", !showCanvas);
     el.sequenceGrid.classList.toggle("hidden", !(showOrgGrid || showSplitGrid));
+    el.annotateBoardWrap.classList.toggle("hidden", !showAnnotate);
     el.convertViewPanel.classList.toggle("hidden", !showConvert);
-    el.bottomPager.classList.toggle("hidden", !showCanvas);
+    el.bottomPager.classList.toggle("hidden", !(showCanvas || showAnnotate));
     if (!showCanvas || state.pillar !== "pages" || state.pagesSub !== "text") {
       el.textFmtBar.classList.add("hidden");
       el.imgFmtBar.classList.add("hidden");
@@ -2290,6 +2697,7 @@
 
     if (!rerenderStage) return;
     if (showOrgGrid) renderOrganizeGrid();
+    else if (showAnnotate) renderAnnotateBoard();
     else if (showSplitGrid) renderSplitSequenceGrid();
     else if (showCanvas) renderCanvasStage();
   }
@@ -2497,7 +2905,12 @@
     try {
       const stem = getPrimaryStem();
 
-      if (state.pillar === "pages") {
+      if (isAnnotateMode()) {
+        const prepDoc = await assembleSlotsPdfDoc(state.pages, false);
+        const layout = getAnnotateLayout();
+        const bytes = await window.ShibaAnnotate.exportAnnotatedPdfBytes(prepDoc, layout, state.annotations);
+        triggerDownloadBlob(new Blob([bytes], { type: "application/pdf" }), `${stem}_审稿批注.pdf`);
+      } else if (state.pillar === "pages") {
         const doc = await assembleSlotsPdfDoc(state.pages, false);
         const bytes = await doc.save();
         triggerDownloadBlob(new Blob([bytes], { type: "application/pdf" }), `${stem}.pdf`);
@@ -2542,9 +2955,16 @@
     applyLanguage();
   });
 
-  // Left 4 Pillars
-  function switchPillar(p) {
-    if (state.pillar === p) return;
+  // Left Collapsible Groups & Pillars
+  function toggleOrActivateGroup(p) {
+    if (p in state.openGroups) {
+      if (state.pillar === p) {
+        state.openGroups[p] = !state.openGroups[p];
+        updateTopStripControls();
+        return;
+      }
+      state.openGroups[p] = true;
+    }
     state.pillar = p;
     state.placingNewText = false;
     clearAllContentSelections();
@@ -2552,12 +2972,12 @@
     refreshWorkspace(true);
   }
 
-  el.navPagesBtn.addEventListener("click", () => switchPillar("pages"));
-  el.navPrepressBtn.addEventListener("click", () => switchPillar("prepress"));
-  el.navPreflightBtn.addEventListener("click", () => switchPillar("preflight"));
-  el.navConvertBtn.addEventListener("click", () => switchPillar("convert"));
+  el.navPagesBtn.addEventListener("click", () => toggleOrActivateGroup("pages"));
+  el.navPrepressBtn.addEventListener("click", () => toggleOrActivateGroup("prepress"));
+  el.navPreflightBtn.addEventListener("click", () => toggleOrActivateGroup("preflight"));
+  el.navConvertBtn.addEventListener("click", () => toggleOrActivateGroup("convert"));
 
-  // File Inputs & Global Drag-and-Drop Merge
+  // File Inputs & Global Drag-and-Drop Merge + Visual Drag Feedback
   [el.sidebarUploadBtn, el.addMoreBtn, el.dropzone].forEach((btn) => {
     btn.addEventListener("click", () => el.fileInput.click());
   });
@@ -2574,13 +2994,22 @@
     state.docOrder = [];
     state.pages = [];
     state.undoStack = [];
+    state.annotations = [];
+    state.annUndoStack = [];
     state.bitmapCache.clear();
-    state.selectedTextId = null;
-    state.selectedOrigImgId = null;
-    state.selectedImgEditId = null;
+    clearAllContentSelections();
     state.activePfHighlights = [];
     renderFileList();
     refreshWorkspace(true);
+  });
+
+  window.addEventListener("dragenter", (ev) => {
+    if (state.draggingOrgIdx >= 0) return;
+    if (ev.dataTransfer && Array.from(ev.dataTransfer.types || []).includes("Files")) {
+      state.dragDepth++;
+      el.dragOverlayText.textContent = t("dragDropTitle");
+      el.dragOverlay.classList.remove("hidden");
+    }
   });
 
   window.addEventListener("dragover", (ev) => {
@@ -2591,9 +3020,13 @@
 
   window.addEventListener("dragleave", () => {
     el.dropzone.classList.remove("dragover");
+    state.dragDepth = Math.max(0, state.dragDepth - 1);
+    if (state.dragDepth === 0) el.dragOverlay.classList.add("hidden");
   });
 
   window.addEventListener("drop", (ev) => {
+    state.dragDepth = 0;
+    el.dragOverlay.classList.add("hidden");
     if (state.draggingOrgIdx >= 0) return;
     ev.preventDefault();
     el.dropzone.classList.remove("dragover");
@@ -2612,6 +3045,7 @@
       if (state.pillar !== "pages" || state.pagesSub !== "text") {
         state.pillar = "pages";
         state.pagesSub = "text";
+        state.openGroups.pages = true;
         refreshWorkspace(true);
       }
       state.imgInputMode = hasSelTarget ? "replace" : "add";
@@ -2625,8 +3059,10 @@
     triggerDownloadBlob(blob, "ShibaPDF_Offline_Studio.html");
   });
 
-  // Pillar 1 Sub-tabs & Organize Selection Actions
+  // Pillar 1 Sub-items & Freeform Designer Annotation Interactions
   el.subOrgBtn.addEventListener("click", () => {
+    state.pillar = "pages";
+    state.openGroups.pages = true;
     state.pagesSub = "organize";
     state.placingNewText = false;
     clearAllContentSelections();
@@ -2634,8 +3070,269 @@
   });
 
   el.subTextBtn.addEventListener("click", () => {
+    state.pillar = "pages";
+    state.openGroups.pages = true;
     state.pagesSub = "text";
     refreshWorkspace(true);
+  });
+
+  el.subAnnotateBtn.addEventListener("click", () => {
+    state.pillar = "pages";
+    state.openGroups.pages = true;
+    state.pagesSub = "annotate";
+    state.placingNewText = false;
+    clearAllContentSelections();
+    refreshWorkspace(true);
+  });
+
+  // Annotation Tool Palette Events
+  el.annToolBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.annTool = btn.dataset.tool || "rect";
+      if (state.annTool !== "select") state.selectedAnnId = null;
+      syncAnnotateCursor();
+      redrawAnnotateLayer(null);
+      updateTopStripControls();
+    });
+  });
+
+  el.annColorDots.forEach((dot) => {
+    dot.addEventListener("click", () => {
+      state.annColor = dot.dataset.color || "#e03e3e";
+      if (state.selectedAnnId) {
+        const sel = state.annotations.find((a) => a.id === state.selectedAnnId);
+        if (sel) sel.color = state.annColor;
+        redrawAnnotateLayer(null);
+      }
+      updateTopStripControls();
+    });
+  });
+
+  el.annColorInput.addEventListener("input", () => {
+    state.annColor = el.annColorInput.value;
+    if (state.selectedAnnId) {
+      const sel = state.annotations.find((a) => a.id === state.selectedAnnId);
+      if (sel) sel.color = state.annColor;
+      redrawAnnotateLayer(null);
+    }
+    updateTopStripControls();
+  });
+
+  el.annWidthBtns.forEach((wBtn) => {
+    wBtn.addEventListener("click", () => {
+      state.annStrokeW = parseFloat(wBtn.dataset.w) || 3.5;
+      if (state.selectedAnnId) {
+        const sel = state.annotations.find((a) => a.id === state.selectedAnnId);
+        if (sel && sel.strokeW) sel.strokeW = state.annStrokeW;
+        redrawAnnotateLayer(null);
+      }
+      updateTopStripControls();
+    });
+  });
+
+  el.annUndoBtn.addEventListener("click", () => {
+    if (!state.annUndoStack.length) return;
+    state.annotations = JSON.parse(state.annUndoStack.pop());
+    state.selectedAnnId = null;
+    redrawAnnotateLayer(null);
+    updateTopStripControls();
+  });
+
+  el.annClearBtn.addEventListener("click", () => {
+    if (!state.annotations.length) return;
+    pushAnnUndo();
+    state.annotations = [];
+    state.selectedAnnId = null;
+    redrawAnnotateLayer(null);
+    updateTopStripControls();
+  });
+
+  el.annExportPngBtn.addEventListener("click", async () => {
+    if (!hasPages() || state.busy) return;
+    state.busy = true;
+    updateTopStripControls();
+    try {
+      const layout = getAnnotateLayout();
+      const blob = await window.ShibaAnnotate.exportReviewBoardPngBlob(
+        layout,
+        (sIdx) => getSlotPreviewCanvas(sIdx),
+        state.annotations
+      );
+      triggerDownloadBlob(blob, `${getPrimaryStem()}_审稿批注图.png`);
+    } catch (err) {
+      alert(t("errExportPdf") + (err && err.message ? err.message : String(err)));
+    } finally {
+      state.busy = false;
+      updateTopStripControls();
+    }
+  });
+
+  // Freeform Canvas Pointer Pan / Draw / Select / Note Handler
+  el.annotateBoardWrap.addEventListener("pointerdown", (ev) => {
+    if (!isAnnotateMode() || !hasPages()) return;
+    if (ev.target.closest(".ann-callout-card")) return;
+
+    const wantPan = ev.button === 1 || state.spacePressed || state.annTool === "pan";
+    if (wantPan) {
+      ev.preventDefault();
+      const sx = ev.clientX;
+      const sy = ev.clientY;
+      const ox = state.annPanX;
+      const oy = state.annPanY;
+      syncAnnotateCursor(true);
+      document.body.classList.add("is-dragging-box");
+
+      function onPanMove(mvEv) {
+        state.annPanX = ox + (mvEv.clientX - sx);
+        state.annPanY = oy + (mvEv.clientY - sy);
+        applyAnnotateTransform();
+      }
+      function onPanUp() {
+        window.removeEventListener("pointermove", onPanMove);
+        window.removeEventListener("pointerup", onPanUp);
+        document.body.classList.remove("is-dragging-box");
+        syncAnnotateCursor(false);
+      }
+      window.addEventListener("pointermove", onPanMove);
+      window.addEventListener("pointerup", onPanUp);
+      return;
+    }
+
+    if (ev.button !== 0) return;
+    const startPt = clientToBoardCoords(ev.clientX, ev.clientY);
+
+    if (state.annTool === "note") {
+      ev.preventDefault();
+      pushAnnUndo();
+      const newNote = {
+        id: `ann_${Date.now()}`,
+        type: "note",
+        x: Math.round(startPt.bx),
+        y: Math.round(startPt.by),
+        text: t("annNoteDefault"),
+        color: state.annColor
+      };
+      state.annotations.push(newNote);
+      state.selectedAnnId = newNote.id;
+      redrawAnnotateLayer(null);
+      updateTopStripControls();
+      requestAnimationFrame(() => {
+        const card = el.annotateNotesLayer.querySelector(`.ann-callout-card[data-note-id="${newNote.id}"] .ann-callout-text`);
+        if (card) {
+          card.focus();
+          const sel = window.getSelection();
+          if (sel) {
+            const rng = document.createRange();
+            rng.selectNodeContents(card);
+            sel.removeAllRanges();
+            sel.addRange(rng);
+          }
+        }
+      });
+      return;
+    }
+
+    if (state.annTool === "select") {
+      const hit = window.ShibaAnnotate.hitTestShapes(state.annotations, startPt.bx, startPt.by);
+      if (!hit) {
+        state.selectedAnnId = null;
+        redrawAnnotateLayer(null);
+        return;
+      }
+      state.selectedAnnId = hit.id;
+      redrawAnnotateLayer(null);
+      let lastPt = startPt;
+      let movedAny = false;
+      document.body.classList.add("is-dragging-box");
+
+      function onSelMove(mvEv) {
+        const curPt = clientToBoardCoords(mvEv.clientX, mvEv.clientY);
+        const dx = curPt.bx - lastPt.bx;
+        const dy = curPt.by - lastPt.by;
+        if (!movedAny && Math.hypot(curPt.bx - startPt.bx, curPt.by - startPt.by) > 2) {
+          movedAny = true;
+          pushAnnUndo();
+        }
+        if (movedAny) {
+          window.ShibaAnnotate.moveAnnotation(hit, dx, dy);
+          lastPt = curPt;
+          redrawAnnotateLayer(null);
+        }
+      }
+      function onSelUp() {
+        window.removeEventListener("pointermove", onSelMove);
+        window.removeEventListener("pointerup", onSelUp);
+        document.body.classList.remove("is-dragging-box");
+        updateTopStripControls();
+      }
+      window.addEventListener("pointermove", onSelMove);
+      window.addEventListener("pointerup", onSelUp);
+      return;
+    }
+
+    // Drawing Tools: rect | ellipse | arrow | pen
+    ev.preventDefault();
+    state.selectedAnnId = null;
+    const tool = state.annTool;
+    const penPts = [[startPt.bx, startPt.by]];
+    let liveShape = null;
+
+    function onDrawMove(mvEv) {
+      const curPt = clientToBoardCoords(mvEv.clientX, mvEv.clientY);
+      if (tool === "rect" || tool === "ellipse") {
+        liveShape = {
+          id: "preview",
+          type: tool,
+          x: Math.min(startPt.bx, curPt.bx),
+          y: Math.min(startPt.by, curPt.by),
+          w: Math.abs(curPt.bx - startPt.bx),
+          h: Math.abs(curPt.by - startPt.by),
+          color: state.annColor,
+          strokeW: state.annStrokeW
+        };
+      } else if (tool === "arrow") {
+        liveShape = {
+          id: "preview",
+          type: "arrow",
+          x1: startPt.bx,
+          y1: startPt.by,
+          x2: curPt.bx,
+          y2: curPt.by,
+          color: state.annColor,
+          strokeW: state.annStrokeW
+        };
+      } else if (tool === "pen") {
+        penPts.push([curPt.bx, curPt.by]);
+        liveShape = {
+          id: "preview",
+          type: "pen",
+          pts: penPts,
+          color: state.annColor,
+          strokeW: state.annStrokeW
+        };
+      }
+      redrawAnnotateLayer(liveShape);
+    }
+
+    function onDrawUp() {
+      window.removeEventListener("pointermove", onDrawMove);
+      window.removeEventListener("pointerup", onDrawUp);
+      if (!liveShape) return;
+      const valid =
+        (liveShape.type === "pen" && liveShape.pts.length >= 2) ||
+        (liveShape.type === "arrow" && Math.hypot(liveShape.x2 - liveShape.x1, liveShape.y2 - liveShape.y1) > 6) ||
+        ((liveShape.type === "rect" || liveShape.type === "ellipse") && (liveShape.w > 4 || liveShape.h > 4));
+      if (valid) {
+        pushAnnUndo();
+        liveShape.id = `ann_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
+        state.annotations.push(liveShape);
+      }
+      redrawAnnotateLayer(null);
+      updateTopStripControls();
+    }
+
+    window.addEventListener("pointermove", onDrawMove);
+    window.addEventListener("pointerup", onDrawUp);
   });
 
   el.selAllBtn.addEventListener("click", () => {
@@ -2968,6 +3665,8 @@
   });
 
   el.subImposeBtn.addEventListener("click", () => {
+    state.pillar = "prepress";
+    state.openGroups.prepress = true;
     state.prepressSub = "impose";
     state.activeSheetIdx = 0;
     closeAllPopovers();
@@ -2975,12 +3674,16 @@
   });
 
   el.subSplitBtn.addEventListener("click", () => {
+    state.pillar = "prepress";
+    state.openGroups.prepress = true;
     state.prepressSub = "split";
     closeAllPopovers();
     refreshWorkspace(true);
   });
 
   el.subK100Btn.addEventListener("click", () => {
+    state.pillar = "prepress";
+    state.openGroups.prepress = true;
     state.prepressSub = "k100";
     closeAllPopovers();
     refreshWorkspace(true);
@@ -3137,18 +3840,24 @@
     if (state.splitTab === "spread") updateSplitAndK100Guides();
   });
 
-  // Pillar 4: Convert & Compress Controls
+  // Pillar 4: Convert & Compress Sub-items
   el.subCompBtn.addEventListener("click", () => {
+    state.pillar = "convert";
+    state.openGroups.convert = true;
     state.convertSub = "compress";
     refreshWorkspace(false);
   });
 
   el.subImgBtn.addEventListener("click", () => {
+    state.pillar = "convert";
+    state.openGroups.convert = true;
     state.convertSub = "img";
     refreshWorkspace(false);
   });
 
   el.subImgPdfBtn.addEventListener("click", () => {
+    state.pillar = "convert";
+    state.openGroups.convert = true;
     state.convertSub = "imgpdf";
     refreshWorkspace(false);
   });
@@ -3328,9 +4037,16 @@
     }
   });
 
-  el.zoomOutBtn.addEventListener("click", () => setSmoothZoom(state.zoomFactor / 1.18));
-  el.zoomInBtn.addEventListener("click", () => setSmoothZoom(state.zoomFactor * 1.18));
-  el.zoomFitBtn.addEventListener("click", () => setSmoothZoom(1.0));
+  el.zoomOutBtn.addEventListener("click", () => {
+    setSmoothZoom(isAnnotateMode() ? state.annScale / 1.2 : state.zoomFactor / 1.18);
+  });
+  el.zoomInBtn.addEventListener("click", () => {
+    setSmoothZoom(isAnnotateMode() ? state.annScale * 1.2 : state.zoomFactor * 1.18);
+  });
+  el.zoomFitBtn.addEventListener("click", () => {
+    if (isAnnotateMode()) fitAnnotateBoard();
+    else setSmoothZoom(1.0);
+  });
 
   window.addEventListener("resize", () => {
     if (hasPages() && !el.spreadViewContainer.classList.contains("hidden")) {

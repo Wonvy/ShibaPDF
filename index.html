@@ -445,22 +445,29 @@ svg.lucide {
 }
 
 .top-action-strip {
-  min-height: 58px;
-  padding: 8px 24px;
+  min-height: 54px;
+  padding: 8px 18px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 8px;
   flex-shrink: 0;
   z-index: 25;
 }
 
-.strip-left,
+.strip-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
 .strip-right {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
 }
 
 .soft-pills {
@@ -473,8 +480,12 @@ svg.lucide {
 }
 
 .soft-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   height: 28px;
-  padding: 0 11px;
+  padding: 0 9px;
   border: none;
   border-radius: 7px;
   background: transparent;
@@ -1293,6 +1304,289 @@ svg.lucide {
 
 .hidden { display: none !important; }
 
+/* Collapsible Left-Rail Feature Groups & Sub-Items */
+.rail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.group-chevron {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-3);
+  transition: transform 0.18s ease;
+}
+
+.group-chevron svg.lucide {
+  width: 14px;
+  height: 14px;
+}
+
+.rail-group.open .group-chevron {
+  transform: rotate(180deg);
+}
+
+.rail-sub-list {
+  display: none;
+  flex-direction: column;
+  gap: 2px;
+  margin-left: 29px;
+  padding-left: 12px;
+  border-left: 1.5px solid var(--bg-pill);
+  margin-bottom: 4px;
+}
+
+.rail-group.open .rail-sub-list {
+  display: flex;
+}
+
+.rail-sub-btn {
+  height: 31px;
+  padding: 0 11px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.14s, color 0.14s;
+}
+
+.rail-sub-btn:hover {
+  background: var(--bg-hover);
+  color: var(--text-1);
+}
+
+.rail-sub-btn.active {
+  background: var(--bg-active-card);
+  color: var(--text-1);
+  font-weight: 600;
+  box-shadow: var(--shadow-active);
+}
+
+/* Freeform Infinite Designer Annotation Board */
+.stage-viewport.freeform-mode {
+  padding: 0 !important;
+  overflow: hidden !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
+}
+
+.annotate-board-wrap {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  user-select: none;
+  background-color: var(--bg-canvas);
+  background-image: radial-gradient(var(--scroll-thumb-hover) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.annotate-board-wrap[data-cursor="pan"] { cursor: grab; }
+.annotate-board-wrap[data-cursor="panning"] { cursor: grabbing !important; }
+.annotate-board-wrap[data-cursor="draw"] { cursor: crosshair; }
+.annotate-board-wrap[data-cursor="note"] { cursor: text; }
+.annotate-board-wrap[data-cursor="select"] { cursor: default; }
+
+.annotate-stage-inner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+#annotateBaseCanvas,
+#annotateDrawCanvas {
+  position: absolute;
+  left: 0;
+  top: 0;
+  display: block;
+}
+
+#annotateDrawCanvas {
+  pointer-events: none;
+}
+
+.annotate-notes-layer {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.ann-callout-card {
+  position: absolute;
+  pointer-events: auto;
+  min-width: 96px;
+  max-width: 280px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: var(--bg-surface);
+  color: var(--text-1);
+  border-left: 4px solid #e03e3e;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.14);
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: grab;
+}
+
+.ann-callout-card.selected {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.ann-callout-text {
+  outline: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+  cursor: text;
+}
+
+.ann-callout-del {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: none;
+  background: #e03e3e;
+  color: #ffffff;
+  font-size: 11px;
+  line-height: 18px;
+  text-align: center;
+  cursor: pointer;
+  display: none;
+}
+
+.ann-callout-card:hover .ann-callout-del,
+.ann-callout-card.selected .ann-callout-del {
+  display: block;
+}
+
+.ann-color-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0 4px;
+}
+
+.ann-color-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  transition: transform 0.12s;
+}
+
+.ann-color-dot.active {
+  transform: scale(1.18);
+  box-shadow: 0 0 0 2px var(--bg-canvas), 0 0 0 3.5px var(--text-1);
+}
+
+/* Global Drag-Over & Real-Time PDF Import Progress Overlays */
+.drag-global-overlay {
+  position: absolute;
+  inset: 12px;
+  border-radius: 18px;
+  border: 2px dashed var(--accent);
+  background: rgba(35, 131, 226, 0.08);
+  backdrop-filter: blur(4px);
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.drag-global-card {
+  padding: 14px 24px;
+  border-radius: 12px;
+  background: var(--bg-surface);
+  color: var(--text-1);
+  box-shadow: var(--shadow-popover);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.load-progress-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(16, 16, 16, 0.28);
+  backdrop-filter: blur(5px);
+  z-index: 160;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.load-progress-card {
+  width: 360px;
+  max-width: 90%;
+  padding: 22px 24px;
+  border-radius: 16px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-popover);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.load-progress-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 14px;
+  font-weight: 650;
+  color: var(--text-1);
+}
+
+.load-progress-pct {
+  font-variant-numeric: tabular-nums;
+  color: var(--accent);
+}
+
+.load-progress-file {
+  font-size: 12px;
+  color: var(--text-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.load-progress-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--bg-pill);
+  overflow: hidden;
+}
+
+.load-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: var(--text-1);
+  transition: width 0.12s ease-out;
+}
+
+.load-progress-step {
+  font-size: 11.5px;
+  color: var(--text-3);
+}
+
 @media (max-width: 900px) {
   .workbench { grid-template-columns: 1fr; }
   .workspace-body { flex-direction: column; }
@@ -1322,28 +1616,44 @@ svg.lucide {
         </div>
       </header>
 
-      <nav class="rail-tools" aria-label="PDF Studio Pillars">
-        <!-- Pillar 1: Pages & Edit -->
-        <button id="navPagesBtn" class="big-tool-btn active" type="button">
-          <span class="tool-icon-box"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-square-pen" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /> <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" /> </svg></span>
-          <span class="tool-btn-copy">
-            <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="pillarPages">页面与编辑</span>
+      <nav class="rail-tools" aria-label="PDF Studio Navigation">
+        <!-- Group 1: Pages, Edit & Design Markup -->
+        <div id="grpPages" class="rail-group open">
+          <button id="navPagesBtn" class="big-tool-btn active" type="button">
+            <span class="tool-icon-box"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-square-pen" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /> <path d="M18.375 2.625a1 1 0 0 1 3 3l-9.013 9.014a2 2 0 0 1-.853.505l-2.873.84a.5.5 0 0 1-.62-.62l.84-2.873a2 2 0 0 1 .506-.852z" /> </svg></span>
+            <span class="tool-btn-copy">
+              <span class="tool-btn-title-row">
+                <span class="tool-btn-title" data-i18n="pillarPages">页面与编辑</span>
+                <span class="group-chevron"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-chevron-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m6 9 6 6 6-6" /> </svg></span>
+              </span>
+              <span class="tool-btn-desc" data-i18n="pillarPagesSub">合并提取 · 原位改字 · 设计批注</span>
             </span>
-            <span class="tool-btn-desc" data-i18n="pillarPagesSub">合并提取 · 排序旋转 · 原位改字</span>
-          </span>
-        </button>
+          </button>
+          <div class="rail-sub-list">
+            <button id="subOrgBtn" class="rail-sub-btn active" type="button" data-i18n="navSubOrg">页面管理</button>
+            <button id="subTextBtn" class="rail-sub-btn" type="button" data-i18n="navSubEdit">图文编辑</button>
+            <button id="subAnnotateBtn" class="rail-sub-btn" type="button" data-i18n="navSubAnnotate">设计批注</button>
+          </div>
+        </div>
 
-        <!-- Pillar 2: Prepress & Impose -->
-        <button id="navPrepressBtn" class="big-tool-btn" type="button">
-          <span class="tool-icon-box"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-layers" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /> <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /> <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /> </svg></span>
-          <span class="tool-btn-copy">
-            <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="pillarPrepress">印前与拼版</span>
+        <!-- Group 2: Prepress & Impose -->
+        <div id="grpPrepress" class="rail-group">
+          <button id="navPrepressBtn" class="big-tool-btn" type="button">
+            <span class="tool-icon-box"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-layers" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.08a1 1 0 0 0 0 1.83l8.58 3.91a2 2 0 0 0 1.66 0l8.58-3.9a1 1 0 0 0 0-1.83z" /> <path d="M2 12a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 12" /> <path d="M2 17a1 1 0 0 0 .58.91l8.6 3.91a2 2 0 0 0 1.65 0l8.58-3.9A1 1 0 0 0 22 17" /> </svg></span>
+            <span class="tool-btn-copy">
+              <span class="tool-btn-title-row">
+                <span class="tool-btn-title" data-i18n="pillarPrepress">印前与拼版</span>
+                <span class="group-chevron"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-chevron-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m6 9 6 6 6-6" /> </svg></span>
+              </span>
+              <span class="tool-btn-desc" data-i18n="pillarPrepressSub">骑马钉/多联拼版 · 拆单页 · 单黑</span>
             </span>
-            <span class="tool-btn-desc" data-i18n="pillarPrepressSub">骑马钉/多联拼版 · 拆单页 · 单黑</span>
-          </span>
-        </button>
+          </button>
+          <div class="rail-sub-list">
+            <button id="subImposeBtn" class="rail-sub-btn active" type="button" data-i18n="navSubImpose">印刷拼版</button>
+            <button id="subSplitBtn" class="rail-sub-btn" type="button" data-i18n="navSubSplit">跨页拆单页</button>
+            <button id="subK100Btn" class="rail-sub-btn" type="button" data-i18n="navSubK100">印前单黑 K100</button>
+          </div>
+        </div>
 
         <!-- Pillar 3: Preflight Check -->
         <button id="navPreflightBtn" class="big-tool-btn" type="button">
@@ -1357,16 +1667,24 @@ svg.lucide {
           </span>
         </button>
 
-        <!-- Pillar 4: Convert & Compress -->
-        <button id="navConvertBtn" class="big-tool-btn" type="button">
-          <span class="tool-icon-box"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-sparkles" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /> </svg></span>
-          <span class="tool-btn-copy">
-            <span class="tool-btn-title-row">
-              <span class="tool-btn-title" data-i18n="pillarConvert">转换与压缩</span>
+        <!-- Group 4: Convert & Compress -->
+        <div id="grpConvert" class="rail-group">
+          <button id="navConvertBtn" class="big-tool-btn" type="button">
+            <span class="tool-icon-box"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-sparkles" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z" /> <path d="M20 2v4" /> <path d="M22 4h-4" /> <circle cx="4" cy="20" r="2" /> </svg></span>
+            <span class="tool-btn-copy">
+              <span class="tool-btn-title-row">
+                <span class="tool-btn-title" data-i18n="pillarConvert">转换与压缩</span>
+                <span class="group-chevron"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-chevron-down" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m6 9 6 6 6-6" /> </svg></span>
+              </span>
+              <span class="tool-btn-desc" data-i18n="pillarConvertSub">减小体积 · 导出图片 · 转图版PDF</span>
             </span>
-            <span class="tool-btn-desc" data-i18n="pillarConvertSub">减小体积 · 导出图片 · 转图版PDF</span>
-          </span>
-        </button>
+          </button>
+          <div class="rail-sub-list">
+            <button id="subCompBtn" class="rail-sub-btn active" type="button" data-i18n="navSubCompress">减小 PDF 体积</button>
+            <button id="subImgBtn" class="rail-sub-btn" type="button" data-i18n="navSubExportImg">导出高清图片</button>
+            <button id="subImgPdfBtn" class="rail-sub-btn" type="button" data-i18n="navSubImgPdf">转为图片版 PDF</button>
+          </div>
+        </div>
       </nav>
 
       <div class="rail-footer">
@@ -1405,13 +1723,8 @@ svg.lucide {
       <!-- Progressive Top Action Strip -->
       <header id="topStrip" class="top-action-strip hidden">
         <div class="strip-left">
-          <!-- Pillar 1: Pages & Edit Sub-controls -->
+          <!-- Pillar 1 Parameter & Tool Controls -->
           <div id="stripPages" class="strip-left">
-            <div class="soft-pills">
-              <button id="subOrgBtn" class="soft-pill active" type="button" data-i18n="subOrganize">页面管理 (合并/提取)</button>
-              <button id="subTextBtn" class="soft-pill" type="button" data-i18n="subTextEdit">文字编辑</button>
-            </div>
-
             <!-- Organize sub-controls -->
             <div id="orgControls" class="strip-left">
               <button id="selAllBtn" class="ghost-btn" type="button" data-i18n="selAll">全选</button>
@@ -1453,16 +1766,58 @@ svg.lucide {
               </button>
               <span id="editHintLabel" style="font-size:12px;color:var(--text-3);" data-i18n="editClickHint">点选文字或图片即可修改/拖入替换</span>
             </div>
+
+            <!-- Designer Freeform Annotation Controls -->
+            <div id="annotateControls" class="strip-left hidden">
+              <div class="soft-pills">
+                <button class="soft-pill ann-tool-btn" data-tool="pan" type="button">
+                  <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-hand" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M18 11V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2" /> <path d="M14 10V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v2" /> <path d="M10 10.5V6a2 2 0 0 0-2-2a2 2 0 0 0-2 2v8" /> <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" /> </svg><span data-i18n="annPan">漫游</span>
+                </button>
+                <button class="soft-pill ann-tool-btn" data-tool="select" type="button">
+                  <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-mouse-pointer-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4.037 4.688a.495.495 0 0 1 .651-.651l16 6.5a.5.5 0 0 1-.063.947l-6.124 1.58a2 2 0 0 0-1.438 1.435l-1.579 6.126a.5.5 0 0 1-.947.063z" /> </svg><span data-i18n="annSelect">选择</span>
+                </button>
+                <button class="soft-pill ann-tool-btn active" data-tool="rect" type="button">
+                  <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-square" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" /> </svg><span data-i18n="annRect">框选</span>
+                </button>
+                <button class="soft-pill ann-tool-btn" data-tool="ellipse" type="button">
+                  <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-circle" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> </svg><span data-i18n="annEllipse">圈选</span>
+                </button>
+                <button class="soft-pill ann-tool-btn" data-tool="arrow" type="button">
+                  <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-move-up-right" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M13 5H19V11" /> <path d="M19 5L5 19" /> </svg><span data-i18n="annArrow">箭头</span>
+                </button>
+                <button class="soft-pill ann-tool-btn" data-tool="pen" type="button">
+                  <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-pencil" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> <path d="m15 5 4 4" /> </svg><span data-i18n="annPen">画笔</span>
+                </button>
+                <button class="soft-pill ann-tool-btn" data-tool="note" type="button">
+                  <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-message-square-plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z" /> <path d="M12 8v6" /> <path d="M9 11h6" /> </svg><span data-i18n="annNote">文字批注</span>
+                </button>
+              </div>
+
+              <div class="ann-color-row">
+                <button class="ann-color-dot active" data-color="#e03e3e" style="background:#e03e3e;" type="button" title="Red"></button>
+                <button class="ann-color-dot" data-color="#f59e0b" style="background:#f59e0b;" type="button" title="Amber"></button>
+                <button class="ann-color-dot" data-color="#2383e2" style="background:#2383e2;" type="button" title="Blue"></button>
+                <button class="ann-color-dot" data-color="#10b981" style="background:#10b981;" type="button" title="Green"></button>
+                <input id="annColorInput" class="fmt-color-input" type="color" value="#e03e3e" title="Custom Color" />
+              </div>
+
+              <div class="soft-pills">
+                <button class="soft-pill ann-width-btn" data-w="2" type="button" data-i18n="annStrokeThin">细</button>
+                <button class="soft-pill ann-width-btn active" data-w="3.5" type="button" data-i18n="annStrokeMid">中</button>
+                <button class="soft-pill ann-width-btn" data-w="6" type="button" data-i18n="annStrokeBold">粗</button>
+              </div>
+
+              <button id="annUndoBtn" class="ghost-btn hidden" type="button">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-undo-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M9 14 4 9l5-5" /> <path d="M4 9h10.5a5.5 5.5 0 0 1 5.5 5.5a5.5 5.5 0 0 1-5.5 5.5H11" /> </svg><span data-i18n="undoBtn">撤销</span>
+              </button>
+              <button id="annClearBtn" class="ghost-btn hidden" type="button">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-eraser" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M21 21H8a2 2 0 0 1-1.42-.587l-3.994-3.999a2 2 0 0 1 0-2.828l10-10a2 2 0 0 1 2.829 0l5.999 6a2 2 0 0 1 0 2.828L12.834 21" /> <path d="m5.082 11.09 8.828 8.828" /> </svg><span data-i18n="annClearBtn">清空批注</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Pillar 2: Prepress & Impose Sub-controls -->
+          <!-- Pillar 2 Parameter Controls -->
           <div id="stripPrepress" class="strip-left hidden">
-            <div class="soft-pills">
-              <button id="subImposeBtn" class="soft-pill active" type="button" data-i18n="subImpose">印刷拼版</button>
-              <button id="subSplitBtn" class="soft-pill" type="button" data-i18n="subSplit">跨页拆单页</button>
-              <button id="subK100Btn" class="soft-pill" type="button" data-i18n="subK100">原尺寸转单黑</button>
-            </div>
-
             <!-- Sub: Imposition Controls -->
             <div id="imposeControls" class="strip-left">
               <div class="soft-pills">
@@ -1582,19 +1937,14 @@ svg.lucide {
             <span style="font-size:13.5px;font-weight:600;" data-i18n="preflightReportTitle">印前规范检查</span>
             <div id="pfScorePills" style="display:flex;gap:6px;"></div>
           </div>
-
-          <!-- Pillar 4: Convert & Compress Sub-tabs -->
-          <div id="stripConvert" class="strip-left hidden">
-            <div class="soft-pills">
-              <button id="subCompBtn" class="soft-pill active" type="button" data-i18n="subCompress">减小 PDF 体积</button>
-              <button id="subImgBtn" class="soft-pill" type="button" data-i18n="subExportImg">导出为图片</button>
-              <button id="subImgPdfBtn" class="soft-pill" type="button" data-i18n="subImgPdf">转为图片版 PDF</button>
-            </div>
-          </div>
         </div>
 
         <div id="stripRightGroup" class="strip-right">
           <span id="dimSummaryText" style="font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;"></span>
+          <button id="annExportPngBtn" class="ghost-btn active hidden" type="button">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-image" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /> </svg>
+            <span data-i18n="annExportPngBtn">导出审稿长图</span>
+          </button>
           <button id="exportBtn" class="primary-btn" type="button" disabled>
             <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-download" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 15V3" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> <path d="m7 10 5 5 5-5" /> </svg>
             <span id="exportBtnText" data-i18n="exportPdfBtn">导出 PDF</span>
@@ -1639,6 +1989,15 @@ svg.lucide {
 
           <!-- Grid View (Used by Organize/Merge/Select & Split Overview) -->
           <div id="sequenceGrid" class="clean-grid hidden"></div>
+
+          <!-- Freeform Infinite Pan & Zoom Designer Annotation Artboard -->
+          <div id="annotateBoardWrap" class="annotate-board-wrap hidden">
+            <div id="annotateStageInner" class="annotate-stage-inner">
+              <canvas id="annotateBaseCanvas"></canvas>
+              <canvas id="annotateDrawCanvas"></canvas>
+              <div id="annotateNotesLayer" class="annotate-notes-layer"></div>
+            </div>
+          </div>
 
           <!-- Convert & Compress Panel -->
           <div id="convertViewPanel" class="convert-panel hidden">
@@ -1776,6 +2135,29 @@ svg.lucide {
         </button>
         <button id="zoomInBtn" class="pager-btn" type="button"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M5 12h14" /> <path d="M12 5v14" /> </svg></button>
       </div>
+
+      <!-- Full-Workspace Drag-Over Feedback Overlay -->
+      <div id="dragOverlay" class="drag-global-overlay hidden">
+        <div class="drag-global-card">
+          <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-upload" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> </svg>
+          <span id="dragOverlayText" data-i18n="dragDropTitle">松开鼠标导入或追加合并 PDF</span>
+        </div>
+      </div>
+
+      <!-- Real-Time PDF Import & Parsing Progress Modal -->
+      <div id="loadProgressOverlay" class="load-progress-overlay hidden">
+        <div class="load-progress-card">
+          <div class="load-progress-head">
+            <span id="loadProgressTitle" class="load-progress-title">正在解析文档</span>
+            <span id="loadProgressPct" class="load-progress-pct">0%</span>
+          </div>
+          <div id="loadProgressFile" class="load-progress-file"></div>
+          <div class="load-progress-track">
+            <div id="loadProgressFill" class="load-progress-fill"></div>
+          </div>
+          <div id="loadProgressStep" class="load-progress-step"></div>
+        </div>
+      </div>
     </main>
   </div>
 
@@ -1854,15 +2236,52 @@ window.LUCIDE_SVGS = {"file-text":"<!-- @license lucide-static v1.78.0 - ISC -->
 /* === src/i18n.js === */
 window.SHIBA_I18N = {
   zh: {
-    // 4 Left Big Pillars
+    // Left Collapsible Navigation Groups & Sub-Items
     pillarPages: "页面与编辑",
-    pillarPagesSub: "合并提取 · 原位改字 · 替换图片",
+    pillarPagesSub: "合并提取 · 原位改字 · 设计批注",
     pillarPrepress: "印前与拼版",
     pillarPrepressSub: "骑马钉/多联拼版 · 拆单页 · 单黑",
     pillarPreflight: "印前检查",
     pillarPreflightSub: "8 项规范体检 · 点击定位高亮",
     pillarConvert: "转换与压缩",
     pillarConvertSub: "减小体积 · 导出图片 · 转图版PDF",
+
+    navSubOrg: "页面管理",
+    navSubEdit: "图文编辑",
+    navSubAnnotate: "设计批注",
+    navSubImpose: "印刷拼版",
+    navSubSplit: "跨页拆单页",
+    navSubK100: "印前单黑 K100",
+    navSubCompress: "减小 PDF 体积",
+    navSubExportImg: "导出高清图片",
+    navSubImgPdf: "转为图片版 PDF",
+
+    // Drag & Import Progress
+    dragDropTitle: "松开鼠标导入或追加合并 PDF",
+    dragDropImgTitle: "松开鼠标替换或插入图片",
+    loadModalTitle: "正在解析文档 ({c}/{t})",
+    loadStepRead: "正在读取文件字节...",
+    loadStepPage: "正在解析页面图文 第 {p} / {n} 页...",
+    loadStepPreflight: "正在扫描 8 项印前规范与图像分辨率...",
+    loadStepReady: "即将呈现工作区...",
+
+    // Designer Freeform Annotation Mode
+    annPan: "漫游",
+    annSelect: "选择",
+    annRect: "框选",
+    annEllipse: "圈选",
+    annArrow: "箭头",
+    annPen: "画笔",
+    annNote: "文字批注",
+    annStrokeThin: "细",
+    annStrokeMid: "中",
+    annStrokeBold: "粗",
+    annClearBtn: "清空批注",
+    annExportPngBtn: "导出审稿长图",
+    annExportPdfBtn: "导出批注 PDF",
+    annFitBoard: "适应画板",
+    annNoteDefault: "此处需修改",
+    annHint: "滚轮或空格+拖拽自由漫游画板 · 支持从页外空白拉箭头标注修改意见",
 
     // Sidebar Footer
     secFiles: "已加载文档（可拖入多个合并）",
@@ -2040,13 +2459,48 @@ window.SHIBA_I18N = {
 
   en: {
     pillarPages: "Pages & Edit",
-    pillarPagesSub: "Merge, extract, edit text & images",
+    pillarPagesSub: "Merge, edit text/img & annotate",
     pillarPrepress: "Prepress & Impose",
     pillarPrepressSub: "Booklet/N-up, split & Pure K100",
     pillarPreflight: "Preflight Check",
     pillarPreflightSub: "8-point audit · Click to highlight",
     pillarConvert: "Convert & Compress",
     pillarConvertSub: "Shrink size, export PNG/ZIP & flatten",
+
+    navSubOrg: "Organize & Extract",
+    navSubEdit: "Edit Text & Images",
+    navSubAnnotate: "Design Markup",
+    navSubImpose: "Print Imposition",
+    navSubSplit: "Split Spreads",
+    navSubK100: "Pure K100 Fix",
+    navSubCompress: "Compress PDF",
+    navSubExportImg: "Export Images",
+    navSubImgPdf: "Image-Only PDF",
+
+    dragDropTitle: "Release mouse to open or merge PDFs",
+    dragDropImgTitle: "Release mouse to replace or insert image",
+    loadModalTitle: "Loading PDF ({c}/{t})",
+    loadStepRead: "Reading file bytes...",
+    loadStepPage: "Parsing page {p} / {n}...",
+    loadStepPreflight: "Running 8-point prepress & DPI inspection...",
+    loadStepReady: "Preparing workspace...",
+
+    annPan: "Pan",
+    annSelect: "Select",
+    annRect: "Box",
+    annEllipse: "Circle",
+    annArrow: "Arrow",
+    annPen: "Pen",
+    annNote: "Callout",
+    annStrokeThin: "S",
+    annStrokeMid: "M",
+    annStrokeBold: "L",
+    annClearBtn: "Clear",
+    annExportPngBtn: "Export Review PNG",
+    annExportPdfBtn: "Export Markup PDF",
+    annFitBoard: "Fit Board",
+    annNoteDefault: "Revision note",
+    annHint: "Scroll or Space+Drag to pan board freely · Draw arrows & notes anywhere in margins",
 
     secFiles: "Loaded PDFs (Drop more to merge)",
     addBtn: "Merge",
@@ -3802,6 +4256,495 @@ window.ShibaImageEdit = (function () {
 })();
 
 ;
+/* === src/annotate.js === */
+// Freeform Infinite Pan & Zoom Designer Review & Markup Artboard (Boxes, Circles, Arrows, Freehand Pen, Margin Callouts, PNG & PDF Export)
+window.ShibaAnnotate = (function () {
+  "use strict";
+
+  const PAD = 110; // Generous margin around pages so reviewers can draw arrows & notes outside page bounds!
+  const GAP = 72;
+
+  function hexToRgba(hex, alpha) {
+    const h = (hex || "#e03e3e").replace("#", "");
+    const r = parseInt(h.slice(0, 2), 16) || 224;
+    const g = parseInt(h.slice(2, 4), 16) || 62;
+    const b = parseInt(h.slice(4, 6), 16) || 62;
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function hexToRgb01(hex) {
+    const h = (hex || "#e03e3e").replace("#", "");
+    return {
+      r: (parseInt(h.slice(0, 2), 16) || 224) / 255,
+      g: (parseInt(h.slice(2, 4), 16) || 62) / 255,
+      b: (parseInt(h.slice(4, 6), 16) || 62) / 255
+    };
+  }
+
+  function computeBoardLayout(slots, getSlotSizeInfoFn) {
+    if (!slots.length) return { boardW: 800, boardH: 600, placements: [] };
+    const sizes = slots.map((s) => getSlotSizeInfoFn(s));
+    const s0 = sizes[0];
+    const cols = slots.length >= 2 && s0.wPt <= s0.hPt * 1.15 ? 2 : 1;
+
+    const colWidths = new Array(cols).fill(0);
+    const rowHeights = [];
+    for (let i = 0; i < sizes.length; i++) {
+      const c = i % cols;
+      const r = Math.floor(i / cols);
+      colWidths[c] = Math.max(colWidths[c], sizes[i].wPt);
+      rowHeights[r] = Math.max(rowHeights[r] || 0, sizes[i].hPt);
+    }
+
+    const colX = [PAD];
+    for (let c = 1; c < cols; c++) colX[c] = colX[c - 1] + colWidths[c - 1] + GAP;
+
+    const rowY = [PAD];
+    for (let r = 1; r < rowHeights.length; r++) rowY[r] = rowY[r - 1] + rowHeights[r - 1] + GAP;
+
+    const placements = sizes.map((sz, i) => {
+      const c = i % cols;
+      const r = Math.floor(i / cols);
+      return {
+        slotIdx: i,
+        x: colX[c] + (colWidths[c] - sz.wPt) / 2,
+        y: rowY[r] + (rowHeights[r] - sz.hPt) / 2,
+        w: sz.wPt,
+        h: sz.hPt
+      };
+    });
+
+    const totalW = colX[cols - 1] + colWidths[cols - 1] + PAD;
+    const totalH = rowY[rowHeights.length - 1] + rowHeights[rowHeights.length - 1] + PAD;
+    return { boardW: Math.round(totalW), boardH: Math.round(totalH), placements };
+  }
+
+  function drawArrowOnCtx(ctx, x1, y1, x2, y2, color, strokeW) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = Math.hypot(dx, dy);
+    if (len < 2) return;
+
+    const angle = Math.atan2(dy, dx);
+    const headLen = Math.max(11, strokeW * 3.8);
+    const headAng = Math.PI / 6.2;
+
+    const shaftEndX = x2 - Math.cos(angle) * (headLen * 0.7);
+    const shaftEndY = y2 - Math.sin(angle) * (headLen * 0.7);
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.fillStyle = color;
+    ctx.lineWidth = strokeW;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(shaftEndX, shaftEndY);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(x2, y2);
+    ctx.lineTo(x2 - headLen * Math.cos(angle - headAng), y2 - headLen * Math.sin(angle - headAng));
+    ctx.lineTo(x2 - headLen * Math.cos(angle + headAng), y2 - headLen * Math.sin(angle + headAng));
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function drawSingleAnnotationOnCtx(ctx, ann, isSelected) {
+    const color = ann.color || "#e03e3e";
+    const sw = ann.strokeW || 3.5;
+
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = sw;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    if (ann.type === "rect") {
+      ctx.fillStyle = hexToRgba(color, 0.08);
+      ctx.fillRect(ann.x, ann.y, ann.w, ann.h);
+      ctx.strokeRect(ann.x, ann.y, ann.w, ann.h);
+      if (isSelected) drawSelectionBox(ctx, ann.x, ann.y, ann.w, ann.h);
+    } else if (ann.type === "ellipse") {
+      const cx = ann.x + ann.w / 2;
+      const cy = ann.y + ann.h / 2;
+      ctx.fillStyle = hexToRgba(color, 0.07);
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, Math.max(1, Math.abs(ann.w) / 2), Math.max(1, Math.abs(ann.h) / 2), 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      if (isSelected) drawSelectionBox(ctx, ann.x, ann.y, ann.w, ann.h);
+    } else if (ann.type === "arrow") {
+      drawArrowOnCtx(ctx, ann.x1, ann.y1, ann.x2, ann.y2, color, sw);
+      if (isSelected) {
+        drawHandleDot(ctx, ann.x1, ann.y1);
+        drawHandleDot(ctx, ann.x2, ann.y2);
+      }
+    } else if (ann.type === "pen" && ann.pts && ann.pts.length > 1) {
+      ctx.beginPath();
+      ctx.moveTo(ann.pts[0][0], ann.pts[0][1]);
+      for (let i = 1; i < ann.pts.length - 1; i++) {
+        const mx = (ann.pts[i][0] + ann.pts[i + 1][0]) / 2;
+        const my = (ann.pts[i][1] + ann.pts[i + 1][1]) / 2;
+        ctx.quadraticCurveTo(ann.pts[i][0], ann.pts[i][1], mx, my);
+      }
+      const last = ann.pts[ann.pts.length - 1];
+      ctx.lineTo(last[0], last[1]);
+      ctx.stroke();
+      if (isSelected) {
+        const b = getAnnotationBounds(ann);
+        drawSelectionBox(ctx, b.x, b.y, b.w, b.h);
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawHandleDot(ctx, x, y) {
+    ctx.save();
+    ctx.fillStyle = "#ffffff";
+    ctx.strokeStyle = "#2383e2";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawSelectionBox(ctx, x, y, w, h) {
+    ctx.save();
+    ctx.strokeStyle = "#2383e2";
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.strokeRect(x - 4, y - 4, w + 8, h + 8);
+    ctx.restore();
+  }
+
+  function getAnnotationBounds(ann) {
+    if (ann.type === "rect" || ann.type === "ellipse") {
+      return { x: ann.x, y: ann.y, w: ann.w, h: ann.h };
+    }
+    if (ann.type === "arrow") {
+      const minX = Math.min(ann.x1, ann.x2);
+      const minY = Math.min(ann.y1, ann.y2);
+      return { x: minX, y: minY, w: Math.max(8, Math.abs(ann.x2 - ann.x1)), h: Math.max(8, Math.abs(ann.y2 - ann.y1)) };
+    }
+    if (ann.type === "pen" && ann.pts && ann.pts.length) {
+      let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+      ann.pts.forEach(([px, py]) => {
+        if (px < minX) minX = px;
+        if (py < minY) minY = py;
+        if (px > maxX) maxX = px;
+        if (py > maxY) maxY = py;
+      });
+      return { x: minX, y: minY, w: Math.max(8, maxX - minX), h: Math.max(8, maxY - minY) };
+    }
+    if (ann.type === "note") {
+      const lines = (ann.text || "").split("\n");
+      const maxChars = Math.max(5, ...lines.map((l) => l.length));
+      return { x: ann.x, y: ann.y, w: Math.min(280, maxChars * 14 + 26), h: lines.length * 20 + 16 };
+    }
+    return { x: 0, y: 0, w: 10, h: 10 };
+  }
+
+  function distPointToSeg(px, py, x1, y1, x2, y2) {
+    const l2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);
+    if (l2 === 0) return Math.hypot(px - x1, py - y1);
+    const t = Math.max(0, Math.min(1, ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / l2));
+    return Math.hypot(px - (x1 + t * (x2 - x1)), py - (y1 + t * (y2 - y1)));
+  }
+
+  function hitTestShapes(annotations, bx, by) {
+    for (let i = annotations.length - 1; i >= 0; i--) {
+      const a = annotations[i];
+      if (a.type === "note") continue; // Notes handled by DOM
+      if (a.type === "rect" || a.type === "ellipse") {
+        if (bx >= a.x - 6 && bx <= a.x + a.w + 6 && by >= a.y - 6 && by <= a.y + a.h + 6) return a;
+      } else if (a.type === "arrow") {
+        if (distPointToSeg(bx, by, a.x1, a.y1, a.x2, a.y2) <= 10) return a;
+      } else if (a.type === "pen" && a.pts) {
+        for (let k = 1; k < a.pts.length; k++) {
+          if (distPointToSeg(bx, by, a.pts[k - 1][0], a.pts[k - 1][1], a.pts[k][0], a.pts[k][1]) <= 10) return a;
+        }
+      }
+    }
+    return null;
+  }
+
+  function moveAnnotation(ann, dx, dy) {
+    if (ann.type === "rect" || ann.type === "ellipse" || ann.type === "note") {
+      ann.x += dx;
+      ann.y += dy;
+    } else if (ann.type === "arrow") {
+      ann.x1 += dx;
+      ann.y1 += dy;
+      ann.x2 += dx;
+      ann.y2 += dy;
+    } else if (ann.type === "pen" && ann.pts) {
+      ann.pts = ann.pts.map(([px, py]) => [px + dx, py + dy]);
+    }
+  }
+
+  function drawNoteCalloutOnCanvas(ctx, ann) {
+    const lines = (ann.text || "").split("\n");
+    const fontSpec = '600 13px -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif';
+    ctx.save();
+    ctx.font = fontSpec;
+    let maxW = 64;
+    lines.forEach((l) => {
+      maxW = Math.max(maxW, Math.min(265, ctx.measureText(l || " ").width));
+    });
+    const cardW = maxW + 22;
+    const cardH = lines.length * 19 + 14;
+    const x = ann.x;
+    const y = ann.y;
+
+    ctx.shadowColor = "rgba(0,0,0,0.14)";
+    ctx.shadowBlur = 12;
+    ctx.shadowOffsetY = 3;
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(x, y, cardW, cardH);
+
+    ctx.shadowColor = "transparent";
+    ctx.fillStyle = ann.color || "#e03e3e";
+    ctx.fillRect(x, y, 4, cardH);
+
+    ctx.fillStyle = "#181817";
+    ctx.textBaseline = "top";
+    lines.forEach((ln, idx) => {
+      ctx.fillText(ln, x + 11, y + 7 + idx * 19);
+    });
+    ctx.restore();
+  }
+
+  // Export High-Res Designer Review Board PNG (including pages + margin arrows/notes!)
+  async function exportReviewBoardPngBlob(layout, getSlotPreviewCanvasFn, annotations) {
+    let minX = PAD - 36;
+    let minY = PAD - 36;
+    let maxX = layout.boardW - PAD + 36;
+    let maxY = layout.boardH - PAD + 36;
+
+    annotations.forEach((a) => {
+      const b = getAnnotationBounds(a);
+      minX = Math.min(minX, b.x - 28);
+      minY = Math.min(minY, b.y - 28);
+      maxX = Math.max(maxX, b.x + b.w + 28);
+      maxY = Math.max(maxY, b.y + b.h + 28);
+    });
+
+    const outW = Math.max(200, Math.round(maxX - minX));
+    const outH = Math.max(200, Math.round(maxY - minY));
+    const scale = Math.min(2.0, 4200 / Math.max(outW, outH));
+
+    const cv = document.createElement("canvas");
+    cv.width = Math.round(outW * scale);
+    cv.height = Math.round(outH * scale);
+    const ctx = cv.getContext("2d");
+    ctx.scale(scale, scale);
+
+    ctx.fillStyle = "#f2f2ee";
+    ctx.fillRect(0, 0, outW, outH);
+    ctx.translate(-minX, -minY);
+
+    for (const pl of layout.placements) {
+      ctx.save();
+      ctx.shadowColor = "rgba(15,15,15,0.10)";
+      ctx.shadowBlur = 18;
+      ctx.shadowOffsetY = 6;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(pl.x, pl.y, pl.w, pl.h);
+      ctx.restore();
+
+      const bmp = await getSlotPreviewCanvasFn(pl.slotIdx);
+      ctx.drawImage(bmp, pl.x, pl.y, pl.w, pl.h);
+
+      ctx.fillStyle = "#63625e";
+      ctx.font = '600 11px -apple-system, "PingFang SC", sans-serif';
+      ctx.fillText(`P${pl.slotIdx + 1}`, pl.x, pl.y - 8);
+    }
+
+    annotations.forEach((ann) => {
+      if (ann.type === "note") drawNoteCalloutOnCanvas(ctx, ann);
+      else drawSingleAnnotationOnCtx(ctx, ann, false);
+    });
+
+    return await new Promise((resolve) => cv.toBlob(resolve, "image/png"));
+  }
+
+  // Export Lossless Vector Pages + Vector Boxes/Arrows & Crisp CJK Callouts to PDF!
+  async function exportAnnotatedPdfBytes(preparedSlotsDoc, layout, annotations) {
+    const outDoc = await PDFLib.PDFDocument.create();
+    const srcPages = preparedSlotsDoc.getPages();
+    const embeddedPages = await outDoc.embedPages(srcPages);
+
+    // Assign every annotation to its nearest page placement on the board!
+    const byPage = layout.placements.map(() => []);
+    annotations.forEach((ann) => {
+      const b = getAnnotationBounds(ann);
+      const cx = b.x + b.w / 2;
+      const cy = b.y + b.h / 2;
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      layout.placements.forEach((pl, idx) => {
+        const dx = cx < pl.x ? pl.x - cx : cx > pl.x + pl.w ? cx - (pl.x + pl.w) : 0;
+        const dy = cy < pl.y ? pl.y - cy : cy > pl.y + pl.h ? cy - (pl.y + pl.h) : 0;
+        const d = Math.hypot(dx, dy);
+        if (d < bestDist) {
+          bestDist = d;
+          bestIdx = idx;
+        }
+      });
+      byPage[bestIdx].push(ann);
+    });
+
+    for (let i = 0; i < layout.placements.length; i++) {
+      const pl = layout.placements[i];
+      const pageAnns = byPage[i];
+
+      // Expand PDF sheet bounds automatically if reviewer drew callout notes/arrows outside page margin!
+      let minX = pl.x;
+      let minY = pl.y;
+      let maxX = pl.x + pl.w;
+      let maxY = pl.y + pl.h;
+      pageAnns.forEach((a) => {
+        const b = getAnnotationBounds(a);
+        minX = Math.min(minX, b.x - 18);
+        minY = Math.min(minY, b.y - 18);
+        maxX = Math.max(maxX, b.x + b.w + 18);
+        maxY = Math.max(maxY, b.y + b.h + 18);
+      });
+
+      const sheetW = maxX - minX;
+      const sheetH = maxY - minY;
+      const outPage = outDoc.addPage([sheetW, sheetH]);
+
+      if (sheetW > pl.w + 1 || sheetH > pl.h + 1) {
+        outPage.drawRectangle({ x: 0, y: 0, width: sheetW, height: sheetH, color: PDFLib.rgb(0.95, 0.95, 0.935) });
+        outPage.drawRectangle({
+          x: pl.x - minX,
+          y: sheetH - (pl.y - minY) - pl.h,
+          width: pl.w,
+          height: pl.h,
+          color: PDFLib.rgb(1, 1, 1)
+        });
+      }
+
+      outPage.drawPage(embeddedPages[i], {
+        x: pl.x - minX,
+        y: sheetH - (pl.y - minY) - pl.h,
+        width: pl.w,
+        height: pl.h
+      });
+
+      const toPdfX = (bx) => bx - minX;
+      const toPdfY = (by) => sheetH - (by - minY);
+
+      for (const ann of pageAnns) {
+        const c = hexToRgb01(ann.color || "#e03e3e");
+        const pdfColor = PDFLib.rgb(c.r, c.g, c.b);
+        const sw = ann.strokeW || 3.5;
+
+        if (ann.type === "rect") {
+          outPage.drawRectangle({
+            x: toPdfX(ann.x),
+            y: toPdfY(ann.y + ann.h),
+            width: ann.w,
+            height: ann.h,
+            color: pdfColor,
+            opacity: 0.08,
+            borderColor: pdfColor,
+            borderWidth: sw,
+            borderOpacity: 1
+          });
+        } else if (ann.type === "ellipse") {
+          outPage.drawEllipse({
+            x: toPdfX(ann.x + ann.w / 2),
+            y: toPdfY(ann.y + ann.h / 2),
+            xScale: ann.w / 2,
+            yScale: ann.h / 2,
+            color: pdfColor,
+            opacity: 0.07,
+            borderColor: pdfColor,
+            borderWidth: sw,
+            borderOpacity: 1
+          });
+        } else if (ann.type === "arrow") {
+          const x1 = toPdfX(ann.x1), y1 = toPdfY(ann.y1);
+          const x2 = toPdfX(ann.x2), y2 = toPdfY(ann.y2);
+          const ang = Math.atan2(y2 - y1, x2 - x1);
+          const headLen = Math.max(11, sw * 3.8);
+          const headAng = Math.PI / 6.2;
+          outPage.drawLine({
+            start: { x: x1, y: y1 },
+            end: { x: x2 - Math.cos(ang) * (headLen * 0.5), y: y2 - Math.sin(ang) * (headLen * 0.5) },
+            thickness: sw,
+            color: pdfColor
+          });
+          outPage.drawLine({
+            start: { x: x2, y: y2 },
+            end: { x: x2 - headLen * Math.cos(ang - headAng), y: y2 - headLen * Math.sin(ang - headAng) },
+            thickness: sw,
+            color: pdfColor
+          });
+          outPage.drawLine({
+            start: { x: x2, y: y2 },
+            end: { x: x2 - headLen * Math.cos(ang + headAng), y: y2 - headLen * Math.sin(ang + headAng) },
+            thickness: sw,
+            color: pdfColor
+          });
+        } else if (ann.type === "pen" && ann.pts && ann.pts.length > 1) {
+          for (let k = 1; k < ann.pts.length; k++) {
+            outPage.drawLine({
+              start: { x: toPdfX(ann.pts[k - 1][0]), y: toPdfY(ann.pts[k - 1][1]) },
+              end: { x: toPdfX(ann.pts[k][0]), y: toPdfY(ann.pts[k][1]) },
+              thickness: sw,
+              color: pdfColor
+            });
+          }
+        } else if (ann.type === "note" && ann.text && ann.text.trim()) {
+          // Render callout card at 4x print crispness so full CJK glyphs work offline!
+          const b = getAnnotationBounds(ann);
+          const sc = 4;
+          const nCv = document.createElement("canvas");
+          nCv.width = Math.ceil((b.w + 16) * sc);
+          nCv.height = Math.ceil((b.h + 16) * sc);
+          const nCtx = nCv.getContext("2d");
+          nCtx.scale(sc, sc);
+          drawNoteCalloutOnCanvas(nCtx, { ...ann, x: 4, y: 4 });
+          const bin = atob(nCv.toDataURL("image/png").split(",")[1]);
+          const pngBytes = new Uint8Array(bin.length);
+          for (let m = 0; m < bin.length; m++) pngBytes[m] = bin.charCodeAt(m);
+          const pngEmb = await outDoc.embedPng(pngBytes);
+          const ptW = nCv.width / sc;
+          const ptH = nCv.height / sc;
+          outPage.drawImage(pngEmb, {
+            x: toPdfX(ann.x - 4),
+            y: toPdfY(ann.y - 4 + ptH),
+            width: ptW,
+            height: ptH
+          });
+        }
+      }
+    }
+
+    return await outDoc.save();
+  }
+
+  return {
+    computeBoardLayout,
+    drawSingleAnnotationOnCtx,
+    getAnnotationBounds,
+    hitTestShapes,
+    moveAnnotation,
+    exportReviewBoardPngBlob,
+    exportAnnotatedPdfBytes
+  };
+})();
+
+;
 /* === src/app.js === */
 // ShibaPDF v4 — Unified 4-Pillar Client-Side PDF Studio Controller
 (function () {
@@ -3832,9 +4775,10 @@ window.ShibaImageEdit = (function () {
       localStorage.getItem("shibapdf_theme") ||
       (window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
 
-    // Navigation: 4 Pillars ('pages' | 'prepress' | 'preflight' | 'convert')
+    // Navigation: 4 Collapsible Left Groups ('pages' | 'prepress' | 'preflight' | 'convert')
     pillar: "pages",
-    pagesSub: "organize", // 'organize' | 'text'
+    openGroups: { pages: true, prepress: false, convert: false },
+    pagesSub: "organize", // 'organize' | 'text' | 'annotate'
     prepressSub: "impose", // 'impose' | 'split' | 'k100'
     convertSub: "compress", // 'compress' | 'img' | 'imgpdf'
 
@@ -3854,6 +4798,20 @@ window.ShibaImageEdit = (function () {
     selectedOrigImgId: null,
     selectedImgEditId: null,
     imgInputMode: "replace",
+
+    // Freeform Designer Annotation Board State
+    annotations: [],
+    annUndoStack: [],
+    annTool: "rect", // 'pan' | 'select' | 'rect' | 'ellipse' | 'arrow' | 'pen' | 'note'
+    annColor: "#e03e3e",
+    annStrokeW: 3.5,
+    selectedAnnId: null,
+    annPanX: 48,
+    annPanY: 36,
+    annScale: 0.72,
+    annNeedsFit: true,
+    spacePressed: false,
+    dragDepth: 0,
 
     // Imposition State
     imposeType: "booklet", // 'booklet' | 'spread2up' | 'nup'
@@ -3902,7 +4860,10 @@ window.ShibaImageEdit = (function () {
     iconMoon: document.getElementById("iconMoon"),
     iconSun: document.getElementById("iconSun"),
 
-    // Left 4 Pillars
+    // Left Collapsible Groups & Pillars
+    grpPages: document.getElementById("grpPages"),
+    grpPrepress: document.getElementById("grpPrepress"),
+    grpConvert: document.getElementById("grpConvert"),
     navPagesBtn: document.getElementById("navPagesBtn"),
     navPrepressBtn: document.getElementById("navPrepressBtn"),
     navPreflightBtn: document.getElementById("navPreflightBtn"),
@@ -3918,11 +4879,12 @@ window.ShibaImageEdit = (function () {
     sidebarUploadBtn: document.getElementById("sidebarUploadBtn"),
     downloadOfflineBtn: document.getElementById("downloadOfflineBtn"),
 
-    // Top Action Strip
+    // Top Action Strip & Left Sub-Items
     topStrip: document.getElementById("topStrip"),
     stripPages: document.getElementById("stripPages"),
     subOrgBtn: document.getElementById("subOrgBtn"),
     subTextBtn: document.getElementById("subTextBtn"),
+    subAnnotateBtn: document.getElementById("subAnnotateBtn"),
     orgControls: document.getElementById("orgControls"),
     selAllBtn: document.getElementById("selAllBtn"),
     selNoneBtn: document.getElementById("selNoneBtn"),
@@ -3941,6 +4903,15 @@ window.ShibaImageEdit = (function () {
     deletePageBtn: document.getElementById("deletePageBtn"),
     undoEditBtn: document.getElementById("undoEditBtn"),
     editHintLabel: document.getElementById("editHintLabel"),
+
+    annotateControls: document.getElementById("annotateControls"),
+    annToolBtns: Array.from(document.querySelectorAll(".ann-tool-btn")),
+    annColorDots: Array.from(document.querySelectorAll(".ann-color-dot")),
+    annColorInput: document.getElementById("annColorInput"),
+    annWidthBtns: Array.from(document.querySelectorAll(".ann-width-btn")),
+    annUndoBtn: document.getElementById("annUndoBtn"),
+    annClearBtn: document.getElementById("annClearBtn"),
+    annExportPngBtn: document.getElementById("annExportPngBtn"),
 
     stripPrepress: document.getElementById("stripPrepress"),
     subImposeBtn: document.getElementById("subImposeBtn"),
@@ -4016,6 +4987,20 @@ window.ShibaImageEdit = (function () {
     pfHighlightOverlay: document.getElementById("pfHighlightOverlay"),
     textEditOverlay: document.getElementById("textEditOverlay"),
     sequenceGrid: document.getElementById("sequenceGrid"),
+    annotateBoardWrap: document.getElementById("annotateBoardWrap"),
+    annotateStageInner: document.getElementById("annotateStageInner"),
+    annotateBaseCanvas: document.getElementById("annotateBaseCanvas"),
+    annotateDrawCanvas: document.getElementById("annotateDrawCanvas"),
+    annotateNotesLayer: document.getElementById("annotateNotesLayer"),
+
+    dragOverlay: document.getElementById("dragOverlay"),
+    dragOverlayText: document.getElementById("dragOverlayText"),
+    loadProgressOverlay: document.getElementById("loadProgressOverlay"),
+    loadProgressTitle: document.getElementById("loadProgressTitle"),
+    loadProgressPct: document.getElementById("loadProgressPct"),
+    loadProgressFile: document.getElementById("loadProgressFile"),
+    loadProgressFill: document.getElementById("loadProgressFill"),
+    loadProgressStep: document.getElementById("loadProgressStep"),
 
     // Convert & Compress Cards
     convertViewPanel: document.getElementById("convertViewPanel"),
@@ -4161,12 +5146,33 @@ window.ShibaImageEdit = (function () {
     refreshWorkspace(true);
   }
 
+  function isAnnotateMode() {
+    return state.pillar === "pages" && state.pagesSub === "annotate";
+  }
+
   function updateZoomReadout() {
+    if (isAnnotateMode()) {
+      el.zoomLabel.textContent = `${Math.round(state.annScale * 100)}%`;
+      return;
+    }
     el.zoomLabel.textContent =
       Math.abs(state.zoomFactor - 1.0) < 0.01 ? t("fitZoom") : `${Math.round(state.zoomFactor * 100)}%`;
   }
 
   function setSmoothZoom(newFactor) {
+    if (isAnnotateMode()) {
+      const clampedAnn = Math.min(4.0, Math.max(0.18, newFactor));
+      const wrapRect = el.annotateBoardWrap.getBoundingClientRect();
+      const cx = wrapRect.width / 2;
+      const cy = wrapRect.height / 2;
+      state.annPanX = cx - (cx - state.annPanX) * (clampedAnn / state.annScale);
+      state.annPanY = cy - (cy - state.annPanY) * (clampedAnn / state.annScale);
+      state.annScale = clampedAnn;
+      applyAnnotateTransform();
+      updateZoomReadout();
+      return;
+    }
+
     const clamped = Math.min(4.0, Math.max(0.35, Math.round(newFactor * 100) / 100));
     if (Math.abs(clamped - state.zoomFactor) < 0.005) return;
     state.zoomFactor = clamped;
@@ -4203,6 +5209,28 @@ window.ShibaImageEdit = (function () {
   window.addEventListener(
     "wheel",
     (e) => {
+      if (isAnnotateMode() && hasPages() && !el.annotateBoardWrap.classList.contains("hidden")) {
+        e.preventDefault();
+        e.stopPropagation();
+        const rect = el.annotateBoardWrap.getBoundingClientRect();
+        const mx = e.clientX - rect.left;
+        const my = e.clientY - rect.top;
+        if (e.ctrlKey || e.metaKey) {
+          const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+          const nextSc = Math.min(4.0, Math.max(0.18, state.annScale * factor));
+          state.annPanX = mx - (mx - state.annPanX) * (nextSc / state.annScale);
+          state.annPanY = my - (my - state.annPanY) * (nextSc / state.annScale);
+          state.annScale = nextSc;
+          applyAnnotateTransform();
+          updateZoomReadout();
+        } else {
+          state.annPanX -= e.deltaX;
+          state.annPanY -= e.deltaY;
+          applyAnnotateTransform();
+        }
+        return;
+      }
+
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         e.stopPropagation();
@@ -4215,12 +5243,50 @@ window.ShibaImageEdit = (function () {
   );
 
   window.addEventListener("keydown", (e) => {
+    const activeTag = document.activeElement ? document.activeElement.tagName : "";
+    const inEditable =
+      activeTag === "INPUT" ||
+      activeTag === "TEXTAREA" ||
+      (document.activeElement && document.activeElement.isContentEditable);
+
+    if (e.code === "Space" && !inEditable && isAnnotateMode()) {
+      e.preventDefault();
+      if (!state.spacePressed) {
+        state.spacePressed = true;
+        syncAnnotateCursor();
+      }
+      return;
+    }
+
+    if ((e.key === "Delete" || e.key === "Backspace") && !inEditable && isAnnotateMode() && state.selectedAnnId) {
+      e.preventDefault();
+      pushAnnUndo();
+      state.annotations = state.annotations.filter((a) => a.id !== state.selectedAnnId);
+      state.selectedAnnId = null;
+      redrawAnnotateLayer();
+      updateTopStripControls();
+      return;
+    }
+
     if ((e.ctrlKey || e.metaKey) && (e.key === "=" || e.key === "+" || e.key === "-" || e.key === "_" || e.key === "0")) {
       e.preventDefault();
       if (!hasPages()) return;
+      if (isAnnotateMode()) {
+        if (e.key === "0") fitAnnotateBoard();
+        else if (e.key === "-" || e.key === "_") setSmoothZoom(state.annScale / 1.18);
+        else setSmoothZoom(state.annScale * 1.18);
+        return;
+      }
       if (e.key === "0") setSmoothZoom(1.0);
       else if (e.key === "-" || e.key === "_") setSmoothZoom(state.zoomFactor / 1.18);
       else setSmoothZoom(state.zoomFactor * 1.18);
+    }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (e.code === "Space" && state.spacePressed) {
+      state.spacePressed = false;
+      syncAnnotateCursor();
     }
   });
 
@@ -4229,8 +5295,22 @@ window.ShibaImageEdit = (function () {
   });
 
   // =========================================================================
-  // Loading & Merging Multiple PDFs into Unified Page Workspace
+  // Loading & Merging Multiple PDFs with Smooth Real-Time Progress Modal
   // =========================================================================
+  function nextUiFrame() {
+    return new Promise((resolve) => requestAnimationFrame(() => setTimeout(resolve, 0)));
+  }
+
+  function updateLoadModal(pct, titleStr, fileName, stepStr) {
+    const clamped = Math.max(0, Math.min(100, Math.round(pct)));
+    el.loadProgressOverlay.classList.remove("hidden");
+    el.loadProgressTitle.textContent = titleStr;
+    el.loadProgressPct.textContent = `${clamped}%`;
+    el.loadProgressFile.textContent = fileName || "";
+    el.loadProgressFill.style.width = `${clamped}%`;
+    el.loadProgressStep.textContent = stepStr || "";
+  }
+
   async function loadPdfFiles(fileListObj) {
     const incoming = Array.from(fileListObj).filter(
       (f) => f.name.toLowerCase().endsWith(".pdf") || f.type === "application/pdf"
@@ -4240,51 +5320,83 @@ window.ShibaImageEdit = (function () {
     const wasEmpty = !hasPages();
     if (!wasEmpty) pushUndo();
 
-    for (const file of incoming) {
-      try {
-        const buf = await file.arrayBuffer();
-        const rawBytes = new Uint8Array(buf);
-        const pdfJsDoc = await pdfjsLib.getDocument({ data: rawBytes.slice() }).promise;
-        const origPages = [];
-        const docId = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+    updateLoadModal(2, t("loadModalTitle", { c: 1, t: incoming.length }), incoming[0].name, t("loadStepRead"));
+    await nextUiFrame();
 
-        for (let p = 1; p <= pdfJsDoc.numPages; p++) {
-          const pg = await pdfJsDoc.getPage(p);
-          const vp = pg.getViewport({ scale: 1 });
-          const textSpans = await window.ShibaPrepress.extractPageTextSpans(pdfJsDoc, p);
-          origPages.push({
-            wPt: vp.width,
-            hPt: vp.height,
-            wMm: vp.width / MM_TO_PT,
-            hMm: vp.height / MM_TO_PT,
-            rot: pg.rotate || 0,
-            textSpans
+    try {
+      for (let fIdx = 0; fIdx < incoming.length; fIdx++) {
+        const file = incoming[fIdx];
+        const basePct = (fIdx / incoming.length) * 100;
+        const spanPct = 100 / incoming.length;
+        const modalTitle = t("loadModalTitle", { c: fIdx + 1, t: incoming.length });
+
+        try {
+          updateLoadModal(basePct + spanPct * 0.05, modalTitle, file.name, t("loadStepRead"));
+          await nextUiFrame();
+
+          const buf = await file.arrayBuffer();
+          const rawBytes = new Uint8Array(buf);
+          const pdfJsDoc = await pdfjsLib.getDocument({ data: rawBytes.slice() }).promise;
+          const origPages = [];
+          const docId = `doc_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+          const totalP = pdfJsDoc.numPages;
+          const yieldEvery = totalP > 24 ? 2 : 1;
+
+          for (let p = 1; p <= totalP; p++) {
+            if (p === 1 || p % yieldEvery === 0 || p === totalP) {
+              updateLoadModal(
+                basePct + spanPct * (0.10 + 0.65 * (p / totalP)),
+                modalTitle,
+                file.name,
+                t("loadStepPage", { p, n: totalP })
+              );
+              await nextUiFrame();
+            }
+            const pg = await pdfJsDoc.getPage(p);
+            const vp = pg.getViewport({ scale: 1 });
+            const textSpans = await window.ShibaPrepress.extractPageTextSpans(pdfJsDoc, p);
+            origPages.push({
+              wPt: vp.width,
+              hPt: vp.height,
+              wMm: vp.width / MM_TO_PT,
+              hMm: vp.height / MM_TO_PT,
+              rot: pg.rotate || 0,
+              textSpans
+            });
+            state.pages.push({
+              uid: `slot_${docId}_${p}_${Math.random().toString(36).slice(2, 6)}`,
+              docId,
+              origIdx: p - 1,
+              extraRot: 0,
+              selected: false,
+              edits: [],
+              imgEdits: []
+            });
+          }
+
+          updateLoadModal(basePct + spanPct * 0.82, modalTitle, file.name, t("loadStepPreflight"));
+          await nextUiFrame();
+
+          const preflight = await window.ShibaPrepress.runPrepressPreflight(rawBytes, pdfJsDoc, origPages);
+          state.sourceDocs.set(docId, {
+            id: docId,
+            name: file.name,
+            size: file.size,
+            rawBytes,
+            pdfJsDoc,
+            origPages,
+            preflight
           });
-          state.pages.push({
-            uid: `slot_${docId}_${p}_${Math.random().toString(36).slice(2, 6)}`,
-            docId,
-            origIdx: p - 1,
-            extraRot: 0,
-            selected: false,
-            edits: [],
-            imgEdits: []
-          });
+          state.docOrder.push(docId);
+        } catch (err) {
+          alert(t("errLoadPdf") + (err && err.message ? err.message : String(err)));
         }
-
-        const preflight = await window.ShibaPrepress.runPrepressPreflight(rawBytes, pdfJsDoc, origPages);
-        state.sourceDocs.set(docId, {
-          id: docId,
-          name: file.name,
-          size: file.size,
-          rawBytes,
-          pdfJsDoc,
-          origPages,
-          preflight
-        });
-        state.docOrder.push(docId);
-      } catch (err) {
-        alert(t("errLoadPdf") + (err && err.message ? err.message : String(err)));
       }
+
+      updateLoadModal(100, t("loadModalTitle", { c: incoming.length, t: incoming.length }), incoming[incoming.length - 1].name, t("loadStepReady"));
+      await nextUiFrame();
+    } finally {
+      el.loadProgressOverlay.classList.add("hidden");
     }
 
     if (wasEmpty) {
@@ -4292,6 +5404,7 @@ window.ShibaImageEdit = (function () {
       state.activeSheetIdx = 0;
       state.zoomFactor = 1.0;
     }
+    state.annNeedsFit = true;
     state.selectedTextId = null;
     state.selectedOrigImgId = null;
     state.selectedImgEditId = null;
@@ -5929,9 +7042,216 @@ window.ShibaImageEdit = (function () {
   }
 
   // =========================================================================
+  // Freeform Infinite Pan & Zoom Designer Annotation Artboard Controller
+  // =========================================================================
+  function getAnnotateLayout() {
+    return window.ShibaAnnotate.computeBoardLayout(state.pages, getSlotSizeInfo);
+  }
+
+  function pushAnnUndo() {
+    state.annUndoStack.push(JSON.stringify(state.annotations));
+    if (state.annUndoStack.length > 35) state.annUndoStack.shift();
+  }
+
+  function syncAnnotateCursor(isDraggingNow) {
+    if (!el.annotateBoardWrap) return;
+    if (isDraggingNow) {
+      el.annotateBoardWrap.setAttribute("data-cursor", "panning");
+      return;
+    }
+    if (state.spacePressed || state.annTool === "pan") el.annotateBoardWrap.setAttribute("data-cursor", "pan");
+    else if (state.annTool === "select") el.annotateBoardWrap.setAttribute("data-cursor", "select");
+    else if (state.annTool === "note") el.annotateBoardWrap.setAttribute("data-cursor", "note");
+    else el.annotateBoardWrap.setAttribute("data-cursor", "draw");
+  }
+
+  function applyAnnotateTransform() {
+    el.annotateStageInner.style.transform = `translate3d(${Math.round(state.annPanX)}px, ${Math.round(state.annPanY)}px, 0) scale(${state.annScale})`;
+  }
+
+  function fitAnnotateBoard() {
+    if (!hasPages()) return;
+    const layout = getAnnotateLayout();
+    const vw = Math.max(320, el.annotateBoardWrap.clientWidth || el.stageViewport.clientWidth);
+    const vh = Math.max(260, el.annotateBoardWrap.clientHeight || el.stageViewport.clientHeight);
+    const fitSc = Math.min(1.15, (vw - 48) / Math.max(1, layout.boardW), (vh - 64) / Math.max(1, layout.boardH));
+    state.annScale = Math.max(0.22, Math.round(fitSc * 100) / 100);
+    state.annPanX = (vw - layout.boardW * state.annScale) / 2;
+    state.annPanY = Math.max(18, (vh - layout.boardH * state.annScale) / 2);
+    state.annNeedsFit = false;
+    applyAnnotateTransform();
+    updateZoomReadout();
+  }
+
+  function clientToBoardCoords(clientX, clientY) {
+    const rect = el.annotateBoardWrap.getBoundingClientRect();
+    return {
+      bx: (clientX - rect.left - state.annPanX) / state.annScale,
+      by: (clientY - rect.top - state.annPanY) / state.annScale
+    };
+  }
+
+  async function renderAnnotateBoard() {
+    if (!hasPages() || !isAnnotateMode()) return;
+    const myToken = ++state.renderToken;
+    const layout = getAnnotateLayout();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    el.annotateStageInner.style.width = `${layout.boardW}px`;
+    el.annotateStageInner.style.height = `${layout.boardH}px`;
+
+    [el.annotateBaseCanvas, el.annotateDrawCanvas].forEach((cv) => {
+      cv.width = Math.max(1, Math.round(layout.boardW * dpr));
+      cv.height = Math.max(1, Math.round(layout.boardH * dpr));
+      cv.style.width = `${layout.boardW}px`;
+      cv.style.height = `${layout.boardH}px`;
+    });
+
+    if (state.annNeedsFit) fitAnnotateBoard();
+    else applyAnnotateTransform();
+
+    const ctx = el.annotateBaseCanvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, layout.boardW, layout.boardH);
+
+    for (const pl of layout.placements) {
+      if (myToken !== state.renderToken) return;
+      ctx.save();
+      ctx.shadowColor = "rgba(15,15,15,0.14)";
+      ctx.shadowBlur = 22;
+      ctx.shadowOffsetY = 6;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(pl.x, pl.y, pl.w, pl.h);
+      ctx.restore();
+
+      const bmp = await getSlotPreviewCanvas(pl.slotIdx);
+      if (myToken !== state.renderToken) return;
+      ctx.drawImage(bmp, pl.x, pl.y, pl.w, pl.h);
+
+      ctx.fillStyle = state.theme === "dark" ? "#9d9d9a" : "#63625e";
+      ctx.font = '600 12px -apple-system, "PingFang SC", sans-serif';
+      ctx.fillText(`P${pl.slotIdx + 1}`, pl.x, pl.y - 10);
+    }
+
+    syncAnnotateCursor();
+    redrawAnnotateLayer(null);
+    updatePagerUI();
+  }
+
+  function redrawAnnotateLayer(previewShape) {
+    if (!isAnnotateMode() || !hasPages()) return;
+    const layout = getAnnotateLayout();
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const ctx = el.annotateDrawCanvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, layout.boardW, layout.boardH);
+
+    state.annotations.forEach((ann) => {
+      if (ann.type !== "note") {
+        window.ShibaAnnotate.drawSingleAnnotationOnCtx(ctx, ann, state.selectedAnnId === ann.id);
+      }
+    });
+
+    if (previewShape) {
+      window.ShibaAnnotate.drawSingleAnnotationOnCtx(ctx, previewShape, false);
+    }
+
+    // Sync Callout Note DOM Cards
+    el.annotateNotesLayer.innerHTML = "";
+    state.annotations
+      .filter((a) => a.type === "note")
+      .forEach((ann) => {
+        const card = document.createElement("div");
+        card.className = "ann-callout-card" + (state.selectedAnnId === ann.id ? " selected" : "");
+        card.dataset.noteId = ann.id;
+        card.style.left = `${ann.x}px`;
+        card.style.top = `${ann.y}px`;
+        card.style.borderLeftColor = ann.color || "#e03e3e";
+
+        const txt = document.createElement("div");
+        txt.className = "ann-callout-text";
+        txt.contentEditable = "true";
+        txt.spellcheck = false;
+        txt.textContent = ann.text;
+        txt.addEventListener("input", () => {
+          ann.text = txt.innerText;
+        });
+        txt.addEventListener("pointerdown", (ev) => {
+          state.selectedAnnId = ann.id;
+          ev.stopPropagation();
+        });
+
+        const del = document.createElement("button");
+        del.className = "ann-callout-del";
+        del.type = "button";
+        del.textContent = "×";
+        del.addEventListener("pointerdown", (ev) => ev.stopPropagation());
+        del.addEventListener("click", (ev) => {
+          ev.stopPropagation();
+          pushAnnUndo();
+          state.annotations = state.annotations.filter((x) => x.id !== ann.id);
+          if (state.selectedAnnId === ann.id) state.selectedAnnId = null;
+          redrawAnnotateLayer(null);
+          updateTopStripControls();
+        });
+
+        card.addEventListener("pointerdown", (ev) => {
+          if (ev.target === txt || ev.target === del) return;
+          ev.preventDefault();
+          ev.stopPropagation();
+          state.selectedAnnId = ann.id;
+          const sPt = clientToBoardCoords(ev.clientX, ev.clientY);
+          const ox = ann.x;
+          const oy = ann.y;
+          let moved = false;
+          document.body.classList.add("is-dragging-box");
+
+          function onMv(mvEv) {
+            const cPt = clientToBoardCoords(mvEv.clientX, mvEv.clientY);
+            const dx = cPt.bx - sPt.bx;
+            const dy = cPt.by - sPt.by;
+            if (!moved && Math.hypot(dx, dy) > 2) {
+              moved = true;
+              pushAnnUndo();
+            }
+            if (moved) {
+              ann.x = ox + dx;
+              ann.y = oy + dy;
+              card.style.left = `${ann.x}px`;
+              card.style.top = `${ann.y}px`;
+            }
+          }
+
+          function onUp() {
+            window.removeEventListener("pointermove", onMv);
+            window.removeEventListener("pointerup", onUp);
+            document.body.classList.remove("is-dragging-box");
+            updateTopStripControls();
+          }
+
+          window.addEventListener("pointermove", onMv);
+          window.addEventListener("pointerup", onUp);
+        });
+
+        card.appendChild(txt);
+        card.appendChild(del);
+        el.annotateNotesLayer.appendChild(card);
+      });
+  }
+
+  // =========================================================================
   // Master Progressive Workspace Synchronizer
   // =========================================================================
   function updatePagerUI() {
+    if (isAnnotateMode()) {
+      el.pageIndicator.textContent = `${state.pages.length}${t("pagesUnit")}`;
+      el.prevSpreadBtn.classList.add("hidden");
+      el.nextSpreadBtn.classList.add("hidden");
+      updateZoomReadout();
+      return;
+    }
+    el.prevSpreadBtn.classList.remove("hidden");
+    el.nextSpreadBtn.classList.remove("hidden");
     if (isImposeMode()) {
       const plan = getCurrentImpositionPlan();
       const total = Math.max(1, plan.sheets.length);
@@ -5944,14 +7264,33 @@ window.ShibaImageEdit = (function () {
       el.prevSpreadBtn.disabled = state.activeSlotIdx <= 0;
       el.nextSpreadBtn.disabled = state.activeSlotIdx >= total - 1;
     }
+    updateZoomReadout();
   }
 
   function updateTopStripControls() {
     const loaded = hasPages();
+
+    // Sync Left-Rail Collapsible Groups & Sub-Items
+    el.grpPages.classList.toggle("open", Boolean(state.openGroups.pages));
+    el.grpPrepress.classList.toggle("open", Boolean(state.openGroups.prepress));
+    el.grpConvert.classList.toggle("open", Boolean(state.openGroups.convert));
+
     el.navPagesBtn.classList.toggle("active", state.pillar === "pages");
     el.navPrepressBtn.classList.toggle("active", state.pillar === "prepress");
     el.navPreflightBtn.classList.toggle("active", state.pillar === "preflight");
     el.navConvertBtn.classList.toggle("active", state.pillar === "convert");
+
+    el.subOrgBtn.classList.toggle("active", state.pillar === "pages" && state.pagesSub === "organize");
+    el.subTextBtn.classList.toggle("active", state.pillar === "pages" && state.pagesSub === "text");
+    el.subAnnotateBtn.classList.toggle("active", state.pillar === "pages" && state.pagesSub === "annotate");
+
+    el.subImposeBtn.classList.toggle("active", state.pillar === "prepress" && state.prepressSub === "impose");
+    el.subSplitBtn.classList.toggle("active", state.pillar === "prepress" && state.prepressSub === "split");
+    el.subK100Btn.classList.toggle("active", state.pillar === "prepress" && state.prepressSub === "k100");
+
+    el.subCompBtn.classList.toggle("active", state.pillar === "convert" && state.convertSub === "compress");
+    el.subImgBtn.classList.toggle("active", state.pillar === "convert" && state.convertSub === "img");
+    el.subImgPdfBtn.classList.toggle("active", state.pillar === "convert" && state.convertSub === "imgpdf");
 
     el.railFilesBox.classList.toggle("hidden", state.docOrder.length === 0);
     el.sidebarUploadBtn.classList.toggle("hidden", state.docOrder.length > 0);
@@ -5963,35 +7302,38 @@ window.ShibaImageEdit = (function () {
       el.emptyStage.classList.remove("hidden");
       el.spreadViewContainer.classList.add("hidden");
       el.sequenceGrid.classList.add("hidden");
+      el.annotateBoardWrap.classList.add("hidden");
       el.convertViewPanel.classList.add("hidden");
       el.bottomPager.classList.add("hidden");
       el.textFmtBar.classList.add("hidden");
       el.imgFmtBar.classList.add("hidden");
-      el.stageViewport.classList.remove("align-top");
+      el.stageViewport.classList.remove("align-top", "freeform-mode");
       return;
     }
 
     el.emptyStage.classList.add("hidden");
-    el.topStrip.classList.remove("hidden");
-    el.exportBtn.disabled = state.busy;
-
     const isPages = state.pillar === "pages";
     const isPrep = state.pillar === "prepress";
     const isPf = state.pillar === "preflight";
     const isConv = state.pillar === "convert";
+    const isAnn = isAnnotateMode();
+
+    // Top Strip only shows parameters/tools; Convert uses clean center card so hide empty top strip!
+    el.topStrip.classList.toggle("hidden", isConv);
+    el.exportBtn.disabled = state.busy;
 
     el.stripPages.classList.toggle("hidden", !isPages);
     el.stripPrepress.classList.toggle("hidden", !isPrep);
     el.stripPreflight.classList.toggle("hidden", !isPf);
-    el.stripConvert.classList.toggle("hidden", !isConv);
     el.preflightDrawer.classList.toggle("hidden", !isPf);
     el.stripRightGroup.classList.toggle("hidden", isConv);
+    el.annExportPngBtn.classList.toggle("hidden", !isAnn);
+    el.annExportPngBtn.disabled = state.busy;
 
-    // Pillar 1 Sub-controls
-    el.subOrgBtn.classList.toggle("active", state.pagesSub === "organize");
-    el.subTextBtn.classList.toggle("active", state.pagesSub === "text");
+    // Pillar 1 Parameter Controls
     el.orgControls.classList.toggle("hidden", state.pagesSub !== "organize");
     el.textEditControls.classList.toggle("hidden", state.pagesSub !== "text");
+    el.annotateControls.classList.toggle("hidden", state.pagesSub !== "annotate");
 
     const selCount = getSelectedSlots().length;
     el.selNoneBtn.classList.toggle("hidden", selCount === 0);
@@ -6004,10 +7346,15 @@ window.ShibaImageEdit = (function () {
     el.addTextBtn.classList.toggle("active", state.placingNewText);
     el.editHintLabel.textContent = state.placingNewText ? t("editPlaceHint") : t("editClickHint");
 
-    // Pillar 2 Sub-controls
-    el.subImposeBtn.classList.toggle("active", state.prepressSub === "impose");
-    el.subSplitBtn.classList.toggle("active", state.prepressSub === "split");
-    el.subK100Btn.classList.toggle("active", state.prepressSub === "k100");
+    // Designer Annotation Controls
+    el.annToolBtns.forEach((b) => b.classList.toggle("active", b.dataset.tool === state.annTool));
+    el.annColorDots.forEach((d) => d.classList.toggle("active", d.dataset.color.toLowerCase() === state.annColor.toLowerCase()));
+    el.annColorInput.value = state.annColor;
+    el.annWidthBtns.forEach((w) => w.classList.toggle("active", parseFloat(w.dataset.w) === state.annStrokeW));
+    el.annUndoBtn.classList.toggle("hidden", state.annUndoStack.length === 0);
+    el.annClearBtn.classList.toggle("hidden", state.annotations.length === 0);
+
+    // Pillar 2 Parameter Controls
     el.imposeControls.classList.toggle("hidden", state.prepressSub !== "impose");
     el.splitControls.classList.toggle("hidden", state.prepressSub !== "split");
     el.k100InlineHint.classList.toggle("hidden", state.prepressSub !== "k100");
@@ -6027,10 +7374,7 @@ window.ShibaImageEdit = (function () {
     el.dirLtrBtn.classList.toggle("active", state.readingDir === "ltr");
     el.dirRtlBtn.classList.toggle("active", state.readingDir === "rtl");
 
-    // Pillar 4 Sub-controls
-    el.subCompBtn.classList.toggle("active", state.convertSub === "compress");
-    el.subImgBtn.classList.toggle("active", state.convertSub === "img");
-    el.subImgPdfBtn.classList.toggle("active", state.convertSub === "imgpdf");
+    // Pillar 4 Cards
     el.panelCompress.classList.toggle("hidden", state.convertSub !== "compress");
     el.panelExportImg.classList.toggle("hidden", state.convertSub !== "img");
     el.panelImgPdf.classList.toggle("hidden", state.convertSub !== "imgpdf");
@@ -6046,7 +7390,10 @@ window.ShibaImageEdit = (function () {
     const curSlot = state.pages[state.activeSlotIdx];
     const curInfo = getSlotSizeInfo(curSlot);
 
-    if (isPages) {
+    if (isAnn) {
+      el.dimSummaryText.textContent = "";
+      el.exportBtnText.textContent = state.busy ? t("exportingBtn") : t("annExportPdfBtn");
+    } else if (isPages) {
       el.dimSummaryText.textContent = `${curInfo.wMm.toFixed(0)}×${curInfo.hMm.toFixed(0)}mm · ${state.pages.length}${t("pagesUnit")}`;
       el.exportBtnText.textContent = state.busy ? t("exportingBtn") : t("exportMergedBtn", { n: state.pages.length });
     } else if (isPrep && state.prepressSub === "impose") {
@@ -6079,15 +7426,18 @@ window.ShibaImageEdit = (function () {
     if (!hasPages()) return;
 
     const showOrgGrid = state.pillar === "pages" && state.pagesSub === "organize";
+    const showAnnotate = isAnnotateMode();
     const showSplitGrid = state.pillar === "prepress" && state.prepressSub === "split" && state.splitTab === "sequence";
     const showConvert = state.pillar === "convert";
-    const showCanvas = !showOrgGrid && !showSplitGrid && !showConvert;
+    const showCanvas = !showOrgGrid && !showAnnotate && !showSplitGrid && !showConvert;
 
     el.stageViewport.classList.toggle("align-top", showOrgGrid || showSplitGrid || showConvert);
+    el.stageViewport.classList.toggle("freeform-mode", showAnnotate);
     el.spreadViewContainer.classList.toggle("hidden", !showCanvas);
     el.sequenceGrid.classList.toggle("hidden", !(showOrgGrid || showSplitGrid));
+    el.annotateBoardWrap.classList.toggle("hidden", !showAnnotate);
     el.convertViewPanel.classList.toggle("hidden", !showConvert);
-    el.bottomPager.classList.toggle("hidden", !showCanvas);
+    el.bottomPager.classList.toggle("hidden", !(showCanvas || showAnnotate));
     if (!showCanvas || state.pillar !== "pages" || state.pagesSub !== "text") {
       el.textFmtBar.classList.add("hidden");
       el.imgFmtBar.classList.add("hidden");
@@ -6095,6 +7445,7 @@ window.ShibaImageEdit = (function () {
 
     if (!rerenderStage) return;
     if (showOrgGrid) renderOrganizeGrid();
+    else if (showAnnotate) renderAnnotateBoard();
     else if (showSplitGrid) renderSplitSequenceGrid();
     else if (showCanvas) renderCanvasStage();
   }
@@ -6302,7 +7653,12 @@ window.ShibaImageEdit = (function () {
     try {
       const stem = getPrimaryStem();
 
-      if (state.pillar === "pages") {
+      if (isAnnotateMode()) {
+        const prepDoc = await assembleSlotsPdfDoc(state.pages, false);
+        const layout = getAnnotateLayout();
+        const bytes = await window.ShibaAnnotate.exportAnnotatedPdfBytes(prepDoc, layout, state.annotations);
+        triggerDownloadBlob(new Blob([bytes], { type: "application/pdf" }), `${stem}_审稿批注.pdf`);
+      } else if (state.pillar === "pages") {
         const doc = await assembleSlotsPdfDoc(state.pages, false);
         const bytes = await doc.save();
         triggerDownloadBlob(new Blob([bytes], { type: "application/pdf" }), `${stem}.pdf`);
@@ -6347,9 +7703,16 @@ window.ShibaImageEdit = (function () {
     applyLanguage();
   });
 
-  // Left 4 Pillars
-  function switchPillar(p) {
-    if (state.pillar === p) return;
+  // Left Collapsible Groups & Pillars
+  function toggleOrActivateGroup(p) {
+    if (p in state.openGroups) {
+      if (state.pillar === p) {
+        state.openGroups[p] = !state.openGroups[p];
+        updateTopStripControls();
+        return;
+      }
+      state.openGroups[p] = true;
+    }
     state.pillar = p;
     state.placingNewText = false;
     clearAllContentSelections();
@@ -6357,12 +7720,12 @@ window.ShibaImageEdit = (function () {
     refreshWorkspace(true);
   }
 
-  el.navPagesBtn.addEventListener("click", () => switchPillar("pages"));
-  el.navPrepressBtn.addEventListener("click", () => switchPillar("prepress"));
-  el.navPreflightBtn.addEventListener("click", () => switchPillar("preflight"));
-  el.navConvertBtn.addEventListener("click", () => switchPillar("convert"));
+  el.navPagesBtn.addEventListener("click", () => toggleOrActivateGroup("pages"));
+  el.navPrepressBtn.addEventListener("click", () => toggleOrActivateGroup("prepress"));
+  el.navPreflightBtn.addEventListener("click", () => toggleOrActivateGroup("preflight"));
+  el.navConvertBtn.addEventListener("click", () => toggleOrActivateGroup("convert"));
 
-  // File Inputs & Global Drag-and-Drop Merge
+  // File Inputs & Global Drag-and-Drop Merge + Visual Drag Feedback
   [el.sidebarUploadBtn, el.addMoreBtn, el.dropzone].forEach((btn) => {
     btn.addEventListener("click", () => el.fileInput.click());
   });
@@ -6379,13 +7742,22 @@ window.ShibaImageEdit = (function () {
     state.docOrder = [];
     state.pages = [];
     state.undoStack = [];
+    state.annotations = [];
+    state.annUndoStack = [];
     state.bitmapCache.clear();
-    state.selectedTextId = null;
-    state.selectedOrigImgId = null;
-    state.selectedImgEditId = null;
+    clearAllContentSelections();
     state.activePfHighlights = [];
     renderFileList();
     refreshWorkspace(true);
+  });
+
+  window.addEventListener("dragenter", (ev) => {
+    if (state.draggingOrgIdx >= 0) return;
+    if (ev.dataTransfer && Array.from(ev.dataTransfer.types || []).includes("Files")) {
+      state.dragDepth++;
+      el.dragOverlayText.textContent = t("dragDropTitle");
+      el.dragOverlay.classList.remove("hidden");
+    }
   });
 
   window.addEventListener("dragover", (ev) => {
@@ -6396,9 +7768,13 @@ window.ShibaImageEdit = (function () {
 
   window.addEventListener("dragleave", () => {
     el.dropzone.classList.remove("dragover");
+    state.dragDepth = Math.max(0, state.dragDepth - 1);
+    if (state.dragDepth === 0) el.dragOverlay.classList.add("hidden");
   });
 
   window.addEventListener("drop", (ev) => {
+    state.dragDepth = 0;
+    el.dragOverlay.classList.add("hidden");
     if (state.draggingOrgIdx >= 0) return;
     ev.preventDefault();
     el.dropzone.classList.remove("dragover");
@@ -6417,6 +7793,7 @@ window.ShibaImageEdit = (function () {
       if (state.pillar !== "pages" || state.pagesSub !== "text") {
         state.pillar = "pages";
         state.pagesSub = "text";
+        state.openGroups.pages = true;
         refreshWorkspace(true);
       }
       state.imgInputMode = hasSelTarget ? "replace" : "add";
@@ -6430,8 +7807,10 @@ window.ShibaImageEdit = (function () {
     triggerDownloadBlob(blob, "ShibaPDF_Offline_Studio.html");
   });
 
-  // Pillar 1 Sub-tabs & Organize Selection Actions
+  // Pillar 1 Sub-items & Freeform Designer Annotation Interactions
   el.subOrgBtn.addEventListener("click", () => {
+    state.pillar = "pages";
+    state.openGroups.pages = true;
     state.pagesSub = "organize";
     state.placingNewText = false;
     clearAllContentSelections();
@@ -6439,8 +7818,269 @@ window.ShibaImageEdit = (function () {
   });
 
   el.subTextBtn.addEventListener("click", () => {
+    state.pillar = "pages";
+    state.openGroups.pages = true;
     state.pagesSub = "text";
     refreshWorkspace(true);
+  });
+
+  el.subAnnotateBtn.addEventListener("click", () => {
+    state.pillar = "pages";
+    state.openGroups.pages = true;
+    state.pagesSub = "annotate";
+    state.placingNewText = false;
+    clearAllContentSelections();
+    refreshWorkspace(true);
+  });
+
+  // Annotation Tool Palette Events
+  el.annToolBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.annTool = btn.dataset.tool || "rect";
+      if (state.annTool !== "select") state.selectedAnnId = null;
+      syncAnnotateCursor();
+      redrawAnnotateLayer(null);
+      updateTopStripControls();
+    });
+  });
+
+  el.annColorDots.forEach((dot) => {
+    dot.addEventListener("click", () => {
+      state.annColor = dot.dataset.color || "#e03e3e";
+      if (state.selectedAnnId) {
+        const sel = state.annotations.find((a) => a.id === state.selectedAnnId);
+        if (sel) sel.color = state.annColor;
+        redrawAnnotateLayer(null);
+      }
+      updateTopStripControls();
+    });
+  });
+
+  el.annColorInput.addEventListener("input", () => {
+    state.annColor = el.annColorInput.value;
+    if (state.selectedAnnId) {
+      const sel = state.annotations.find((a) => a.id === state.selectedAnnId);
+      if (sel) sel.color = state.annColor;
+      redrawAnnotateLayer(null);
+    }
+    updateTopStripControls();
+  });
+
+  el.annWidthBtns.forEach((wBtn) => {
+    wBtn.addEventListener("click", () => {
+      state.annStrokeW = parseFloat(wBtn.dataset.w) || 3.5;
+      if (state.selectedAnnId) {
+        const sel = state.annotations.find((a) => a.id === state.selectedAnnId);
+        if (sel && sel.strokeW) sel.strokeW = state.annStrokeW;
+        redrawAnnotateLayer(null);
+      }
+      updateTopStripControls();
+    });
+  });
+
+  el.annUndoBtn.addEventListener("click", () => {
+    if (!state.annUndoStack.length) return;
+    state.annotations = JSON.parse(state.annUndoStack.pop());
+    state.selectedAnnId = null;
+    redrawAnnotateLayer(null);
+    updateTopStripControls();
+  });
+
+  el.annClearBtn.addEventListener("click", () => {
+    if (!state.annotations.length) return;
+    pushAnnUndo();
+    state.annotations = [];
+    state.selectedAnnId = null;
+    redrawAnnotateLayer(null);
+    updateTopStripControls();
+  });
+
+  el.annExportPngBtn.addEventListener("click", async () => {
+    if (!hasPages() || state.busy) return;
+    state.busy = true;
+    updateTopStripControls();
+    try {
+      const layout = getAnnotateLayout();
+      const blob = await window.ShibaAnnotate.exportReviewBoardPngBlob(
+        layout,
+        (sIdx) => getSlotPreviewCanvas(sIdx),
+        state.annotations
+      );
+      triggerDownloadBlob(blob, `${getPrimaryStem()}_审稿批注图.png`);
+    } catch (err) {
+      alert(t("errExportPdf") + (err && err.message ? err.message : String(err)));
+    } finally {
+      state.busy = false;
+      updateTopStripControls();
+    }
+  });
+
+  // Freeform Canvas Pointer Pan / Draw / Select / Note Handler
+  el.annotateBoardWrap.addEventListener("pointerdown", (ev) => {
+    if (!isAnnotateMode() || !hasPages()) return;
+    if (ev.target.closest(".ann-callout-card")) return;
+
+    const wantPan = ev.button === 1 || state.spacePressed || state.annTool === "pan";
+    if (wantPan) {
+      ev.preventDefault();
+      const sx = ev.clientX;
+      const sy = ev.clientY;
+      const ox = state.annPanX;
+      const oy = state.annPanY;
+      syncAnnotateCursor(true);
+      document.body.classList.add("is-dragging-box");
+
+      function onPanMove(mvEv) {
+        state.annPanX = ox + (mvEv.clientX - sx);
+        state.annPanY = oy + (mvEv.clientY - sy);
+        applyAnnotateTransform();
+      }
+      function onPanUp() {
+        window.removeEventListener("pointermove", onPanMove);
+        window.removeEventListener("pointerup", onPanUp);
+        document.body.classList.remove("is-dragging-box");
+        syncAnnotateCursor(false);
+      }
+      window.addEventListener("pointermove", onPanMove);
+      window.addEventListener("pointerup", onPanUp);
+      return;
+    }
+
+    if (ev.button !== 0) return;
+    const startPt = clientToBoardCoords(ev.clientX, ev.clientY);
+
+    if (state.annTool === "note") {
+      ev.preventDefault();
+      pushAnnUndo();
+      const newNote = {
+        id: `ann_${Date.now()}`,
+        type: "note",
+        x: Math.round(startPt.bx),
+        y: Math.round(startPt.by),
+        text: t("annNoteDefault"),
+        color: state.annColor
+      };
+      state.annotations.push(newNote);
+      state.selectedAnnId = newNote.id;
+      redrawAnnotateLayer(null);
+      updateTopStripControls();
+      requestAnimationFrame(() => {
+        const card = el.annotateNotesLayer.querySelector(`.ann-callout-card[data-note-id="${newNote.id}"] .ann-callout-text`);
+        if (card) {
+          card.focus();
+          const sel = window.getSelection();
+          if (sel) {
+            const rng = document.createRange();
+            rng.selectNodeContents(card);
+            sel.removeAllRanges();
+            sel.addRange(rng);
+          }
+        }
+      });
+      return;
+    }
+
+    if (state.annTool === "select") {
+      const hit = window.ShibaAnnotate.hitTestShapes(state.annotations, startPt.bx, startPt.by);
+      if (!hit) {
+        state.selectedAnnId = null;
+        redrawAnnotateLayer(null);
+        return;
+      }
+      state.selectedAnnId = hit.id;
+      redrawAnnotateLayer(null);
+      let lastPt = startPt;
+      let movedAny = false;
+      document.body.classList.add("is-dragging-box");
+
+      function onSelMove(mvEv) {
+        const curPt = clientToBoardCoords(mvEv.clientX, mvEv.clientY);
+        const dx = curPt.bx - lastPt.bx;
+        const dy = curPt.by - lastPt.by;
+        if (!movedAny && Math.hypot(curPt.bx - startPt.bx, curPt.by - startPt.by) > 2) {
+          movedAny = true;
+          pushAnnUndo();
+        }
+        if (movedAny) {
+          window.ShibaAnnotate.moveAnnotation(hit, dx, dy);
+          lastPt = curPt;
+          redrawAnnotateLayer(null);
+        }
+      }
+      function onSelUp() {
+        window.removeEventListener("pointermove", onSelMove);
+        window.removeEventListener("pointerup", onSelUp);
+        document.body.classList.remove("is-dragging-box");
+        updateTopStripControls();
+      }
+      window.addEventListener("pointermove", onSelMove);
+      window.addEventListener("pointerup", onSelUp);
+      return;
+    }
+
+    // Drawing Tools: rect | ellipse | arrow | pen
+    ev.preventDefault();
+    state.selectedAnnId = null;
+    const tool = state.annTool;
+    const penPts = [[startPt.bx, startPt.by]];
+    let liveShape = null;
+
+    function onDrawMove(mvEv) {
+      const curPt = clientToBoardCoords(mvEv.clientX, mvEv.clientY);
+      if (tool === "rect" || tool === "ellipse") {
+        liveShape = {
+          id: "preview",
+          type: tool,
+          x: Math.min(startPt.bx, curPt.bx),
+          y: Math.min(startPt.by, curPt.by),
+          w: Math.abs(curPt.bx - startPt.bx),
+          h: Math.abs(curPt.by - startPt.by),
+          color: state.annColor,
+          strokeW: state.annStrokeW
+        };
+      } else if (tool === "arrow") {
+        liveShape = {
+          id: "preview",
+          type: "arrow",
+          x1: startPt.bx,
+          y1: startPt.by,
+          x2: curPt.bx,
+          y2: curPt.by,
+          color: state.annColor,
+          strokeW: state.annStrokeW
+        };
+      } else if (tool === "pen") {
+        penPts.push([curPt.bx, curPt.by]);
+        liveShape = {
+          id: "preview",
+          type: "pen",
+          pts: penPts,
+          color: state.annColor,
+          strokeW: state.annStrokeW
+        };
+      }
+      redrawAnnotateLayer(liveShape);
+    }
+
+    function onDrawUp() {
+      window.removeEventListener("pointermove", onDrawMove);
+      window.removeEventListener("pointerup", onDrawUp);
+      if (!liveShape) return;
+      const valid =
+        (liveShape.type === "pen" && liveShape.pts.length >= 2) ||
+        (liveShape.type === "arrow" && Math.hypot(liveShape.x2 - liveShape.x1, liveShape.y2 - liveShape.y1) > 6) ||
+        ((liveShape.type === "rect" || liveShape.type === "ellipse") && (liveShape.w > 4 || liveShape.h > 4));
+      if (valid) {
+        pushAnnUndo();
+        liveShape.id = `ann_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`;
+        state.annotations.push(liveShape);
+      }
+      redrawAnnotateLayer(null);
+      updateTopStripControls();
+    }
+
+    window.addEventListener("pointermove", onDrawMove);
+    window.addEventListener("pointerup", onDrawUp);
   });
 
   el.selAllBtn.addEventListener("click", () => {
@@ -6773,6 +8413,8 @@ window.ShibaImageEdit = (function () {
   });
 
   el.subImposeBtn.addEventListener("click", () => {
+    state.pillar = "prepress";
+    state.openGroups.prepress = true;
     state.prepressSub = "impose";
     state.activeSheetIdx = 0;
     closeAllPopovers();
@@ -6780,12 +8422,16 @@ window.ShibaImageEdit = (function () {
   });
 
   el.subSplitBtn.addEventListener("click", () => {
+    state.pillar = "prepress";
+    state.openGroups.prepress = true;
     state.prepressSub = "split";
     closeAllPopovers();
     refreshWorkspace(true);
   });
 
   el.subK100Btn.addEventListener("click", () => {
+    state.pillar = "prepress";
+    state.openGroups.prepress = true;
     state.prepressSub = "k100";
     closeAllPopovers();
     refreshWorkspace(true);
@@ -6942,18 +8588,24 @@ window.ShibaImageEdit = (function () {
     if (state.splitTab === "spread") updateSplitAndK100Guides();
   });
 
-  // Pillar 4: Convert & Compress Controls
+  // Pillar 4: Convert & Compress Sub-items
   el.subCompBtn.addEventListener("click", () => {
+    state.pillar = "convert";
+    state.openGroups.convert = true;
     state.convertSub = "compress";
     refreshWorkspace(false);
   });
 
   el.subImgBtn.addEventListener("click", () => {
+    state.pillar = "convert";
+    state.openGroups.convert = true;
     state.convertSub = "img";
     refreshWorkspace(false);
   });
 
   el.subImgPdfBtn.addEventListener("click", () => {
+    state.pillar = "convert";
+    state.openGroups.convert = true;
     state.convertSub = "imgpdf";
     refreshWorkspace(false);
   });
@@ -7133,9 +8785,16 @@ window.ShibaImageEdit = (function () {
     }
   });
 
-  el.zoomOutBtn.addEventListener("click", () => setSmoothZoom(state.zoomFactor / 1.18));
-  el.zoomInBtn.addEventListener("click", () => setSmoothZoom(state.zoomFactor * 1.18));
-  el.zoomFitBtn.addEventListener("click", () => setSmoothZoom(1.0));
+  el.zoomOutBtn.addEventListener("click", () => {
+    setSmoothZoom(isAnnotateMode() ? state.annScale / 1.2 : state.zoomFactor / 1.18);
+  });
+  el.zoomInBtn.addEventListener("click", () => {
+    setSmoothZoom(isAnnotateMode() ? state.annScale * 1.2 : state.zoomFactor * 1.18);
+  });
+  el.zoomFitBtn.addEventListener("click", () => {
+    if (isAnnotateMode()) fitAnnotateBoard();
+    else setSmoothZoom(1.0);
+  });
 
   window.addEventListener("resize", () => {
     if (hasPages() && !el.spreadViewContainer.classList.contains("hidden")) {
