@@ -142,6 +142,12 @@ body.is-sorting-pages * {
   user-select: none !important;
 }
 
+body.is-resizing-col,
+body.is-resizing-col * {
+  cursor: col-resize !important;
+  user-select: none !important;
+}
+
 html,
 body {
   height: 100%;
@@ -161,11 +167,14 @@ svg.lucide {
   flex-shrink: 0;
 }
 
-/* Pure Borderless Two-Column Workbench */
+/* Pure Borderless Resizable Workbench */
 .workbench {
+  --rail-w: 272px;
+  --right-w: 352px;
   display: grid;
-  grid-template-columns: 268px 1fr;
+  grid-template-columns: var(--rail-w) 6px 1fr;
   height: 100vh;
+  height: 100dvh;
   width: 100vw;
 }
 
@@ -174,8 +183,65 @@ svg.lucide {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  padding: 16px 14px;
+  min-width: 0;
+  padding: 16px 13px;
   z-index: 30;
+}
+
+.version-pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: var(--bg-pill);
+  color: var(--text-2);
+  letter-spacing: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.icon-only-btn {
+  width: 28px;
+  padding: 0;
+  text-decoration: none;
+}
+
+.col-splitter {
+  width: 6px;
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+  z-index: 35;
+  flex-shrink: 0;
+  touch-action: none;
+}
+
+.col-splitter::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  width: 2px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background-color 0.15s;
+}
+
+.col-splitter:hover::after,
+.col-splitter.dragging::after {
+  background: var(--accent);
+}
+
+.mobile-top-bar {
+  display: none;
+}
+
+.mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(2px);
+  z-index: 185;
 }
 
 .rail-header {
@@ -670,15 +736,121 @@ svg.lucide {
   position: relative;
 }
 
-/* Preflight Drawer */
+/* Right-Side Preflight & Organize Preview Drawers */
 .preflight-drawer {
-  width: 348px;
-  padding: 4px 14px 24px 24px;
+  width: var(--right-w);
+  background: var(--bg-rail);
+  padding: 14px 16px 24px;
   overflow-y: auto;
   display: flex;
   flex-direction: column;
   gap: 8px;
   flex-shrink: 0;
+}
+
+.org-preview-drawer {
+  width: var(--right-w);
+  background: var(--bg-rail);
+  padding: 14px 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+  min-height: 0;
+}
+
+.org-preview-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.org-preview-title {
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--text-1);
+}
+
+.org-preview-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.org-preview-body canvas {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  background: #ffffff;
+  box-shadow: var(--shadow-paper);
+}
+
+.org-preview-meta {
+  font-size: 11.5px;
+  color: var(--text-2);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+.reopen-preview-tab {
+  position: absolute;
+  right: 12px;
+  top: 14px;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 9px;
+  background: var(--bg-surface);
+  color: var(--text-1);
+  box-shadow: var(--shadow-float);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 25;
+}
+
+.reopen-preview-tab:hover {
+  background: var(--bg-hover);
+}
+
+.hover-loupe-popover {
+  position: fixed;
+  z-index: 145;
+  pointer-events: none;
+  padding: 10px;
+  border-radius: 14px;
+  background: var(--bg-surface);
+  box-shadow: var(--shadow-popover);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.hover-loupe-popover canvas {
+  display: block;
+  max-width: 360px;
+  max-height: 460px;
+  width: auto;
+  height: auto;
+  background: #ffffff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.hover-loupe-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
 }
 
 .pf-card {
@@ -1102,14 +1274,15 @@ svg.lucide {
 
 .fmt-color-input { width: 22px; height: 22px; border: none; padding: 0; background: transparent; cursor: pointer; }
 
-/* Interactive Organize & Select Grid */
+/* Interactive Organize & Select Grid (Supports Ctrl + Wheel & Pinch Zoom via --org-min-w) */
 .clean-grid {
+  --org-min-w: 172px;
   width: 100%;
-  max-width: 1180px;
+  max-width: 1480px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(172px, 1fr));
-  gap: 24px 20px;
-  padding-bottom: 28px;
+  grid-template-columns: repeat(auto-fill, minmax(var(--org-min-w), 1fr));
+  gap: 22px 18px;
+  padding-bottom: 32px;
 }
 
 .org-card {
@@ -1606,29 +1779,122 @@ svg.lucide {
   color: var(--text-3);
 }
 
+.text-box-wrap,
+.img-box-wrap,
+.text-drag-handle,
+.text-resize-handle,
+.ann-callout-card {
+  touch-action: none;
+}
+
+@media (pointer: coarse) {
+  .text-resize-handle {
+    width: 16px;
+    height: 16px;
+  }
+  .text-resize-handle.se {
+    right: -9px;
+    bottom: -9px;
+  }
+  .text-resize-handle.e {
+    right: -8px;
+    width: 10px;
+    height: 20px;
+  }
+  .text-resize-handle.s {
+    bottom: -8px;
+    width: 20px;
+    height: 10px;
+  }
+  .org-card.selected .org-quick-actions {
+    display: flex;
+  }
+}
+
 @media (max-width: 900px) {
-  .workbench { grid-template-columns: 1fr; }
-  .workspace-body { flex-direction: column; }
-  .preflight-drawer { width: 100%; max-height: 260px; }
+  .workbench {
+    grid-template-columns: 1fr !important;
+  }
+  #leftSplitter,
+  #rightSplitter,
+  .hover-loupe-popover {
+    display: none !important;
+  }
+  .left-rail {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: min(286px, 84vw);
+    z-index: 195;
+    transform: translateX(-104%);
+    transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1);
+    box-shadow: var(--shadow-popover);
+  }
+  .left-rail.mobile-open {
+    transform: translateX(0);
+  }
+  .mobile-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 46px;
+    padding: 0 12px;
+    background: var(--bg-rail);
+    flex-shrink: 0;
+    z-index: 28;
+  }
+  .top-action-strip {
+    min-height: 48px;
+    padding: 6px 12px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+  .strip-left {
+    flex-wrap: nowrap;
+  }
+  .workspace-body {
+    flex-direction: column;
+  }
+  .stage-viewport {
+    padding: 14px 12px 68px;
+  }
+  .preflight-drawer,
+  .org-preview-drawer {
+    width: 100% !important;
+    max-height: 38vh;
+    padding: 10px 12px 16px;
+  }
+  .floating-pager {
+    bottom: 12px;
+  }
+  .text-fmt-bar {
+    max-width: calc(100vw - 16px);
+    overflow-x: auto;
+  }
 }
 
   </style>
 </head>
 <body>
   <div class="workbench">
-    <!-- Left Column: 4 Clean Borderless Pillars -->
-    <aside class="left-rail">
+    <!-- Left Column: Collapsible Feature Navigation -->
+    <aside id="leftRail" class="left-rail">
       <header class="rail-header">
         <div class="brand-mark">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /> </svg>
           <span>ShibaPDF</span>
+          <span class="version-pill">v1.6.0</span>
         </div>
         <div class="header-mini-btns">
+          <a id="githubLinkBtn" class="ghost-btn icon-only-btn" href="https://github.com/Wonvy/ShibaPDF" target="_blank" rel="noopener noreferrer" title="GitHub: Wonvy/ShibaPDF" aria-label="GitHub Repository">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.07 11.07 0 0 1 5.8 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+          </a>
           <button id="langBtn" class="ghost-btn" type="button" title="Switch Language">
             <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-languages" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m5 8 6 6" /> <path d="m4 14 6-6 2-3" /> <path d="M2 5h12" /> <path d="M7 2h1" /> <path d="m22 22-5-10-5 10" /> <path d="M14 18h6" /> </svg>
             <span id="langLabel">EN</span>
           </button>
-          <button id="themeBtn" class="ghost-btn" type="button" title="Toggle Theme">
+          <button id="themeBtn" class="ghost-btn icon-only-btn" type="button" title="Toggle Theme">
             <span id="iconMoon"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-moon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /> </svg></span>
             <span id="iconSun" class="hidden"><!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-sun" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /> </svg></span>
           </button>
@@ -1755,8 +2021,31 @@ svg.lucide {
       </div>
     </aside>
 
+    <!-- Mobile Drawer Backdrop -->
+    <div id="mobileBackdrop" class="mobile-backdrop hidden"></div>
+
+    <!-- Draggable Left-Right Column Resizer -->
+    <div id="leftSplitter" class="col-splitter" title="Drag to resize · Double-click to reset"></div>
+
     <!-- Right Column: Progressive Workspace -->
     <main class="right-workspace">
+      <!-- Mobile Compact Top Bar (Touch Devices <= 900px) -->
+      <div id="mobileTopBar" class="mobile-top-bar">
+        <button id="mobileMenuBtn" class="ghost-btn" type="button">
+          <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /> </svg>
+          <span style="font-weight:700;">ShibaPDF</span>
+          <span class="version-pill">v1.6.0</span>
+        </button>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <a class="ghost-btn icon-only-btn" href="https://github.com/Wonvy/ShibaPDF" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.07 11.07 0 0 1 5.8 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+          </a>
+          <button id="mobileQuickOpenBtn" class="ghost-btn" type="button">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-upload" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 3v12" /> <path d="m17 8-5-5-5 5" /> <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /> </svg>
+          </button>
+        </div>
+      </div>
+
       <!-- Progressive Top Action Strip -->
       <header id="topStrip" class="top-action-strip hidden">
         <div class="strip-left">
@@ -1766,6 +2055,9 @@ svg.lucide {
             <div id="orgControls" class="strip-left">
               <button id="selAllBtn" class="ghost-btn" type="button" data-i18n="selAll">全选</button>
               <button id="selNoneBtn" class="ghost-btn hidden" type="button" data-i18n="selNone">取消选择</button>
+              <button id="toggleOrgPreviewBtn" class="ghost-btn active" type="button">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-panel-right-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M15 3v18" /> <path d="m10 15-3-3 3-3" /> </svg><span data-i18n="orgPreviewBtn">预览栏</span>
+              </button>
               <!-- Progressive Selection Actions (Only appear when >=1 page selected!) -->
               <div id="selActionGroup" class="strip-left hidden">
                 <button id="rotSelBtn" class="ghost-btn" type="button">
@@ -1972,10 +2264,19 @@ svg.lucide {
             <span id="k100InlineHint" class="hidden" style="font-size:12px;color:var(--text-2);" data-i18n="keepDescInline">保持原跨页尺寸与出血 · 自动转单色黑 K100 并保留透明度</span>
           </div>
 
-          <!-- Pillar 3: Preflight Summary -->
+          <!-- Pillar 3: Preflight Summary & Prev/Next Auto-Jump -->
           <div id="stripPreflight" class="strip-left hidden">
             <span style="font-size:13.5px;font-weight:600;" data-i18n="preflightReportTitle">印前规范检查</span>
             <div id="pfScorePills" style="display:flex;gap:6px;"></div>
+            <div id="pfNavGroup" class="soft-pills hidden" style="margin-left:4px;">
+              <button id="pfPrevIssueBtn" class="soft-pill" type="button">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-chevron-left" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m15 18-6-6 6-6" /> </svg><span data-i18n="pfPrevBtn">上一条</span>
+              </button>
+              <span id="pfIssueCounter" style="font-size:11.5px;font-weight:600;padding:0 8px;color:var(--text-1);font-variant-numeric:tabular-nums;">1 / 1</span>
+              <button id="pfNextIssueBtn" class="soft-pill" type="button">
+                <span data-i18n="pfNextBtn">下一条</span><!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-chevron-right" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="m9 18 6-6-6-6" /> </svg>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -1994,8 +2295,6 @@ svg.lucide {
 
       <!-- Workspace Main Body -->
       <div class="workspace-body">
-        <aside id="preflightDrawer" class="preflight-drawer hidden"></aside>
-
         <div id="stageViewport" class="stage-viewport">
           <!-- Empty State -->
           <div id="emptyStage" class="center-placeholder">
@@ -2120,6 +2419,42 @@ svg.lucide {
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- Draggable Right Drawer Resizer -->
+        <div id="rightSplitter" class="col-splitter hidden" title="Drag to resize · Double-click to reset"></div>
+
+        <!-- Right-Side Preflight Inspector Drawer -->
+        <aside id="preflightDrawer" class="preflight-drawer hidden"></aside>
+
+        <!-- Right-Side Collapsible Organize Page Preview Drawer -->
+        <aside id="orgPreviewDrawer" class="org-preview-drawer hidden">
+          <div class="org-preview-head">
+            <span id="orgPreviewTitle" class="org-preview-title">P1</span>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <button id="orgPrevEditPageBtn" class="ghost-btn" style="height:26px;padding:0 8px;font-size:11.5px;" type="button">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:12px;height:12px;" class="lucide lucide-pen-line" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M13 21h8" /> <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /> </svg><span data-i18n="navSubEdit">图文编辑</span>
+              </button>
+              <button id="closeOrgPreviewBtn" class="ghost-btn icon-only-btn" type="button" title="Collapse Preview">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-panel-right-close" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M15 3v18" /> <path d="m8 9 3 3-3 3" /> </svg>
+              </button>
+            </div>
+          </div>
+          <div class="org-preview-body">
+            <canvas id="orgPreviewCanvas"></canvas>
+          </div>
+          <div id="orgPreviewMeta" class="org-preview-meta"></div>
+        </aside>
+
+        <!-- Floating Edge Reopen Tab When Organize Preview Drawer Is Collapsed -->
+        <button id="reopenOrgPreviewTab" class="reopen-preview-tab hidden" type="button" title="Expand Preview Pane">
+          <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-panel-right-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M15 3v18" /> <path d="m10 15-3-3 3-3" /> </svg>
+        </button>
+
+        <!-- Desktop Hover Large Page Preview Popover -->
+        <div id="hoverLoupePopover" class="hover-loupe-popover hidden">
+          <canvas id="hoverLoupeCanvas"></canvas>
+          <div id="hoverLoupeLabel" class="hover-loupe-label"></div>
         </div>
       </div>
 
@@ -2344,6 +2679,11 @@ window.SHIBA_I18N = {
     subTextEdit: "图文编辑",
     selAll: "全选",
     selNone: "取消选择",
+    orgPreviewBtn: "预览栏",
+    pfPrevBtn: "上一条",
+    pfNextBtn: "下一条",
+    pfIssuePosFmt: "第 {c} / {t} 项问题",
+    pfNoIssues: "全部通过",
     selOdd: "奇数页",
     selEven: "偶数页",
     selCountInfo: "已选 {n} 页",
@@ -2565,6 +2905,11 @@ window.SHIBA_I18N = {
     subTextEdit: "Edit Content",
     selAll: "Select All",
     selNone: "Deselect",
+    orgPreviewBtn: "Preview Pane",
+    pfPrevBtn: "Prev",
+    pfNextBtn: "Next",
+    pfIssuePosFmt: "Issue {c} / {t}",
+    pfNoIssues: "All Clear",
     selOdd: "Odd",
     selEven: "Even",
     selCountInfo: "{n} selected",
@@ -4802,6 +5147,234 @@ window.ShibaAnnotate = (function () {
 })();
 
 ;
+/* === src/workspace-ux.js === */
+// Resizable Left/Right Splitters, Organize Hover Loupe, Right Preview Pane, Mobile Drawer & Touch Pinch-Zoom
+window.ShibaUX = (function () {
+  "use strict";
+
+  let loupeTimer = null;
+  let loupeToken = 0;
+
+  function hideHoverLoupe() {
+    clearTimeout(loupeTimer);
+    loupeToken++;
+    const pop = document.getElementById("hoverLoupePopover");
+    if (pop) pop.classList.add("hidden");
+  }
+
+  function scheduleHoverLoupe(cardEl, slotIdx, labelStr, getPreviewCanvasFn) {
+    if (window.innerWidth <= 900) return;
+    if (window.matchMedia && window.matchMedia("(pointer: coarse)").matches) return;
+
+    clearTimeout(loupeTimer);
+    const myTok = ++loupeToken;
+
+    loupeTimer = setTimeout(async () => {
+      const pop = document.getElementById("hoverLoupePopover");
+      const cv = document.getElementById("hoverLoupeCanvas");
+      const lbl = document.getElementById("hoverLoupeLabel");
+      if (!pop || !cv || !cardEl.isConnected) return;
+
+      const srcCv = await getPreviewCanvasFn(slotIdx);
+      if (myTok !== loupeToken || !cardEl.isConnected) return;
+
+      const maxW = 340;
+      const maxH = 440;
+      const sc = Math.min(maxW / Math.max(1, srcCv.width), maxH / Math.max(1, srcCv.height), 1);
+      cv.width = Math.max(1, Math.round(srcCv.width * sc));
+      cv.height = Math.max(1, Math.round(srcCv.height * sc));
+      cv.getContext("2d").drawImage(srcCv, 0, 0, cv.width, cv.height);
+      if (lbl) lbl.textContent = labelStr;
+
+      pop.classList.remove("hidden");
+
+      const rect = cardEl.getBoundingClientRect();
+      const popW = cv.width + 20;
+      const popH = cv.height + 40;
+      // Place smartly to the right of card if space allows, otherwise to the left
+      let left = rect.right + 14;
+      if (left + popW > window.innerWidth - 16) {
+        left = Math.max(12, rect.left - popW - 14);
+      }
+      const top = Math.max(14, Math.min(window.innerHeight - popH - 14, rect.top - 10));
+      pop.style.left = `${Math.round(left)}px`;
+      pop.style.top = `${Math.round(top)}px`;
+    }, 180);
+  }
+
+  async function renderOrgPreviewPane(slotIdx, titleStr, metaStr, getPreviewCanvasFn) {
+    const drawer = document.getElementById("orgPreviewDrawer");
+    const cv = document.getElementById("orgPreviewCanvas");
+    const ttl = document.getElementById("orgPreviewTitle");
+    const meta = document.getElementById("orgPreviewMeta");
+    if (!drawer || drawer.classList.contains("hidden") || !cv) return;
+
+    if (ttl) ttl.textContent = titleStr;
+    if (meta) meta.textContent = metaStr;
+
+    const srcCv = await getPreviewCanvasFn(slotIdx);
+    if (!srcCv) return;
+    cv.width = srcCv.width;
+    cv.height = srcCv.height;
+    cv.getContext("2d").drawImage(srcCv, 0, 0);
+  }
+
+  function initColumnSplitters(onLayoutResize) {
+    const workbench = document.querySelector(".workbench");
+    const leftSplitter = document.getElementById("leftSplitter");
+    const rightSplitter = document.getElementById("rightSplitter");
+    if (!workbench) return;
+
+    const savedRail = parseInt(localStorage.getItem("shibapdf_rail_w") || "272", 10);
+    const savedRight = parseInt(localStorage.getItem("shibapdf_right_w") || "352", 10);
+    if (savedRail >= 200 && savedRail <= 460) workbench.style.setProperty("--rail-w", `${savedRail}px`);
+    if (savedRight >= 240 && savedRight <= 580) workbench.style.setProperty("--right-w", `${savedRight}px`);
+
+    if (leftSplitter) {
+      leftSplitter.addEventListener("dblclick", () => {
+        workbench.style.setProperty("--rail-w", "272px");
+        localStorage.setItem("shibapdf_rail_w", "272");
+        if (onLayoutResize) onLayoutResize();
+      });
+
+      leftSplitter.addEventListener("pointerdown", (ev) => {
+        ev.preventDefault();
+        leftSplitter.classList.add("dragging");
+        document.body.classList.add("is-resizing-col");
+
+        function onMove(mv) {
+          const w = Math.max(200, Math.min(460, Math.round(mv.clientX)));
+          workbench.style.setProperty("--rail-w", `${w}px`);
+        }
+        function onUp(up) {
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onUp);
+          leftSplitter.classList.remove("dragging");
+          document.body.classList.remove("is-resizing-col");
+          const finalW = Math.max(200, Math.min(460, Math.round(up.clientX)));
+          localStorage.setItem("shibapdf_rail_w", String(finalW));
+          if (onLayoutResize) onLayoutResize();
+        }
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+      });
+    }
+
+    if (rightSplitter) {
+      rightSplitter.addEventListener("dblclick", () => {
+        workbench.style.setProperty("--right-w", "352px");
+        localStorage.setItem("shibapdf_right_w", "352");
+        if (onLayoutResize) onLayoutResize();
+      });
+
+      rightSplitter.addEventListener("pointerdown", (ev) => {
+        ev.preventDefault();
+        rightSplitter.classList.add("dragging");
+        document.body.classList.add("is-resizing-col");
+
+        function onMove(mv) {
+          const w = Math.max(240, Math.min(580, Math.round(window.innerWidth - mv.clientX)));
+          workbench.style.setProperty("--right-w", `${w}px`);
+        }
+        function onUp(up) {
+          window.removeEventListener("pointermove", onMove);
+          window.removeEventListener("pointerup", onUp);
+          rightSplitter.classList.remove("dragging");
+          document.body.classList.remove("is-resizing-col");
+          const finalW = Math.max(240, Math.min(580, Math.round(window.innerWidth - up.clientX)));
+          localStorage.setItem("shibapdf_right_w", String(finalW));
+          if (onLayoutResize) onLayoutResize();
+        }
+        window.addEventListener("pointermove", onMove);
+        window.addEventListener("pointerup", onUp);
+      });
+    }
+  }
+
+  function initMobileAndTouchUX(onPinchZoomFn, onOpenFileFn) {
+    const leftRail = document.getElementById("leftRail");
+    const backdrop = document.getElementById("mobileBackdrop");
+    const menuBtn = document.getElementById("mobileMenuBtn");
+    const quickOpenBtn = document.getElementById("mobileQuickOpenBtn");
+    const stageVp = document.getElementById("stageViewport");
+
+    function closeMobileRail() {
+      if (leftRail) leftRail.classList.remove("mobile-open");
+      if (backdrop) backdrop.classList.add("hidden");
+    }
+
+    function openMobileRail() {
+      if (leftRail) leftRail.classList.add("mobile-open");
+      if (backdrop) backdrop.classList.remove("hidden");
+    }
+
+    if (menuBtn) menuBtn.addEventListener("click", openMobileRail);
+    if (backdrop) backdrop.addEventListener("click", closeMobileRail);
+    if (quickOpenBtn && onOpenFileFn) quickOpenBtn.addEventListener("click", onOpenFileFn);
+
+    // Auto-close mobile drawer whenever user selects a leaf tool on mobile
+    document.querySelectorAll(".rail-sub-btn, #navPreflightBtn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        if (window.innerWidth <= 900) closeMobileRail();
+      });
+    });
+
+    // Universal Two-Finger Touch Pinch-to-Zoom on Stage Viewport
+    if (stageVp && onPinchZoomFn) {
+      let lastDist = 0;
+      stageVp.addEventListener(
+        "touchstart",
+        (ev) => {
+          hideHoverLoupe();
+          if (ev.touches.length === 2) {
+            const dx = ev.touches[0].clientX - ev.touches[1].clientX;
+            const dy = ev.touches[0].clientY - ev.touches[1].clientY;
+            lastDist = Math.hypot(dx, dy);
+          }
+        },
+        { passive: true }
+      );
+
+      stageVp.addEventListener(
+        "touchmove",
+        (ev) => {
+          if (ev.touches.length === 2 && lastDist > 12) {
+            ev.preventDefault();
+            const dx = ev.touches[0].clientX - ev.touches[1].clientX;
+            const dy = ev.touches[0].clientY - ev.touches[1].clientY;
+            const curDist = Math.hypot(dx, dy);
+            const ratio = curDist / lastDist;
+            if (Math.abs(ratio - 1) > 0.015) {
+              const midX = (ev.touches[0].clientX + ev.touches[1].clientX) / 2;
+              const midY = (ev.touches[0].clientY + ev.touches[1].clientY) / 2;
+              onPinchZoomFn(ratio, midX, midY);
+              lastDist = curDist;
+            }
+          }
+        },
+        { passive: false }
+      );
+
+      stageVp.addEventListener("touchend", () => {
+        lastDist = 0;
+      });
+    }
+
+    window.addEventListener("scroll", hideHoverLoupe, true);
+    window.addEventListener("wheel", hideHoverLoupe, { passive: true });
+    window.addEventListener("pointerdown", hideHoverLoupe, { passive: true });
+  }
+
+  return {
+    hideHoverLoupe,
+    scheduleHoverLoupe,
+    renderOrgPreviewPane,
+    initColumnSplitters,
+    initMobileAndTouchUX
+  };
+})();
+
+;
 /* === src/app.js === */
 // ShibaPDF v4 — Unified 4-Pillar Client-Side PDF Studio Controller
 (function () {
@@ -4846,6 +5419,9 @@ window.ShibaAnnotate = (function () {
     undoStack: [],
     bitmapCache: new Map(),
     activeSlotIdx: 0,
+    previewSlotIdx: 0,
+    orgGridScale: 1.0,
+    orgPreviewOpen: localStorage.getItem("shibapdf_org_prev") !== "0",
     lastClickedOrgIdx: -1,
     draggingOrgIdx: -1,
 
@@ -4894,6 +5470,8 @@ window.ShibaAnnotate = (function () {
     // Preflight State
     activePfHighlights: [],
     selectedPfCardIdx: -1,
+    flatPfSteps: [],
+    pfStepCursor: -1,
 
     // Convert & Compress State
     compPreset: "balanced",
@@ -4947,6 +5525,7 @@ window.ShibaAnnotate = (function () {
     orgControls: document.getElementById("orgControls"),
     selAllBtn: document.getElementById("selAllBtn"),
     selNoneBtn: document.getElementById("selNoneBtn"),
+    toggleOrgPreviewBtn: document.getElementById("toggleOrgPreviewBtn"),
     selActionGroup: document.getElementById("selActionGroup"),
     rotSelBtn: document.getElementById("rotSelBtn"),
     delSelBtn: document.getElementById("delSelBtn"),
@@ -5017,6 +5596,10 @@ window.ShibaAnnotate = (function () {
 
     stripPreflight: document.getElementById("stripPreflight"),
     pfScorePills: document.getElementById("pfScorePills"),
+    pfNavGroup: document.getElementById("pfNavGroup"),
+    pfPrevIssueBtn: document.getElementById("pfPrevIssueBtn"),
+    pfNextIssueBtn: document.getElementById("pfNextIssueBtn"),
+    pfIssueCounter: document.getElementById("pfIssueCounter"),
 
     stripConvert: document.getElementById("stripConvert"),
     subCompBtn: document.getElementById("subCompBtn"),
@@ -5028,8 +5611,16 @@ window.ShibaAnnotate = (function () {
     exportBtn: document.getElementById("exportBtn"),
     exportBtnText: document.getElementById("exportBtnText"),
 
-    // Main Body
+    // Main Body & Right-Side Drawers
+    rightSplitter: document.getElementById("rightSplitter"),
     preflightDrawer: document.getElementById("preflightDrawer"),
+    orgPreviewDrawer: document.getElementById("orgPreviewDrawer"),
+    orgPreviewTitle: document.getElementById("orgPreviewTitle"),
+    orgPreviewCanvas: document.getElementById("orgPreviewCanvas"),
+    orgPreviewMeta: document.getElementById("orgPreviewMeta"),
+    orgPrevEditPageBtn: document.getElementById("orgPrevEditPageBtn"),
+    closeOrgPreviewBtn: document.getElementById("closeOrgPreviewBtn"),
+    reopenOrgPreviewTab: document.getElementById("reopenOrgPreviewTab"),
     stageViewport: document.getElementById("stageViewport"),
     emptyStage: document.getElementById("emptyStage"),
     dropzone: document.getElementById("dropzone"),
@@ -5209,6 +5800,10 @@ window.ShibaAnnotate = (function () {
     refreshWorkspace(true);
   }
 
+  function isOrganizeMode() {
+    return state.pillar === "pages" && state.pagesSub === "organize";
+  }
+
   function isAnnotateMode() {
     return state.pillar === "pages" && state.pagesSub === "annotate";
   }
@@ -5218,11 +5813,32 @@ window.ShibaAnnotate = (function () {
       el.zoomLabel.textContent = `${Math.round(state.annScale * 100)}%`;
       return;
     }
+    if (isOrganizeMode()) {
+      el.zoomLabel.textContent =
+        Math.abs(state.orgGridScale - 1.0) < 0.02 ? "100%" : `${Math.round(state.orgGridScale * 100)}%`;
+      return;
+    }
     el.zoomLabel.textContent =
       Math.abs(state.zoomFactor - 1.0) < 0.01 ? t("fitZoom") : `${Math.round(state.zoomFactor * 100)}%`;
   }
 
+  function setOrgGridZoom(newScale) {
+    const clamped = Math.min(2.4, Math.max(0.5, Math.round(newScale * 100) / 100));
+    if (Math.abs(clamped - state.orgGridScale) < 0.005) return;
+    state.orgGridScale = clamped;
+    el.sequenceGrid.style.setProperty("--org-min-w", `${Math.round(172 * clamped)}px`);
+    updateZoomReadout();
+    clearTimeout(state.wheelRenderTimer);
+    state.wheelRenderTimer = setTimeout(() => {
+      if (isOrganizeMode()) renderOrganizeGrid();
+    }, 150);
+  }
+
   function setSmoothZoom(newFactor) {
+    if (isOrganizeMode()) {
+      setOrgGridZoom(newFactor);
+      return;
+    }
     if (isAnnotateMode()) {
       const clampedAnn = Math.min(4.0, Math.max(0.18, newFactor));
       const wrapRect = el.annotateBoardWrap.getBoundingClientRect();
@@ -5297,8 +5913,13 @@ window.ShibaAnnotate = (function () {
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         e.stopPropagation();
-        if (!hasPages() || el.spreadViewContainer.classList.contains("hidden")) return;
+        if (!hasPages()) return;
         const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+        if (isOrganizeMode()) {
+          setOrgGridZoom(state.orgGridScale * factor);
+          return;
+        }
+        if (el.spreadViewContainer.classList.contains("hidden")) return;
         setSmoothZoom(state.zoomFactor * factor);
       }
     },
@@ -5659,10 +6280,28 @@ window.ShibaAnnotate = (function () {
   // =========================================================================
   // Pillar 1A: Organize, Multi-Select, Drag-Sort & Extract Grid
   // =========================================================================
+  function updateRightOrgPreview(slotIdx) {
+    if (!hasPages() || !window.ShibaUX) return;
+    const idx = Math.max(0, Math.min(state.pages.length - 1, slotIdx));
+    state.previewSlotIdx = idx;
+    const slot = state.pages[idx];
+    const info = getSlotSizeInfo(slot);
+    const docEntry = state.sourceDocs.get(slot.docId);
+    const docName = docEntry ? docEntry.name : "";
+    window.ShibaUX.renderOrgPreviewPane(
+      idx,
+      `P${idx + 1} / ${state.pages.length}`,
+      `${info.wMm.toFixed(0)}×${info.hMm.toFixed(0)}mm · ${docName}`,
+      (sIdx) => getSlotPreviewCanvas(sIdx)
+    );
+  }
+
   async function renderOrganizeGrid() {
     if (!hasPages()) return;
     const myToken = ++state.renderToken;
+    el.sequenceGrid.style.setProperty("--org-min-w", `${Math.round(172 * state.orgGridScale)}px`);
     el.sequenceGrid.innerHTML = "";
+    updateRightOrgPreview(state.activeSlotIdx);
 
     for (let i = 0; i < state.pages.length; i++) {
       const slot = state.pages[i];
@@ -5744,6 +6383,25 @@ window.ShibaAnnotate = (function () {
       cap.appendChild(dm);
       card.appendChild(cap);
 
+      // Hover: update right preview pane immediately + schedule floating large loupe on desktop
+      card.addEventListener("pointerenter", (ev) => {
+        if (ev.pointerType === "touch") return;
+        updateRightOrgPreview(i);
+        if (window.ShibaUX) {
+          window.ShibaUX.scheduleHoverLoupe(
+            card,
+            i,
+            `P${i + 1} · ${info.wMm.toFixed(0)}×${info.hMm.toFixed(0)}mm`,
+            (sIdx) => getSlotPreviewCanvas(sIdx)
+          );
+        }
+      });
+
+      card.addEventListener("pointerleave", () => {
+        if (window.ShibaUX) window.ShibaUX.hideHoverLoupe();
+        updateRightOrgPreview(state.activeSlotIdx);
+      });
+
       // Click to select / Shift+Click range select; Double-click to open Text Edit
       card.addEventListener("click", (ev) => {
         if (ev.shiftKey && state.lastClickedOrgIdx >= 0 && state.lastClickedOrgIdx < state.pages.length) {
@@ -5756,6 +6414,7 @@ window.ShibaAnnotate = (function () {
           state.lastClickedOrgIdx = i;
         }
         state.activeSlotIdx = i;
+        updateRightOrgPreview(i);
         syncOrganizeSelectionUI();
       });
 
@@ -5811,10 +6470,10 @@ window.ShibaAnnotate = (function () {
 
       el.sequenceGrid.appendChild(card);
 
-      // Async render thumbnail
+      // Async render thumbnail (scales crispness up when grid is zoomed in!)
       getSlotPreviewCanvas(i).then((srcCv) => {
         if (myToken !== state.renderToken) return;
-        const maxThumb = 220;
+        const maxThumb = Math.round(220 * Math.max(1, state.orgGridScale));
         const sc = Math.min(maxThumb / Math.max(1, srcCv.width), maxThumb / Math.max(1, srcCv.height), 1);
         cv.width = Math.max(1, Math.round(srcCv.width * sc));
         cv.height = Math.max(1, Math.round(srcCv.height * sc));
@@ -6963,11 +7622,39 @@ window.ShibaAnnotate = (function () {
     if (warnCount > 0) addPill("warn", t("pfWarnCount", { n: warnCount }));
     addPill("ok", t("pfPassCount", { n: okCount }));
 
+    // Build flat ordered step list across all locate-able preflight issues for Prev/Next auto-jump!
+    const flatSteps = [];
+    items.forEach((it, cardIdx) => {
+      if (!it.locations || !it.locations.length) return;
+      const uniqueSlots = Array.from(new Set(it.locations.map((l) => l.slotIdx))).sort((a, b) => a - b);
+      uniqueSlots.forEach((sIdx) => {
+        flatSteps.push({ cardIdx, slotIdx: sIdx, locations: it.locations });
+      });
+    });
+    state.flatPfSteps = flatSteps;
+
+    if (flatSteps.length > 0) {
+      el.pfNavGroup.classList.remove("hidden");
+      const matchedCursor = flatSteps.findIndex(
+        (st) =>
+          st.cardIdx === state.selectedPfCardIdx &&
+          st.slotIdx === state.activeSlotIdx &&
+          state.activePfHighlights.length > 0
+      );
+      if (matchedCursor >= 0) state.pfStepCursor = matchedCursor;
+      const dispIdx = state.pfStepCursor >= 0 ? state.pfStepCursor + 1 : 0;
+      el.pfIssueCounter.textContent = `${dispIdx} / ${flatSteps.length}`;
+    } else {
+      el.pfNavGroup.classList.add("hidden");
+      state.pfStepCursor = -1;
+    }
+
     el.preflightDrawer.innerHTML = "";
     items.forEach((it, idx) => {
       const card = document.createElement("div");
       const hasLocs = it.locations && it.locations.length > 0;
       card.className = "pf-card" + (hasLocs ? " clickable" : "") + (state.selectedPfCardIdx === idx ? " selected" : "");
+      card.dataset.pfIdx = String(idx);
 
       const head = document.createElement("div");
       head.className = "pf-card-head";
@@ -7032,8 +7719,26 @@ window.ShibaAnnotate = (function () {
     state.selectedPfCardIdx = cardIdx;
     state.activeSlotIdx = targetSlotIdx;
     state.activePfHighlights = allLocs.filter((l) => l.slotIdx === targetSlotIdx);
+    const stepIdx = state.flatPfSteps.findIndex((s) => s.cardIdx === cardIdx && s.slotIdx === targetSlotIdx);
+    if (stepIdx >= 0) state.pfStepCursor = stepIdx;
     renderPreflightBadgeAndDrawer();
     renderCanvasStage();
+    requestAnimationFrame(() => {
+      const activeCard = el.preflightDrawer.querySelector(`.pf-card[data-pf-idx="${cardIdx}"]`);
+      if (activeCard && typeof activeCard.scrollIntoView === "function") {
+        activeCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    });
+  }
+
+  function stepPreflightIssue(delta) {
+    if (!state.flatPfSteps.length) return;
+    let next = state.pfStepCursor;
+    if (next < 0) next = delta > 0 ? 0 : state.flatPfSteps.length - 1;
+    else next = (next + delta + state.flatPfSteps.length) % state.flatPfSteps.length;
+    state.pfStepCursor = next;
+    const st = state.flatPfSteps[next];
+    jumpToPreflightIssue(st.cardIdx, st.locations, st.slotIdx);
   }
 
   function renderPreflightHighlightBoxes() {
@@ -7192,6 +7897,7 @@ window.ShibaAnnotate = (function () {
     }
 
     clampActiveIndices();
+    updatePagerUI();
     const slot = state.pages[state.activeSlotIdx];
     const docEntry = state.sourceDocs.get(slot.docId);
     const page = await docEntry.pdfJsDoc.getPage(slot.origIdx + 1);
@@ -7432,7 +8138,7 @@ window.ShibaAnnotate = (function () {
   // Master Progressive Workspace Synchronizer
   // =========================================================================
   function updatePagerUI() {
-    if (isAnnotateMode()) {
+    if (isAnnotateMode() || isOrganizeMode()) {
       el.pageIndicator.textContent = `${state.pages.length}${t("pagesUnit")}`;
       el.prevSpreadBtn.classList.add("hidden");
       el.nextSpreadBtn.classList.add("hidden");
@@ -7487,7 +8193,10 @@ window.ShibaAnnotate = (function () {
 
     if (!loaded) {
       el.topStrip.classList.add("hidden");
+      el.rightSplitter.classList.add("hidden");
       el.preflightDrawer.classList.add("hidden");
+      el.orgPreviewDrawer.classList.add("hidden");
+      el.reopenOrgPreviewTab.classList.add("hidden");
       el.emptyStage.classList.remove("hidden");
       el.spreadViewContainer.classList.add("hidden");
       el.sequenceGrid.classList.add("hidden");
@@ -7506,6 +8215,7 @@ window.ShibaAnnotate = (function () {
     const isPf = state.pillar === "preflight";
     const isConv = state.pillar === "convert";
     const isAnn = isAnnotateMode();
+    const isOrg = isOrganizeMode();
 
     // Top Strip only shows parameters/tools; Convert uses clean center card so hide empty top strip!
     el.topStrip.classList.toggle("hidden", isConv);
@@ -7515,6 +8225,11 @@ window.ShibaAnnotate = (function () {
     el.stripPrepress.classList.toggle("hidden", !isPrep);
     el.stripPreflight.classList.toggle("hidden", !isPf);
     el.preflightDrawer.classList.toggle("hidden", !isPf);
+    const showOrgPreview = isOrg && state.orgPreviewOpen;
+    el.orgPreviewDrawer.classList.toggle("hidden", !showOrgPreview);
+    el.reopenOrgPreviewTab.classList.toggle("hidden", !(isOrg && !state.orgPreviewOpen));
+    el.rightSplitter.classList.toggle("hidden", !(isPf || showOrgPreview));
+    el.toggleOrgPreviewBtn.classList.toggle("active", state.orgPreviewOpen);
     el.stripRightGroup.classList.toggle("hidden", isConv);
     el.annExportPngBtn.classList.toggle("hidden", !isAnn);
     el.annExportPngBtn.disabled = state.busy;
@@ -7630,7 +8345,8 @@ window.ShibaAnnotate = (function () {
     el.sequenceGrid.classList.toggle("hidden", !(showOrgGrid || showSplitGrid));
     el.annotateBoardWrap.classList.toggle("hidden", !showAnnotate);
     el.convertViewPanel.classList.toggle("hidden", !showConvert);
-    el.bottomPager.classList.toggle("hidden", !(showCanvas || showAnnotate));
+    el.bottomPager.classList.toggle("hidden", !(showCanvas || showAnnotate || showOrgGrid));
+    if (showOrgGrid) updatePagerUI();
     if (!showCanvas || state.pillar !== "pages" || state.pagesSub !== "text") {
       el.textFmtBar.classList.add("hidden");
       el.imgFmtBar.classList.add("hidden");
@@ -9036,14 +9752,39 @@ window.ShibaAnnotate = (function () {
     }
   });
 
+  function setOrgPreviewOpen(val) {
+    state.orgPreviewOpen = Boolean(val);
+    localStorage.setItem("shibapdf_org_prev", state.orgPreviewOpen ? "1" : "0");
+    updateTopStripControls();
+    if (state.orgPreviewOpen && isOrganizeMode()) {
+      updateRightOrgPreview(state.previewSlotIdx || state.activeSlotIdx);
+    }
+  }
+
+  el.toggleOrgPreviewBtn.addEventListener("click", () => setOrgPreviewOpen(!state.orgPreviewOpen));
+  el.closeOrgPreviewBtn.addEventListener("click", () => setOrgPreviewOpen(false));
+  el.reopenOrgPreviewTab.addEventListener("click", () => setOrgPreviewOpen(true));
+  el.orgPrevEditPageBtn.addEventListener("click", () => {
+    if (!hasPages()) return;
+    state.activeSlotIdx = state.previewSlotIdx || 0;
+    state.pagesSub = "text";
+    refreshWorkspace(true);
+  });
+
+  el.pfPrevIssueBtn.addEventListener("click", () => stepPreflightIssue(-1));
+  el.pfNextIssueBtn.addEventListener("click", () => stepPreflightIssue(1));
+
   el.zoomOutBtn.addEventListener("click", () => {
-    setSmoothZoom(isAnnotateMode() ? state.annScale / 1.2 : state.zoomFactor / 1.18);
+    if (isOrganizeMode()) setOrgGridZoom(state.orgGridScale / 1.18);
+    else setSmoothZoom(isAnnotateMode() ? state.annScale / 1.2 : state.zoomFactor / 1.18);
   });
   el.zoomInBtn.addEventListener("click", () => {
-    setSmoothZoom(isAnnotateMode() ? state.annScale * 1.2 : state.zoomFactor * 1.18);
+    if (isOrganizeMode()) setOrgGridZoom(state.orgGridScale * 1.18);
+    else setSmoothZoom(isAnnotateMode() ? state.annScale * 1.2 : state.zoomFactor * 1.18);
   });
   el.zoomFitBtn.addEventListener("click", () => {
-    if (isAnnotateMode()) fitAnnotateBoard();
+    if (isOrganizeMode()) setOrgGridZoom(1.0);
+    else if (isAnnotateMode()) fitAnnotateBoard();
     else setSmoothZoom(1.0);
   });
 
@@ -9053,6 +9794,35 @@ window.ShibaAnnotate = (function () {
       state.wheelRenderTimer = setTimeout(() => renderCanvasStage(), 150);
     }
   });
+
+  // Initialize Splitters, Mobile Drawer & Touch Pinch-Zoom
+  if (window.ShibaUX) {
+    window.ShibaUX.initColumnSplitters(() => {
+      if (hasPages() && !el.spreadViewContainer.classList.contains("hidden")) renderCanvasStage();
+      else if (isAnnotateMode() && hasPages()) fitAnnotateBoard();
+    });
+    window.ShibaUX.initMobileAndTouchUX(
+      (ratio, midX, midY) => {
+        if (!hasPages()) return;
+        if (isOrganizeMode()) {
+          setOrgGridZoom(state.orgGridScale * ratio);
+        } else if (isAnnotateMode()) {
+          const rect = el.annotateBoardWrap.getBoundingClientRect();
+          const mx = midX - rect.left;
+          const my = midY - rect.top;
+          const nextSc = Math.min(4.0, Math.max(0.18, state.annScale * ratio));
+          state.annPanX = mx - (mx - state.annPanX) * (nextSc / state.annScale);
+          state.annPanY = my - (my - state.annPanY) * (nextSc / state.annScale);
+          state.annScale = nextSc;
+          applyAnnotateTransform();
+          updateZoomReadout();
+        } else if (!el.spreadViewContainer.classList.contains("hidden")) {
+          setSmoothZoom(state.zoomFactor * ratio);
+        }
+      },
+      () => el.fileInput.click()
+    );
+  }
 
   // Initialize App
   applyTheme();

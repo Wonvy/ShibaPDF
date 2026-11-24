@@ -11,6 +11,7 @@ const jsModules = [
   "src/convert-compress.js",
   "src/image-edit.js",
   "src/annotate.js",
+  "src/workspace-ux.js",
   "src/app.js"
 ];
 
@@ -40,7 +41,9 @@ function escapeScriptClose(code) {
 
 function build() {
   const t0 = Date.now();
+  const pkg = JSON.parse(fs.readFileSync(path.join(root, "package.json"), "utf8"));
   let tpl = fs.readFileSync(path.join(root, "src/template.html"), "utf8");
+  tpl = tpl.replace(/\/\*__APP_VERSION__\*\//g, pkg.version || "1.6.0");
   const css = fs.readFileSync(path.join(root, "src/styles.css"), "utf8");
 
   const combinedAppJs = jsModules

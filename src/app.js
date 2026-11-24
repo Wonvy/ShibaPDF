@@ -41,6 +41,9 @@
     undoStack: [],
     bitmapCache: new Map(),
     activeSlotIdx: 0,
+    previewSlotIdx: 0,
+    orgGridScale: 1.0,
+    orgPreviewOpen: localStorage.getItem("shibapdf_org_prev") !== "0",
     lastClickedOrgIdx: -1,
     draggingOrgIdx: -1,
 
@@ -89,6 +92,8 @@
     // Preflight State
     activePfHighlights: [],
     selectedPfCardIdx: -1,
+    flatPfSteps: [],
+    pfStepCursor: -1,
 
     // Convert & Compress State
     compPreset: "balanced",
@@ -142,6 +147,7 @@
     orgControls: document.getElementById("orgControls"),
     selAllBtn: document.getElementById("selAllBtn"),
     selNoneBtn: document.getElementById("selNoneBtn"),
+    toggleOrgPreviewBtn: document.getElementById("toggleOrgPreviewBtn"),
     selActionGroup: document.getElementById("selActionGroup"),
     rotSelBtn: document.getElementById("rotSelBtn"),
     delSelBtn: document.getElementById("delSelBtn"),
@@ -212,6 +218,10 @@
 
     stripPreflight: document.getElementById("stripPreflight"),
     pfScorePills: document.getElementById("pfScorePills"),
+    pfNavGroup: document.getElementById("pfNavGroup"),
+    pfPrevIssueBtn: document.getElementById("pfPrevIssueBtn"),
+    pfNextIssueBtn: document.getElementById("pfNextIssueBtn"),
+    pfIssueCounter: document.getElementById("pfIssueCounter"),
 
     stripConvert: document.getElementById("stripConvert"),
     subCompBtn: document.getElementById("subCompBtn"),
@@ -223,8 +233,16 @@
     exportBtn: document.getElementById("exportBtn"),
     exportBtnText: document.getElementById("exportBtnText"),
 
-    // Main Body
+    // Main Body & Right-Side Drawers
+    rightSplitter: document.getElementById("rightSplitter"),
     preflightDrawer: document.getElementById("preflightDrawer"),
+    orgPreviewDrawer: document.getElementById("orgPreviewDrawer"),
+    orgPreviewTitle: document.getElementById("orgPreviewTitle"),
+    orgPreviewCanvas: document.getElementById("orgPreviewCanvas"),
+    orgPreviewMeta: document.getElementById("orgPreviewMeta"),
+    orgPrevEditPageBtn: document.getElementById("orgPrevEditPageBtn"),
+    closeOrgPreviewBtn: document.getElementById("closeOrgPreviewBtn"),
+    reopenOrgPreviewTab: document.getElementById("reopenOrgPreviewTab"),
     stageViewport: document.getElementById("stageViewport"),
     emptyStage: document.getElementById("emptyStage"),
     dropzone: document.getElementById("dropzone"),
@@ -404,6 +422,10 @@
     refreshWorkspace(true);
   }
 
+  function isOrganizeMode() {
+    return state.pillar === "pages" && state.pagesSub === "organize";
+  }
+
   function isAnnotateMode() {
     return state.pillar === "pages" && state.pagesSub === "annotate";
   }
@@ -413,11 +435,32 @@
       el.zoomLabel.textContent = `${Math.round(state.annScale * 100)}%`;
       return;
     }
+    if (isOrganizeMode()) {
+      el.zoomLabel.textContent =
+        Math.abs(state.orgGridScale - 1.0) < 0.02 ? "100%" : `${Math.round(state.orgGridScale * 100)}%`;
+      return;
+    }
     el.zoomLabel.textContent =
       Math.abs(state.zoomFactor - 1.0) < 0.01 ? t("fitZoom") : `${Math.round(state.zoomFactor * 100)}%`;
   }
 
+  function setOrgGridZoom(newScale) {
+    const clamped = Math.min(2.4, Math.max(0.5, Math.round(newScale * 100) / 100));
+    if (Math.abs(clamped - state.orgGridScale) < 0.005) return;
+    state.orgGridScale = clamped;
+    el.sequenceGrid.style.setProperty("--org-min-w", `${Math.round(172 * clamped)}px`);
+    updateZoomReadout();
+    clearTimeout(state.wheelRenderTimer);
+    state.wheelRenderTimer = setTimeout(() => {
+      if (isOrganizeMode()) renderOrganizeGrid();
+    }, 150);
+  }
+
   function setSmoothZoom(newFactor) {
+    if (isOrganizeMode()) {
+      setOrgGridZoom(newFactor);
+      return;
+    }
     if (isAnnotateMode()) {
       const clampedAnn = Math.min(4.0, Math.max(0.18, newFactor));
       const wrapRect = el.annotateBoardWrap.getBoundingClientRect();
@@ -492,8 +535,13 @@
       if (e.ctrlKey || e.metaKey) {
         e.preventDefault();
         e.stopPropagation();
-        if (!hasPages() || el.spreadViewContainer.classList.contains("hidden")) return;
+        if (!hasPages()) return;
         const factor = e.deltaY < 0 ? 1.12 : 1 / 1.12;
+        if (isOrganizeMode()) {
+          setOrgGridZoom(state.orgGridScale * factor);
+          return;
+        }
+        if (el.spreadViewContainer.classList.contains("hidden")) return;
         setSmoothZoom(state.zoomFactor * factor);
       }
     },
@@ -854,10 +902,28 @@
   // =========================================================================
   // Pillar 1A: Organize, Multi-Select, Drag-Sort & Extract Grid
   // =========================================================================
+  function updateRightOrgPreview(slotIdx) {
+    if (!hasPages() || !window.ShibaUX) return;
+    const idx = Math.max(0, Math.min(state.pages.length - 1, slotIdx));
+    state.previewSlotIdx = idx;
+    const slot = state.pages[idx];
+    const info = getSlotSizeInfo(slot);
+    const docEntry = state.sourceDocs.get(slot.docId);
+    const docName = docEntry ? docEntry.name : "";
+    window.ShibaUX.renderOrgPreviewPane(
+      idx,
+      `P${idx + 1} / ${state.pages.length}`,
+      `${info.wMm.toFixed(0)}×${info.hMm.toFixed(0)}mm · ${docName}`,
+      (sIdx) => getSlotPreviewCanvas(sIdx)
+    );
+  }
+
   async function renderOrganizeGrid() {
     if (!hasPages()) return;
     const myToken = ++state.renderToken;
+    el.sequenceGrid.style.setProperty("--org-min-w", `${Math.round(172 * state.orgGridScale)}px`);
     el.sequenceGrid.innerHTML = "";
+    updateRightOrgPreview(state.activeSlotIdx);
 
     for (let i = 0; i < state.pages.length; i++) {
       const slot = state.pages[i];
@@ -939,6 +1005,25 @@
       cap.appendChild(dm);
       card.appendChild(cap);
 
+      // Hover: update right preview pane immediately + schedule floating large loupe on desktop
+      card.addEventListener("pointerenter", (ev) => {
+        if (ev.pointerType === "touch") return;
+        updateRightOrgPreview(i);
+        if (window.ShibaUX) {
+          window.ShibaUX.scheduleHoverLoupe(
+            card,
+            i,
+            `P${i + 1} · ${info.wMm.toFixed(0)}×${info.hMm.toFixed(0)}mm`,
+            (sIdx) => getSlotPreviewCanvas(sIdx)
+          );
+        }
+      });
+
+      card.addEventListener("pointerleave", () => {
+        if (window.ShibaUX) window.ShibaUX.hideHoverLoupe();
+        updateRightOrgPreview(state.activeSlotIdx);
+      });
+
       // Click to select / Shift+Click range select; Double-click to open Text Edit
       card.addEventListener("click", (ev) => {
         if (ev.shiftKey && state.lastClickedOrgIdx >= 0 && state.lastClickedOrgIdx < state.pages.length) {
@@ -951,6 +1036,7 @@
           state.lastClickedOrgIdx = i;
         }
         state.activeSlotIdx = i;
+        updateRightOrgPreview(i);
         syncOrganizeSelectionUI();
       });
 
@@ -1006,10 +1092,10 @@
 
       el.sequenceGrid.appendChild(card);
 
-      // Async render thumbnail
+      // Async render thumbnail (scales crispness up when grid is zoomed in!)
       getSlotPreviewCanvas(i).then((srcCv) => {
         if (myToken !== state.renderToken) return;
-        const maxThumb = 220;
+        const maxThumb = Math.round(220 * Math.max(1, state.orgGridScale));
         const sc = Math.min(maxThumb / Math.max(1, srcCv.width), maxThumb / Math.max(1, srcCv.height), 1);
         cv.width = Math.max(1, Math.round(srcCv.width * sc));
         cv.height = Math.max(1, Math.round(srcCv.height * sc));
@@ -2158,11 +2244,39 @@
     if (warnCount > 0) addPill("warn", t("pfWarnCount", { n: warnCount }));
     addPill("ok", t("pfPassCount", { n: okCount }));
 
+    // Build flat ordered step list across all locate-able preflight issues for Prev/Next auto-jump!
+    const flatSteps = [];
+    items.forEach((it, cardIdx) => {
+      if (!it.locations || !it.locations.length) return;
+      const uniqueSlots = Array.from(new Set(it.locations.map((l) => l.slotIdx))).sort((a, b) => a - b);
+      uniqueSlots.forEach((sIdx) => {
+        flatSteps.push({ cardIdx, slotIdx: sIdx, locations: it.locations });
+      });
+    });
+    state.flatPfSteps = flatSteps;
+
+    if (flatSteps.length > 0) {
+      el.pfNavGroup.classList.remove("hidden");
+      const matchedCursor = flatSteps.findIndex(
+        (st) =>
+          st.cardIdx === state.selectedPfCardIdx &&
+          st.slotIdx === state.activeSlotIdx &&
+          state.activePfHighlights.length > 0
+      );
+      if (matchedCursor >= 0) state.pfStepCursor = matchedCursor;
+      const dispIdx = state.pfStepCursor >= 0 ? state.pfStepCursor + 1 : 0;
+      el.pfIssueCounter.textContent = `${dispIdx} / ${flatSteps.length}`;
+    } else {
+      el.pfNavGroup.classList.add("hidden");
+      state.pfStepCursor = -1;
+    }
+
     el.preflightDrawer.innerHTML = "";
     items.forEach((it, idx) => {
       const card = document.createElement("div");
       const hasLocs = it.locations && it.locations.length > 0;
       card.className = "pf-card" + (hasLocs ? " clickable" : "") + (state.selectedPfCardIdx === idx ? " selected" : "");
+      card.dataset.pfIdx = String(idx);
 
       const head = document.createElement("div");
       head.className = "pf-card-head";
@@ -2227,8 +2341,26 @@
     state.selectedPfCardIdx = cardIdx;
     state.activeSlotIdx = targetSlotIdx;
     state.activePfHighlights = allLocs.filter((l) => l.slotIdx === targetSlotIdx);
+    const stepIdx = state.flatPfSteps.findIndex((s) => s.cardIdx === cardIdx && s.slotIdx === targetSlotIdx);
+    if (stepIdx >= 0) state.pfStepCursor = stepIdx;
     renderPreflightBadgeAndDrawer();
     renderCanvasStage();
+    requestAnimationFrame(() => {
+      const activeCard = el.preflightDrawer.querySelector(`.pf-card[data-pf-idx="${cardIdx}"]`);
+      if (activeCard && typeof activeCard.scrollIntoView === "function") {
+        activeCard.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+    });
+  }
+
+  function stepPreflightIssue(delta) {
+    if (!state.flatPfSteps.length) return;
+    let next = state.pfStepCursor;
+    if (next < 0) next = delta > 0 ? 0 : state.flatPfSteps.length - 1;
+    else next = (next + delta + state.flatPfSteps.length) % state.flatPfSteps.length;
+    state.pfStepCursor = next;
+    const st = state.flatPfSteps[next];
+    jumpToPreflightIssue(st.cardIdx, st.locations, st.slotIdx);
   }
 
   function renderPreflightHighlightBoxes() {
@@ -2387,6 +2519,7 @@
     }
 
     clampActiveIndices();
+    updatePagerUI();
     const slot = state.pages[state.activeSlotIdx];
     const docEntry = state.sourceDocs.get(slot.docId);
     const page = await docEntry.pdfJsDoc.getPage(slot.origIdx + 1);
@@ -2627,7 +2760,7 @@
   // Master Progressive Workspace Synchronizer
   // =========================================================================
   function updatePagerUI() {
-    if (isAnnotateMode()) {
+    if (isAnnotateMode() || isOrganizeMode()) {
       el.pageIndicator.textContent = `${state.pages.length}${t("pagesUnit")}`;
       el.prevSpreadBtn.classList.add("hidden");
       el.nextSpreadBtn.classList.add("hidden");
@@ -2682,7 +2815,10 @@
 
     if (!loaded) {
       el.topStrip.classList.add("hidden");
+      el.rightSplitter.classList.add("hidden");
       el.preflightDrawer.classList.add("hidden");
+      el.orgPreviewDrawer.classList.add("hidden");
+      el.reopenOrgPreviewTab.classList.add("hidden");
       el.emptyStage.classList.remove("hidden");
       el.spreadViewContainer.classList.add("hidden");
       el.sequenceGrid.classList.add("hidden");
@@ -2701,6 +2837,7 @@
     const isPf = state.pillar === "preflight";
     const isConv = state.pillar === "convert";
     const isAnn = isAnnotateMode();
+    const isOrg = isOrganizeMode();
 
     // Top Strip only shows parameters/tools; Convert uses clean center card so hide empty top strip!
     el.topStrip.classList.toggle("hidden", isConv);
@@ -2710,6 +2847,11 @@
     el.stripPrepress.classList.toggle("hidden", !isPrep);
     el.stripPreflight.classList.toggle("hidden", !isPf);
     el.preflightDrawer.classList.toggle("hidden", !isPf);
+    const showOrgPreview = isOrg && state.orgPreviewOpen;
+    el.orgPreviewDrawer.classList.toggle("hidden", !showOrgPreview);
+    el.reopenOrgPreviewTab.classList.toggle("hidden", !(isOrg && !state.orgPreviewOpen));
+    el.rightSplitter.classList.toggle("hidden", !(isPf || showOrgPreview));
+    el.toggleOrgPreviewBtn.classList.toggle("active", state.orgPreviewOpen);
     el.stripRightGroup.classList.toggle("hidden", isConv);
     el.annExportPngBtn.classList.toggle("hidden", !isAnn);
     el.annExportPngBtn.disabled = state.busy;
@@ -2825,7 +2967,8 @@
     el.sequenceGrid.classList.toggle("hidden", !(showOrgGrid || showSplitGrid));
     el.annotateBoardWrap.classList.toggle("hidden", !showAnnotate);
     el.convertViewPanel.classList.toggle("hidden", !showConvert);
-    el.bottomPager.classList.toggle("hidden", !(showCanvas || showAnnotate));
+    el.bottomPager.classList.toggle("hidden", !(showCanvas || showAnnotate || showOrgGrid));
+    if (showOrgGrid) updatePagerUI();
     if (!showCanvas || state.pillar !== "pages" || state.pagesSub !== "text") {
       el.textFmtBar.classList.add("hidden");
       el.imgFmtBar.classList.add("hidden");
@@ -4231,14 +4374,39 @@
     }
   });
 
+  function setOrgPreviewOpen(val) {
+    state.orgPreviewOpen = Boolean(val);
+    localStorage.setItem("shibapdf_org_prev", state.orgPreviewOpen ? "1" : "0");
+    updateTopStripControls();
+    if (state.orgPreviewOpen && isOrganizeMode()) {
+      updateRightOrgPreview(state.previewSlotIdx || state.activeSlotIdx);
+    }
+  }
+
+  el.toggleOrgPreviewBtn.addEventListener("click", () => setOrgPreviewOpen(!state.orgPreviewOpen));
+  el.closeOrgPreviewBtn.addEventListener("click", () => setOrgPreviewOpen(false));
+  el.reopenOrgPreviewTab.addEventListener("click", () => setOrgPreviewOpen(true));
+  el.orgPrevEditPageBtn.addEventListener("click", () => {
+    if (!hasPages()) return;
+    state.activeSlotIdx = state.previewSlotIdx || 0;
+    state.pagesSub = "text";
+    refreshWorkspace(true);
+  });
+
+  el.pfPrevIssueBtn.addEventListener("click", () => stepPreflightIssue(-1));
+  el.pfNextIssueBtn.addEventListener("click", () => stepPreflightIssue(1));
+
   el.zoomOutBtn.addEventListener("click", () => {
-    setSmoothZoom(isAnnotateMode() ? state.annScale / 1.2 : state.zoomFactor / 1.18);
+    if (isOrganizeMode()) setOrgGridZoom(state.orgGridScale / 1.18);
+    else setSmoothZoom(isAnnotateMode() ? state.annScale / 1.2 : state.zoomFactor / 1.18);
   });
   el.zoomInBtn.addEventListener("click", () => {
-    setSmoothZoom(isAnnotateMode() ? state.annScale * 1.2 : state.zoomFactor * 1.18);
+    if (isOrganizeMode()) setOrgGridZoom(state.orgGridScale * 1.18);
+    else setSmoothZoom(isAnnotateMode() ? state.annScale * 1.2 : state.zoomFactor * 1.18);
   });
   el.zoomFitBtn.addEventListener("click", () => {
-    if (isAnnotateMode()) fitAnnotateBoard();
+    if (isOrganizeMode()) setOrgGridZoom(1.0);
+    else if (isAnnotateMode()) fitAnnotateBoard();
     else setSmoothZoom(1.0);
   });
 
@@ -4248,6 +4416,35 @@
       state.wheelRenderTimer = setTimeout(() => renderCanvasStage(), 150);
     }
   });
+
+  // Initialize Splitters, Mobile Drawer & Touch Pinch-Zoom
+  if (window.ShibaUX) {
+    window.ShibaUX.initColumnSplitters(() => {
+      if (hasPages() && !el.spreadViewContainer.classList.contains("hidden")) renderCanvasStage();
+      else if (isAnnotateMode() && hasPages()) fitAnnotateBoard();
+    });
+    window.ShibaUX.initMobileAndTouchUX(
+      (ratio, midX, midY) => {
+        if (!hasPages()) return;
+        if (isOrganizeMode()) {
+          setOrgGridZoom(state.orgGridScale * ratio);
+        } else if (isAnnotateMode()) {
+          const rect = el.annotateBoardWrap.getBoundingClientRect();
+          const mx = midX - rect.left;
+          const my = midY - rect.top;
+          const nextSc = Math.min(4.0, Math.max(0.18, state.annScale * ratio));
+          state.annPanX = mx - (mx - state.annPanX) * (nextSc / state.annScale);
+          state.annPanY = my - (my - state.annPanY) * (nextSc / state.annScale);
+          state.annScale = nextSc;
+          applyAnnotateTransform();
+          updateZoomReadout();
+        } else if (!el.spreadViewContainer.classList.contains("hidden")) {
+          setSmoothZoom(state.zoomFactor * ratio);
+        }
+      },
+      () => el.fileInput.click()
+    );
+  }
 
   // Initialize App
   applyTheme();

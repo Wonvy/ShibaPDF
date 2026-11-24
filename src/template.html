@@ -12,19 +12,23 @@
 </head>
 <body>
   <div class="workbench">
-    <!-- Left Column: 4 Clean Borderless Pillars -->
-    <aside class="left-rail">
+    <!-- Left Column: Collapsible Feature Navigation -->
+    <aside id="leftRail" class="left-rail">
       <header class="rail-header">
         <div class="brand-mark">
           <i data-lucide="book-open"></i>
           <span>ShibaPDF</span>
+          <span class="version-pill">v/*__APP_VERSION__*/</span>
         </div>
         <div class="header-mini-btns">
+          <a id="githubLinkBtn" class="ghost-btn icon-only-btn" href="https://github.com/Wonvy/ShibaPDF" target="_blank" rel="noopener noreferrer" title="GitHub: Wonvy/ShibaPDF" aria-label="GitHub Repository">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.07 11.07 0 0 1 5.8 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+          </a>
           <button id="langBtn" class="ghost-btn" type="button" title="Switch Language">
             <i data-lucide="languages"></i>
             <span id="langLabel">EN</span>
           </button>
-          <button id="themeBtn" class="ghost-btn" type="button" title="Toggle Theme">
+          <button id="themeBtn" class="ghost-btn icon-only-btn" type="button" title="Toggle Theme">
             <span id="iconMoon"><i data-lucide="moon"></i></span>
             <span id="iconSun" class="hidden"><i data-lucide="sun"></i></span>
           </button>
@@ -151,8 +155,31 @@
       </div>
     </aside>
 
+    <!-- Mobile Drawer Backdrop -->
+    <div id="mobileBackdrop" class="mobile-backdrop hidden"></div>
+
+    <!-- Draggable Left-Right Column Resizer -->
+    <div id="leftSplitter" class="col-splitter" title="Drag to resize · Double-click to reset"></div>
+
     <!-- Right Column: Progressive Workspace -->
     <main class="right-workspace">
+      <!-- Mobile Compact Top Bar (Touch Devices <= 900px) -->
+      <div id="mobileTopBar" class="mobile-top-bar">
+        <button id="mobileMenuBtn" class="ghost-btn" type="button">
+          <i data-lucide="menu"></i>
+          <span style="font-weight:700;">ShibaPDF</span>
+          <span class="version-pill">v/*__APP_VERSION__*/</span>
+        </button>
+        <div style="display:flex;align-items:center;gap:4px;">
+          <a class="ghost-btn icon-only-btn" href="https://github.com/Wonvy/ShibaPDF" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.11.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.72.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11.07 11.07 0 0 1 5.8 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.68.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/></svg>
+          </a>
+          <button id="mobileQuickOpenBtn" class="ghost-btn" type="button">
+            <i data-lucide="upload"></i>
+          </button>
+        </div>
+      </div>
+
       <!-- Progressive Top Action Strip -->
       <header id="topStrip" class="top-action-strip hidden">
         <div class="strip-left">
@@ -162,6 +189,9 @@
             <div id="orgControls" class="strip-left">
               <button id="selAllBtn" class="ghost-btn" type="button" data-i18n="selAll">全选</button>
               <button id="selNoneBtn" class="ghost-btn hidden" type="button" data-i18n="selNone">取消选择</button>
+              <button id="toggleOrgPreviewBtn" class="ghost-btn active" type="button">
+                <i data-lucide="panel-right-open"></i><span data-i18n="orgPreviewBtn">预览栏</span>
+              </button>
               <!-- Progressive Selection Actions (Only appear when >=1 page selected!) -->
               <div id="selActionGroup" class="strip-left hidden">
                 <button id="rotSelBtn" class="ghost-btn" type="button">
@@ -368,10 +398,19 @@
             <span id="k100InlineHint" class="hidden" style="font-size:12px;color:var(--text-2);" data-i18n="keepDescInline">保持原跨页尺寸与出血 · 自动转单色黑 K100 并保留透明度</span>
           </div>
 
-          <!-- Pillar 3: Preflight Summary -->
+          <!-- Pillar 3: Preflight Summary & Prev/Next Auto-Jump -->
           <div id="stripPreflight" class="strip-left hidden">
             <span style="font-size:13.5px;font-weight:600;" data-i18n="preflightReportTitle">印前规范检查</span>
             <div id="pfScorePills" style="display:flex;gap:6px;"></div>
+            <div id="pfNavGroup" class="soft-pills hidden" style="margin-left:4px;">
+              <button id="pfPrevIssueBtn" class="soft-pill" type="button">
+                <i data-lucide="chevron-left" style="width:13px;height:13px;"></i><span data-i18n="pfPrevBtn">上一条</span>
+              </button>
+              <span id="pfIssueCounter" style="font-size:11.5px;font-weight:600;padding:0 8px;color:var(--text-1);font-variant-numeric:tabular-nums;">1 / 1</span>
+              <button id="pfNextIssueBtn" class="soft-pill" type="button">
+                <span data-i18n="pfNextBtn">下一条</span><i data-lucide="chevron-right" style="width:13px;height:13px;"></i>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -390,8 +429,6 @@
 
       <!-- Workspace Main Body -->
       <div class="workspace-body">
-        <aside id="preflightDrawer" class="preflight-drawer hidden"></aside>
-
         <div id="stageViewport" class="stage-viewport">
           <!-- Empty State -->
           <div id="emptyStage" class="center-placeholder">
@@ -516,6 +553,42 @@
               </button>
             </div>
           </div>
+        </div>
+
+        <!-- Draggable Right Drawer Resizer -->
+        <div id="rightSplitter" class="col-splitter hidden" title="Drag to resize · Double-click to reset"></div>
+
+        <!-- Right-Side Preflight Inspector Drawer -->
+        <aside id="preflightDrawer" class="preflight-drawer hidden"></aside>
+
+        <!-- Right-Side Collapsible Organize Page Preview Drawer -->
+        <aside id="orgPreviewDrawer" class="org-preview-drawer hidden">
+          <div class="org-preview-head">
+            <span id="orgPreviewTitle" class="org-preview-title">P1</span>
+            <div style="display:flex;align-items:center;gap:4px;">
+              <button id="orgPrevEditPageBtn" class="ghost-btn" style="height:26px;padding:0 8px;font-size:11.5px;" type="button">
+                <i data-lucide="pen-line" style="width:12px;height:12px;"></i><span data-i18n="navSubEdit">图文编辑</span>
+              </button>
+              <button id="closeOrgPreviewBtn" class="ghost-btn icon-only-btn" type="button" title="Collapse Preview">
+                <i data-lucide="panel-right-close"></i>
+              </button>
+            </div>
+          </div>
+          <div class="org-preview-body">
+            <canvas id="orgPreviewCanvas"></canvas>
+          </div>
+          <div id="orgPreviewMeta" class="org-preview-meta"></div>
+        </aside>
+
+        <!-- Floating Edge Reopen Tab When Organize Preview Drawer Is Collapsed -->
+        <button id="reopenOrgPreviewTab" class="reopen-preview-tab hidden" type="button" title="Expand Preview Pane">
+          <i data-lucide="panel-right-open"></i>
+        </button>
+
+        <!-- Desktop Hover Large Page Preview Popover -->
+        <div id="hoverLoupePopover" class="hover-loupe-popover hidden">
+          <canvas id="hoverLoupeCanvas"></canvas>
+          <div id="hoverLoupeLabel" class="hover-loupe-label"></div>
         </div>
       </div>
 
