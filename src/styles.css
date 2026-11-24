@@ -16,10 +16,13 @@
   --text-1: #141414;
   --text-2: #5c5c5a;
   --text-3: #8e8e8b;
+  --text-active: #000000;
 
   --btn-bg: #141414;
   --btn-fg: #ffffff;
   --btn-hover: #2c2c2b;
+  --btn-tile-bg: rgba(20, 20, 20, 0.03);
+  --btn-tile-hover: rgba(20, 20, 20, 0.06);
 
   --ok: #3a3a38;
   --ok-bg: rgba(20, 20, 20, 0.07);
@@ -62,10 +65,13 @@
   --text-1: #ededed;
   --text-2: #9a9a98;
   --text-3: #666664;
+  --text-active: #ffffff;
 
   --btn-bg: #ededed;
   --btn-fg: #121212;
   --btn-hover: #ffffff;
+  --btn-tile-bg: rgba(255, 255, 255, 0.028);
+  --btn-tile-hover: rgba(255, 255, 255, 0.06);
 
   --ok: #c4c4c2;
   --ok-bg: rgba(255, 255, 255, 0.08);
@@ -317,21 +323,21 @@ svg.lucide {
 }
 
 .ghost-btn.active {
-  background: var(--bg-pill);
-  color: var(--text-1);
+  background: transparent;
+  color: var(--text-active);
   font-weight: 600;
 }
 
 #openFlipbookBtn {
-  background: var(--bg-pill);
-  color: var(--text-1);
+  background: var(--btn-tile-bg);
+  color: var(--text-2);
   border: none;
-  font-weight: 600;
+  font-weight: 500;
 }
 
 #openFlipbookBtn:hover {
-  background: var(--btn-bg);
-  color: var(--btn-fg);
+  background: var(--btn-tile-hover);
+  color: var(--text-active);
 }
 
 /* High-Density Borderless Pro Navigation Pillars */
@@ -730,8 +736,8 @@ svg.lucide {
 }
 
 .soft-pill.active {
-  background: var(--btn-bg);
-  color: var(--btn-fg);
+  background: transparent;
+  color: var(--text-active);
   font-weight: 600;
   box-shadow: none;
 }
@@ -1079,18 +1085,22 @@ svg.lucide {
   padding: 3px 8px;
   font-size: 11px;
   font-weight: 600;
-  background: var(--bg-rail);
-  color: var(--text-1);
+  background: var(--btn-tile-bg);
+  color: var(--text-2);
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   gap: 4px;
 }
 
-.pf-jump-chip:hover,
+.pf-jump-chip:hover {
+  background: var(--btn-tile-hover);
+  color: var(--text-1);
+}
+
 .pf-jump-chip.active {
-  background: var(--btn-bg);
-  color: var(--btn-fg);
+  background: transparent;
+  color: var(--text-active);
 }
 
 .pf-jump-chip svg.lucide { width: 11px; height: 11px; }
@@ -1696,8 +1706,8 @@ svg.lucide {
   transition: background-color 0.14s;
 }
 
-.preset-radio-card:hover { background: var(--bg-hover); }
-.preset-radio-card.active { background: var(--btn-bg); color: var(--btn-fg); outline: none; font-weight: 600; }
+.preset-radio-card:hover { background: var(--btn-tile-hover); color: var(--text-1); }
+.preset-radio-card.active { background: transparent; color: var(--text-active); outline: none; font-weight: 600; }
 
 .result-banner {
   padding: 11px 14px;
@@ -1789,7 +1799,7 @@ svg.lucide {
   padding: 8px 6px;
   border: none;
   border-radius: 8px;
-  background: var(--bg-pill);
+  background: var(--btn-tile-bg);
   color: var(--text-2);
   font-size: 11.5px;
   font-weight: 500;
@@ -1817,30 +1827,30 @@ svg.lucide {
   width: 20px;
   height: 20px;
   stroke-width: 1.7;
-  opacity: 0.78;
+  opacity: 0.68;
   flex-shrink: 0;
   transition: opacity 0.14s, color 0.14s;
 }
 
 .rail-sub-btn:hover {
-  background: var(--bg-hover);
+  background: var(--btn-tile-hover);
   color: var(--text-1);
 }
 
 .rail-sub-btn:hover svg.lucide {
-  opacity: 1;
+  opacity: 0.9;
 }
 
 .rail-sub-btn.active {
-  background: var(--btn-bg);
+  background: transparent;
   border: none;
-  color: var(--btn-fg);
+  color: var(--text-active);
   font-weight: 600;
 }
 
 .rail-sub-btn.active svg.lucide {
   opacity: 1;
-  color: var(--btn-fg);
+  color: var(--text-active);
 }
 
 /* Freeform Infinite Designer Annotation Board */
@@ -2341,7 +2351,7 @@ svg.lucide {
   padding: 0 6px;
   border: none;
   border-radius: 8px;
-  background: var(--bg-rail);
+  background: var(--btn-tile-bg);
   color: var(--text-2);
   cursor: pointer;
   display: inline-flex;
@@ -2351,13 +2361,13 @@ svg.lucide {
 }
 
 .prop-icon-btn:hover:not(:disabled) {
-  background: var(--bg-hover);
+  background: var(--btn-tile-hover);
   color: var(--text-1);
 }
 
 .prop-icon-btn.active {
-  background: var(--btn-bg);
-  color: var(--btn-fg);
+  background: transparent;
+  color: var(--text-active);
 }
 
 .prop-icon-btn:disabled,
@@ -2376,7 +2386,7 @@ svg.lucide {
   height: 25px;
   border: none;
   border-radius: 6px;
-  background: var(--bg-rail);
+  background: var(--btn-tile-bg);
   color: var(--text-2);
   font-size: 11px;
   font-weight: 600;
@@ -2385,13 +2395,13 @@ svg.lucide {
 }
 
 .prop-chip-btn:hover {
-  background: var(--bg-hover);
+  background: var(--btn-tile-hover);
   color: var(--text-1);
 }
 
 .prop-chip-btn.active {
-  background: var(--btn-bg);
-  color: var(--btn-fg);
+  background: transparent;
+  color: var(--text-active);
 }
 
 .prop-align-grid {
@@ -2487,8 +2497,8 @@ svg.lucide {
 }
 
 .prop-para-btn.active {
-  background: var(--btn-bg);
-  color: var(--btn-fg);
+  background: transparent;
+  color: var(--text-active);
   font-weight: 600;
   box-shadow: none;
 }
@@ -2887,26 +2897,26 @@ svg.lucide {
   padding: 11px 6px 10px;
   border-radius: 0;
   border: none;
-  background: var(--bg-rail);
-  color: var(--text-1);
+  background: linear-gradient(var(--btn-tile-bg), var(--btn-tile-bg)), var(--bg-rail);
+  color: var(--text-2);
   cursor: pointer;
-  transition: background-color 0.14s, box-shadow 0.14s;
+  transition: background 0.14s, color 0.14s;
   gap: 3px;
 }
 
 .impose-method-card:hover {
-  background: var(--bg-hover);
+  background: linear-gradient(var(--btn-tile-hover), var(--btn-tile-hover)), var(--bg-rail);
+  color: var(--text-1);
 }
 
 .impose-method-card.active {
-  background: var(--btn-bg);
-  color: var(--btn-fg);
-  --bg-surface: var(--btn-bg);
+  background: var(--bg-rail);
+  color: var(--text-active);
   box-shadow: none;
 }
 
 .impose-method-card.active:hover {
-  background: var(--btn-bg);
+  background: var(--bg-rail);
 }
 
 .impose-svg-slot {
@@ -2915,7 +2925,9 @@ svg.lucide {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-1);
+  color: var(--text-2);
+  opacity: 0.65;
+  transition: color 0.14s, opacity 0.14s;
 }
 
 .impose-svg-slot svg {
@@ -2926,14 +2938,20 @@ svg.lucide {
 
 .impose-card-title {
   font-size: 12px;
-  font-weight: 650;
-  color: var(--text-1);
+  font-weight: 550;
+  color: var(--text-2);
   line-height: 1.2;
+  transition: color 0.14s;
 }
 
-.impose-method-card.active .impose-svg-slot,
+.impose-method-card.active .impose-svg-slot {
+  color: var(--text-active);
+  opacity: 1;
+}
+
 .impose-method-card.active .impose-card-title {
-  color: var(--btn-fg);
+  color: var(--text-active);
+  font-weight: 650;
 }
 
 .impose-card-sub {
@@ -2943,8 +2961,8 @@ svg.lucide {
 }
 
 .impose-method-card.active .impose-card-sub {
-  color: var(--btn-fg);
-  opacity: 0.72;
+  color: var(--text-2);
+  opacity: 1;
 }
 
 /* ============================================================================
