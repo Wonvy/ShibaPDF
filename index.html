@@ -2435,6 +2435,245 @@ svg.lucide {
   text-align-last: justify;
 }
 
+/* PDF Document Properties & Font Embedding Inspector Modal */
+.pdf-info-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(12, 12, 12, 0.44);
+  backdrop-filter: blur(4px);
+  z-index: 210;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.pdf-info-dialog {
+  width: 680px;
+  max-width: 100%;
+  max-height: min(84vh, 720px);
+  background: var(--bg-surface);
+  border-radius: 18px;
+  box-shadow: var(--shadow-popover);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.pdf-info-header {
+  padding: 16px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.pdf-info-title {
+  font-size: 15.5px;
+  font-weight: 650;
+  color: var(--text-1);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pdf-info-tabs-bar {
+  padding: 0 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  border-bottom: 1px solid var(--status-border);
+  flex-shrink: 0;
+}
+
+.font-filter-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.font-search-input {
+  height: 30px;
+  width: 148px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: none;
+  background: var(--bg-rail);
+  color: var(--text-1);
+  font-size: 12px;
+  outline: none;
+}
+
+.pdf-info-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+}
+
+.info-pane-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+@media (max-width: 680px) {
+  .info-pane-meta {
+    grid-template-columns: 1fr;
+  }
+}
+
+.info-sec-card {
+  background: var(--bg-rail);
+  border-radius: 13px;
+  padding: 14px 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.info-sec-title {
+  font-size: 11.5px;
+  font-weight: 650;
+  color: var(--text-3);
+  margin-bottom: 2px;
+}
+
+.info-kv-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.info-kv-key {
+  color: var(--text-2);
+  flex-shrink: 0;
+}
+
+.info-kv-val {
+  color: var(--text-1);
+  font-weight: 550;
+  text-align: right;
+  word-break: break-word;
+  font-variant-numeric: tabular-nums;
+}
+
+.info-pane-fonts {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.info-font-banner {
+  padding: 11px 14px;
+  border-radius: 11px;
+  font-size: 12.5px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.info-font-banner.ok {
+  background: var(--ok-bg);
+  color: var(--ok);
+}
+
+.info-font-banner.err {
+  background: var(--err-bg);
+  color: var(--err);
+}
+
+.info-font-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-font-card {
+  background: var(--bg-rail);
+  border-radius: 12px;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.info-font-card.unembedded {
+  outline: 1.5px solid var(--err);
+}
+
+.info-font-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.info-font-name {
+  font-size: 13.5px;
+  font-weight: 650;
+  color: var(--text-1);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  word-break: break-all;
+}
+
+.info-font-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 11.5px;
+  color: var(--text-2);
+}
+
+.info-font-pages {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  font-size: 11px;
+  color: var(--text-3);
+  margin-top: 2px;
+}
+
+.info-page-chip {
+  border: none;
+  border-radius: 5px;
+  padding: 2px 7px;
+  background: var(--bg-surface);
+  color: var(--text-1);
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.info-page-chip:hover {
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+}
+
+.pdf-info-footer {
+  padding: 12px 20px;
+  border-top: 1px solid var(--status-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
   </style>
 </head>
 <body>
@@ -2445,7 +2684,7 @@ svg.lucide {
         <div class="brand-mark">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-book-open" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 5v16" /> <path d="M20.001 19A2 2 0 0022 17V5a2 2 0 00-1.999-2L16 3.002A5 5 0 0012 5a5 5 0 00-4-2H4a2 2 0 00-2 2v12a2 2 0 001.999 2H8a5 5 0 014 2 5 5 0 014-2z" /> </svg>
           <span>ShibaPDF</span>
-          <span class="version-pill">v1.8.0</span>
+          <span class="version-pill">v1.9.0</span>
         </div>
         <div class="header-mini-btns">
           <button id="langBtn" class="ghost-btn" type="button" title="Switch Language">
@@ -2555,6 +2794,10 @@ svg.lucide {
           <div class="rail-files-head">
             <span data-i18n="secFiles">已加载文档</span>
             <div style="display:flex;gap:4px;">
+              <button id="railDocInfoBtn" class="ghost-btn" style="height:22px;padding:0 6px;font-size:11px;" type="button" title="Ctrl+D">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:11px;height:11px;" class="lucide lucide-info" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="M12 16v-4" /> <path d="M12 8h.01" /> </svg>
+                <span data-i18n="docInfoShort">属性</span>
+              </button>
               <button id="addMoreBtn" class="ghost-btn" style="height:22px;padding:0 6px;font-size:11px;" type="button">
                 <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:11px;height:11px;" class="lucide lucide-plus" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M5 12h14" /> <path d="M12 5v14" /> </svg>
                 <span data-i18n="addBtn">添加合并</span>
@@ -2604,7 +2847,7 @@ svg.lucide {
         <button id="mobileMenuBtn" class="ghost-btn" type="button">
           <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-menu" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M4 5h16" /> <path d="M4 12h16" /> <path d="M4 19h16" /> </svg>
           <span style="font-weight:700;">ShibaPDF</span>
-          <span class="version-pill">v1.8.0</span>
+          <span class="version-pill">v1.9.0</span>
         </button>
         <div style="display:flex;align-items:center;gap:4px;">
           <button id="mobileQuickOpenBtn" class="ghost-btn" type="button">
@@ -2909,7 +3152,11 @@ svg.lucide {
         </div>
 
         <div id="stripRightGroup" class="strip-right">
-          <span id="dimSummaryText" style="font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;"></span>
+          <span id="dimSummaryText" style="font-size:12px;color:var(--text-2);font-variant-numeric:tabular-nums;cursor:pointer;" title="查看 PDF 文档属性与字体信息 (Ctrl+D)"></span>
+          <button id="docInfoBtn" class="ghost-btn" type="button" title="Ctrl+D">
+            <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-info" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="M12 16v-4" /> <path d="M12 8h.01" /> </svg>
+            <span data-i18n="docInfoBtn">文档属性</span>
+          </button>
           <button id="annExportPngBtn" class="ghost-btn active hidden" type="button">
             <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-image" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <circle cx="9" cy="9" r="2" /> <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" /> </svg>
             <span data-i18n="annExportPngBtn">导出审稿长图</span>
@@ -3371,6 +3618,64 @@ svg.lucide {
         </div>
       </div>
 
+      <!-- PDF Document Properties & Font Embedding Inspector Modal (Ctrl+D) -->
+      <div id="pdfInfoModal" class="pdf-info-modal hidden" role="dialog" aria-modal="true" aria-labelledby="pdfInfoTitle">
+        <div class="pdf-info-dialog">
+          <div class="pdf-info-header">
+            <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1;">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:18px;height:18px;color:var(--text-1);" class="lucide lucide-info" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <circle cx="12" cy="12" r="10" /> <path d="M12 16v-4" /> <path d="M12 8h.01" /> </svg>
+              <h3 id="pdfInfoTitle" class="pdf-info-title" data-i18n="infoModalTitle">PDF 文档属性与字体检查</h3>
+            </div>
+            <select id="pdfInfoDocSelect" class="prop-select hidden" style="width:auto;max-width:240px;height:30px;font-size:12px;"></select>
+            <button id="closePdfInfoBtn" class="ghost-btn icon-only-btn" type="button" title="Esc">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-x" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M18 6 6 18" /> <path d="m6 6 12 12" /> </svg>
+            </button>
+          </div>
+
+          <div class="pdf-info-tabs-bar">
+            <div class="soft-pills">
+              <button id="infoTabMetaBtn" class="soft-pill active" type="button">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-file-text" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" /> </svg>
+                <span data-i18n="infoTabMeta">文档参数</span>
+              </button>
+              <button id="infoTabFontsBtn" class="soft-pill" type="button">
+                <!-- @license lucide-static v1.78.0 - ISC --> <svg style="width:13px;height:13px;" class="lucide lucide-type" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <path d="M12 4v16" /> <path d="M4 7V5a1 1 0 0 1 1-1h14a1 1 0 0 1 1 1v2" /> <path d="M9 20h6" /> </svg>
+                <span data-i18n="infoTabFonts">字体列表</span>
+                <span id="infoFontsBadge" class="version-pill" style="margin-left:2px;">0</span>
+              </button>
+            </div>
+
+            <div id="fontFilterGroup" class="font-filter-group hidden">
+              <div class="soft-pills">
+                <button class="soft-pill font-flt-btn active" data-flt="all" type="button" data-i18n="fontFilterAll">全部</button>
+                <button class="soft-pill font-flt-btn" data-flt="unemb" type="button" data-i18n="fontFilterUnemb">未嵌入</button>
+                <button class="soft-pill font-flt-btn" data-flt="emb" type="button" data-i18n="fontFilterEmb">已嵌入</button>
+              </div>
+              <input id="fontSearchInput" class="font-search-input" type="text" placeholder="搜索字体名称..." />
+            </div>
+          </div>
+
+          <div class="pdf-info-body">
+            <!-- Tab 1: Document Metadata & Prepress Specs -->
+            <div id="infoPaneMeta" class="info-pane-meta"></div>
+
+            <!-- Tab 2: Detailed Font List & Embedding Audit -->
+            <div id="infoPaneFonts" class="info-pane-fonts hidden">
+              <div id="infoFontBanner" class="info-font-banner"></div>
+              <div id="infoFontList" class="info-font-list"></div>
+            </div>
+          </div>
+
+          <div class="pdf-info-footer">
+            <button id="copyPdfInfoBtn" class="ghost-btn active" type="button">
+              <!-- @license lucide-static v1.78.0 - ISC --> <svg class="lucide lucide-copy" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" > <rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /> </svg>
+              <span id="copyPdfInfoText" data-i18n="infoCopyBtn">复制属性报告</span>
+            </button>
+            <button id="closePdfInfoFootBtn" class="primary-btn" style="height:32px;" type="button" data-i18n="infoCloseBtn">关闭</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Fixed Right Workspace Contextual Status Bar -->
       <footer id="rightStatusBar" class="right-status-bar">
         <div class="right-status-left">
@@ -3774,7 +4079,58 @@ window.SHIBA_I18N = {
     stImgMsg: "格式：{fmt} · 分辨率：{dpi} DPI · 范围：{scope}",
     stImgRight: "预计输出 {n} 张图片{zip}",
     stImgZip: "（自动打包 ZIP）",
-    stImgPdfMsg: "输出清晰度：{dpi} DPI · 全页栅格化防复制篡改、彻底锁死字体"
+    stImgPdfMsg: "输出清晰度：{dpi} DPI · 全页栅格化防复制篡改、彻底锁死字体",
+
+    // PDF Document Info & Font Inspector Modal (v1.9)
+    docInfoBtn: "文档属性",
+    docInfoShort: "属性",
+    infoModalTitle: "PDF 文档属性与字体检查",
+    infoAllDocsOpt: "全部已加载文档汇总 ({n} 份)",
+    infoTabMeta: "文档参数",
+    infoTabFonts: "字体列表",
+    infoSecBasic: "文件与元数据",
+    infoSecTech: "页面与印前参数",
+    infoFileName: "文件名称",
+    infoFileSize: "文件体积",
+    infoPdfVer: "PDF 版本",
+    infoLinearizedYes: " · 支持快速 Web 视图",
+    infoTitle: "文档标题",
+    infoAuthor: "作者",
+    infoSubject: "主题 / 摘要",
+    infoKeywords: "关键词",
+    infoCreator: "创建应用程序",
+    infoProducer: "PDF 转换引擎",
+    infoCreated: "创建时间",
+    infoModified: "修改时间",
+    infoPages: "页面数量",
+    infoPagesFmt: "{p} 页（折算单页 {s}P）",
+    infoPageSize: "页面尺寸",
+    infoSizeMixed: "多尺寸混排（首张 {w}×{h} mm）",
+    infoBoxes: "印刷框定义",
+    infoFontsSummary: "字体嵌入概况",
+    infoImagesSummary: "图像与色彩",
+    infoSecurity: "安全与权限",
+    infoSecOpen: "未加密（印前 RIP 可直接读取）",
+    infoSecLocked: "含权限加密字典",
+    infoNone: "—",
+    fontFilterAll: "全部",
+    fontFilterUnemb: "未嵌入",
+    fontFilterEmb: "已嵌入",
+    fontSearchPh: "搜索字体名称...",
+    fontAllEmbBanner: "共检测到 {n} 款字体，已 100% 嵌入文件，跨电脑审阅与送印无缺字风险。",
+    fontUnembBanner: "注意：共 {t} 款字体中有 {u} 款未嵌入文件！在未安装该字体的电脑或印厂打开可能发生替换或乱码。",
+    fontZeroBanner: "当前文档无活动文本字体（文字已全部转曲或纯位图），印刷绝对安全，无缺字风险。",
+    fontFixLockBtn: "转图片版锁死字体",
+    fontEmbSub: "已嵌入 (子集)",
+    fontEmbFull: "已完整嵌入",
+    fontNotEmb: "未嵌入",
+    fontSubsetTag: "子集",
+    fontTypeLabel: "类型",
+    fontEncLabel: "编码",
+    fontPagesLabel: "所在页：",
+    infoCopyBtn: "复制属性报告",
+    infoCopiedBtn: "已复制到剪贴板 ✓",
+    infoCloseBtn: "关闭"
   },
 
   en: {
@@ -4084,7 +4440,57 @@ window.SHIBA_I18N = {
     stImgMsg: "Format: {fmt} · {dpi} DPI · Scope: {scope}",
     stImgRight: "Output {n} image(s){zip}",
     stImgZip: " (Auto-ZIP)",
-    stImgPdfMsg: "Resolution: {dpi} DPI · Full-page rasterized PDF to lock fonts & prevent text copy"
+    stImgPdfMsg: "Resolution: {dpi} DPI · Full-page rasterized PDF to lock fonts & prevent text copy",
+
+    docInfoBtn: "PDF Info",
+    docInfoShort: "Info",
+    infoModalTitle: "PDF Document Properties & Fonts",
+    infoAllDocsOpt: "All Loaded Documents ({n})",
+    infoTabMeta: "Summary",
+    infoTabFonts: "Fonts",
+    infoSecBasic: "File & Metadata",
+    infoSecTech: "Pages & Prepress Specs",
+    infoFileName: "File Name",
+    infoFileSize: "File Size",
+    infoPdfVer: "PDF Version",
+    infoLinearizedYes: " · Fast Web View",
+    infoTitle: "Title",
+    infoAuthor: "Author",
+    infoSubject: "Subject",
+    infoKeywords: "Keywords",
+    infoCreator: "Application",
+    infoProducer: "PDF Producer",
+    infoCreated: "Created",
+    infoModified: "Modified",
+    infoPages: "Page Count",
+    infoPagesFmt: "{p} page(s) ({s} single-equiv)",
+    infoPageSize: "Page Size",
+    infoSizeMixed: "Mixed sizes (1st: {w}×{h} mm)",
+    infoBoxes: "PDF Page Boxes",
+    infoFontsSummary: "Font Embedding",
+    infoImagesSummary: "Images & Color",
+    infoSecurity: "Security",
+    infoSecOpen: "Unencrypted (RIP Ready)",
+    infoSecLocked: "Encrypted Dictionary",
+    infoNone: "—",
+    fontFilterAll: "All",
+    fontFilterUnemb: "Unembedded",
+    fontFilterEmb: "Embedded",
+    fontSearchPh: "Filter font name...",
+    fontAllEmbBanner: "All {n} font(s) are 100% embedded in the PDF — safe for printing and cross-device viewing.",
+    fontUnembBanner: "Warning: {u} of {t} font(s) are NOT embedded! Missing glyphs or font substitution may occur.",
+    fontZeroBanner: "0 active text fonts (all text outlined to curves or rasterized) — 100% safe for press.",
+    fontFixLockBtn: "Flatten to Image PDF",
+    fontEmbSub: "Embedded (Subset)",
+    fontEmbFull: "Embedded (Full)",
+    fontNotEmb: "Not Embedded",
+    fontSubsetTag: "Subset",
+    fontTypeLabel: "Type",
+    fontEncLabel: "Encoding",
+    fontPagesLabel: "Pages:",
+    infoCopyBtn: "Copy Report",
+    infoCopiedBtn: "Copied ✓",
+    infoCloseBtn: "Close"
   }
 };
 
@@ -4497,9 +4903,101 @@ window.ShibaPrepress = (function () {
     return spans;
   }
 
+  async function extractPdfMetadataSummary(rawBytes, doc, pdfJsDoc) {
+    let pdfVersion = "1.4+";
+    let isLinearized = false;
+    try {
+      const headLen = Math.min(rawBytes.length, 1024);
+      let headStr = "";
+      for (let i = 0; i < headLen; i++) headStr += String.fromCharCode(rawBytes[i]);
+      const mVer = headStr.match(/%PDF-(\d+\.\d+)/);
+      if (mVer) pdfVersion = mVer[1];
+      if (/\/Linearized\b/.test(headStr)) isLinearized = true;
+    } catch (_) {}
+
+    function formatPdfDate(val) {
+      if (!val) return "";
+      if (val instanceof Date && !isNaN(val.getTime())) {
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${val.getFullYear()}-${pad(val.getMonth() + 1)}-${pad(val.getDate())} ${pad(val.getHours())}:${pad(val.getMinutes())}`;
+      }
+      const s = String(val).trim();
+      const m = s.match(/^(?:D:)?(\d{4})(\d{2})?(\d{2})?(\d{2})?(\d{2})?/);
+      if (m && m[1]) {
+        const yr = m[1];
+        const mo = m[2] || "01";
+        const dy = m[3] || "01";
+        const hr = m[4] || "00";
+        const mn = m[5] || "00";
+        return `${yr}-${mo}-${dy} ${hr}:${mn}`;
+      }
+      return s;
+    }
+
+    let info = {};
+    try {
+      if (pdfJsDoc && typeof pdfJsDoc.getMetadata === "function") {
+        const md = await pdfJsDoc.getMetadata();
+        if (md && md.info) info = md.info;
+      }
+    } catch (_) {}
+
+    const pickStr = (jsVal, libGetter) => {
+      if (jsVal && String(jsVal).trim()) return String(jsVal).trim();
+      try {
+        const v = libGetter();
+        if (v && String(v).trim()) return String(v).trim();
+      } catch (_) {}
+      return "";
+    };
+
+    return {
+      pdfVersion,
+      isLinearized,
+      title: pickStr(info.Title, () => doc.getTitle()),
+      author: pickStr(info.Author, () => doc.getAuthor()),
+      subject: pickStr(info.Subject, () => doc.getSubject()),
+      keywords: pickStr(info.Keywords, () => doc.getKeywords()),
+      creator: pickStr(info.Creator, () => doc.getCreator()),
+      producer: pickStr(info.Producer, () => doc.getProducer()),
+      creationDate: formatPdfDate(info.CreationDate || (() => { try { return doc.getCreationDate(); } catch (_) { return ""; } })()),
+      modDate: formatPdfDate(info.ModDate || (() => { try { return doc.getModificationDate(); } catch (_) { return ""; } })())
+    };
+  }
+
+  function decodePdfFontBaseName(rawStr) {
+    let s = String(rawStr || "").replace(/^\//, "").trim();
+    let isSubset = false;
+    if (/^[A-Z]{6}\+/.test(s)) {
+      isSubset = true;
+      s = s.slice(7);
+    }
+    if (/#[0-9A-Fa-f]{2}/.test(s) && typeof TextDecoder !== "undefined") {
+      try {
+        const bytes = [];
+        for (let i = 0; i < s.length; i++) {
+          if (s[i] === "#" && /^[0-9A-Fa-f]{2}$/.test(s.slice(i + 1, i + 3))) {
+            bytes.push(parseInt(s.slice(i + 1, i + 3), 16));
+            i += 2;
+          } else {
+            bytes.push(s.charCodeAt(i) & 0xff);
+          }
+        }
+        const u8 = new Uint8Array(bytes);
+        try {
+          s = new TextDecoder("utf-8", { fatal: true }).decode(u8);
+        } catch (_) {
+          s = new TextDecoder("gbk").decode(u8);
+        }
+      } catch (_) {}
+    }
+    return { cleanName: s || "UnnamedFont", isSubset };
+  }
+
   async function runPrepressPreflight(rawBytes, pdfJsDoc, origPages) {
     const doc = await PDFLib.PDFDocument.load(rawBytes, { ignoreEncryption: true });
     const pages = doc.getPages();
+    const metaInfo = await extractPdfMetadataSummary(rawBytes, doc, pdfJsDoc);
 
     const nonK100PageIndices = new Set();
     const nonK100Locs = [];
@@ -4510,13 +5008,114 @@ window.ShibaPrepress = (function () {
     let rgbVectorPages = 0;
     let smaskCount = 0;
     let gradientCount = 0;
+    let hasTrimBox = false;
+    let hasBleedBox = false;
 
     const allFonts = new Map();
+    const fontDetailsMap = new Map();
     const placedDpis = [];
     const seenImgRefs = new Set();
 
+    function scanResFonts(resDict, pageNumOneBased, visitedFormRefs) {
+      if (!resDict || !(resDict instanceof PDFLib.PDFDict)) return;
+      const fontDict = resDict.lookup(PDFLib.PDFName.of("Font"));
+      if (fontDict && fontDict instanceof PDFLib.PDFDict) {
+        for (const [, fRef] of fontDict.entries()) {
+          const fObj = doc.context.lookup(fRef);
+          if (!fObj || !(fObj instanceof PDFLib.PDFDict)) continue;
+
+          const rawBase = (fObj.get(PDFLib.PDFName.of("BaseFont")) || "").toString();
+          const { cleanName, isSubset } = decodePdfFontBaseName(rawBase);
+          const subTypeRaw = (fObj.get(PDFLib.PDFName.of("Subtype")) || "").toString().replace(/^\//, "") || "Font";
+          let cidSubType = "";
+
+          const encObj = fObj.get(PDFLib.PDFName.of("Encoding"));
+          let encoding = "Built-in";
+          if (encObj) {
+            const es = encObj.toString();
+            if (es.startsWith("/")) encoding = es.slice(1);
+            else {
+              const encDict = fObj.lookup(PDFLib.PDFName.of("Encoding"));
+              if (encDict && encDict instanceof PDFLib.PDFDict) {
+                const baseEnc = encDict.get(PDFLib.PDFName.of("BaseEncoding"));
+                encoding = baseEnc ? baseEnc.toString().replace(/^\//, "") : "Custom";
+              } else {
+                encoding = "Custom";
+              }
+            }
+          }
+
+          let embedded = subTypeRaw === "Type3";
+          let streamFormat = subTypeRaw === "Type3" ? "Type3" : "";
+
+          let desc = fObj.lookup(PDFLib.PDFName.of("FontDescriptor"));
+          if (!desc) {
+            const descArr = fObj.lookup(PDFLib.PDFName.of("DescendantFonts"));
+            if (descArr && descArr instanceof PDFLib.PDFArray && descArr.size() > 0) {
+              const cidFont = doc.context.lookup(descArr.get(0));
+              if (cidFont && cidFont instanceof PDFLib.PDFDict) {
+                cidSubType = (cidFont.get(PDFLib.PDFName.of("Subtype")) || "").toString().replace(/^\//, "");
+                desc = cidFont.lookup(PDFLib.PDFName.of("FontDescriptor"));
+              }
+            }
+          }
+          if (desc && desc instanceof PDFLib.PDFDict) {
+            if (desc.get(PDFLib.PDFName.of("FontFile"))) {
+              embedded = true;
+              streamFormat = "Type1";
+            } else if (desc.get(PDFLib.PDFName.of("FontFile2"))) {
+              embedded = true;
+              streamFormat = "TrueType";
+            } else if (desc.get(PDFLib.PDFName.of("FontFile3"))) {
+              embedded = true;
+              streamFormat = "OpenType / CFF";
+            }
+          }
+
+          const dispType = cidSubType ? `${subTypeRaw} (${cidSubType})` : subTypeRaw;
+          if (!allFonts.has(cleanName) || !embedded) allFonts.set(cleanName, embedded);
+
+          const detailKey = `${cleanName}__${dispType}__${embedded ? "1" : "0"}`;
+          if (!fontDetailsMap.has(detailKey)) {
+            fontDetailsMap.set(detailKey, {
+              name: cleanName,
+              embedded,
+              isSubset,
+              fontType: dispType,
+              encoding,
+              streamFormat,
+              pages: new Set([pageNumOneBased])
+            });
+          } else {
+            const existing = fontDetailsMap.get(detailKey);
+            if (isSubset) existing.isSubset = true;
+            existing.pages.add(pageNumOneBased);
+          }
+        }
+      }
+
+      const xObjD = resDict.lookup(PDFLib.PDFName.of("XObject"));
+      if (xObjD && xObjD instanceof PDFLib.PDFDict) {
+        for (const [, xRef] of xObjD.entries()) {
+          if (!(xRef instanceof PDFLib.PDFRef)) continue;
+          const rk = xRef.toString();
+          if (visitedFormRefs.has(rk)) continue;
+          visitedFormRefs.add(rk);
+          const xo = doc.context.lookup(xRef);
+          if (xo && xo instanceof PDFLib.PDFRawStream) {
+            const sub = (xo.dict.get(PDFLib.PDFName.of("Subtype")) || "").toString();
+            if (sub === "/Form") {
+              scanResFonts(xo.dict.lookup(PDFLib.PDFName.of("Resources")), pageNumOneBased, visitedFormRefs);
+            }
+          }
+        }
+      }
+    }
+
     for (let pIdx = 0; pIdx < pages.length; pIdx++) {
       const page = pages[pIdx];
+      if (page.node.get(PDFLib.PDFName.of("TrimBox"))) hasTrimBox = true;
+      if (page.node.get(PDFLib.PDFName.of("BleedBox"))) hasBleedBox = true;
       const rawCrop = page.getCropBox();
       const res = page.node.lookup(PDFLib.PDFName.of("Resources"));
       let hasRgbGroup = false;
@@ -4526,29 +5125,7 @@ window.ShibaPrepress = (function () {
         if (cs && cs.toString() === "/DeviceRGB") hasRgbGroup = true;
       }
 
-      const fontDict = res && res instanceof PDFLib.PDFDict ? res.lookup(PDFLib.PDFName.of("Font")) : null;
-      if (fontDict && fontDict instanceof PDFLib.PDFDict) {
-        for (const [, fRef] of fontDict.entries()) {
-          const fObj = doc.context.lookup(fRef);
-          if (!fObj || !(fObj instanceof PDFLib.PDFDict)) continue;
-          const rawName = (fObj.get(PDFLib.PDFName.of("BaseFont")) || "").toString().replace(/^\//, "").replace(/^[A-Z]{6}\+/, "") || "Font";
-          const subType = (fObj.get(PDFLib.PDFName.of("Subtype")) || "").toString();
-          let embedded = subType === "/Type3";
-
-          let desc = fObj.lookup(PDFLib.PDFName.of("FontDescriptor"));
-          if (!desc) {
-            const descArr = fObj.lookup(PDFLib.PDFName.of("DescendantFonts"));
-            if (descArr && descArr instanceof PDFLib.PDFArray && descArr.size() > 0) {
-              const cidFont = doc.context.lookup(descArr.get(0));
-              if (cidFont && cidFont instanceof PDFLib.PDFDict) desc = cidFont.lookup(PDFLib.PDFName.of("FontDescriptor"));
-            }
-          }
-          if (desc && desc instanceof PDFLib.PDFDict) {
-            if (desc.get(PDFLib.PDFName.of("FontFile")) || desc.get(PDFLib.PDFName.of("FontFile2")) || desc.get(PDFLib.PDFName.of("FontFile3"))) embedded = true;
-          }
-          if (!allFonts.has(rawName) || !embedded) allFonts.set(rawName, embedded);
-        }
-      }
+      scanResFonts(res, pIdx + 1, new Set());
 
       const extDict = res && res instanceof PDFLib.PDFDict ? res.lookup(PDFLib.PDFName.of("ExtGState")) : null;
       if (extDict && extDict instanceof PDFLib.PDFDict) {
@@ -4794,8 +5371,28 @@ window.ShibaPrepress = (function () {
     let singleEquivPages = 0;
     origPages.forEach((p) => { singleEquivPages += p.wMm > p.hMm ? 2 : 1; });
 
+    const fontDetails = Array.from(fontDetailsMap.values())
+      .map((f) => ({
+        name: f.name,
+        embedded: f.embedded,
+        isSubset: f.isSubset,
+        fontType: f.fontType,
+        encoding: f.encoding,
+        streamFormat: f.streamFormat,
+        pages: Array.from(f.pages).sort((a, b) => a - b)
+      }))
+      .sort((a, b) => {
+        if (a.embedded !== b.embedded) return a.embedded ? 1 : -1;
+        return a.name.localeCompare(b.name);
+      });
+
     return {
       isEncrypted: doc.isEncrypted,
+      metaInfo,
+      fontDetails,
+      totalImages: seenImgRefs.size,
+      hasTrimBox,
+      hasBleedBox,
       nonK100Pages: nonK100PageIndices.size,
       nonK100Locs,
       lowDpiLocs,
@@ -4947,6 +5544,193 @@ window.ShibaPrepress = (function () {
     extractPageTextSpans,
     runPrepressPreflight,
     applyPureBlackK100ToDoc
+  };
+})();
+
+;
+/* === src/pdf-info.js === */
+// PDF Document Properties & Deep Font Embedding Inspector Modal Controller
+window.ShibaPdfInfo = (function () {
+  "use strict";
+
+  function formatBytes(bytes) {
+    if (!bytes || bytes <= 0) return "0 KB";
+    const mb = bytes / (1024 * 1024);
+    const numFmt = bytes.toLocaleString();
+    if (mb >= 1) return `${mb.toFixed(2)} MB (${numFmt} B)`;
+    return `${(bytes / 1024).toFixed(1)} KB (${numFmt} B)`;
+  }
+
+  function buildInspectData(targetDocId, sourceDocs, docOrder, pages, t) {
+    const useAll = targetDocId === "__all__" && docOrder.length > 1;
+    const targetIds = useAll ? docOrder : [docOrder.includes(targetDocId) ? targetDocId : docOrder[0]];
+    const validEntries = targetIds.map((id) => sourceDocs.get(id)).filter(Boolean);
+    if (!validEntries.length) return null;
+
+    // Map (docId, origPageOneBased) -> workspace slotIndex (one-based)
+    const slotPageLookup = new Map();
+    pages.forEach((s, idx) => {
+      const k = `${s.docId}_${s.origIdx + 1}`;
+      if (!slotPageLookup.has(k)) slotPageLookup.set(k, []);
+      slotPageLookup.get(k).push(idx + 1);
+    });
+
+    const d0 = validEntries[0];
+    const pf0 = d0.preflight || {};
+    const m0 = pf0.metaInfo || {};
+
+    let totalSize = 0;
+    let totalOrigPages = 0;
+    let totalSingleEquiv = 0;
+    let totalImages = 0;
+    let rgbImages = 0;
+    let anyEncrypted = false;
+    let hasTrim = false;
+    let hasBleed = false;
+    const allDpis = [];
+    const mergedFonts = new Map();
+
+    validEntries.forEach((doc) => {
+      totalSize += doc.size || (doc.rawBytes ? doc.rawBytes.byteLength : 0);
+      totalOrigPages += doc.origPages ? doc.origPages.length : 0;
+      const pf = doc.preflight || {};
+      totalSingleEquiv += pf.singleEquivPages || 0;
+      totalImages += pf.totalImages || 0;
+      rgbImages += pf.rgbImageCount || 0;
+      if (pf.isEncrypted) anyEncrypted = true;
+      if (pf.hasTrimBox) hasTrim = true;
+      if (pf.hasBleedBox) hasBleed = true;
+      (pf.placedDpis || []).forEach((x) => allDpis.push(x.dpi));
+
+      const fList = pf.fontDetails || (pf.fonts || []).map(([nm, emb]) => ({
+        name: nm,
+        embedded: emb,
+        isSubset: false,
+        fontType: "Font",
+        encoding: "—",
+        streamFormat: "",
+        pages: []
+      }));
+
+      fList.forEach((fd) => {
+        const key = `${fd.name}__${fd.fontType}__${fd.embedded ? "1" : "0"}`;
+        const mappedWorkspacePages = [];
+        (fd.pages || []).forEach((origP) => {
+          const hits = slotPageLookup.get(`${doc.id}_${origP}`);
+          if (hits && hits.length) mappedWorkspacePages.push(...hits);
+          else if (!useAll) mappedWorkspacePages.push(origP);
+        });
+
+        if (!mergedFonts.has(key)) {
+          mergedFonts.set(key, {
+            name: fd.name,
+            embedded: fd.embedded,
+            isSubset: Boolean(fd.isSubset),
+            fontType: fd.fontType || "Font",
+            encoding: fd.encoding || "—",
+            streamFormat: fd.streamFormat || "",
+            pages: new Set(mappedWorkspacePages)
+          });
+        } else {
+          const cur = mergedFonts.get(key);
+          if (fd.isSubset) cur.isSubset = true;
+          mappedWorkspacePages.forEach((p) => cur.pages.add(p));
+        }
+      });
+    });
+
+    const fonts = Array.from(mergedFonts.values())
+      .map((f) => ({
+        ...f,
+        pages: Array.from(f.pages).sort((a, b) => a - b)
+      }))
+      .sort((a, b) => {
+        if (a.embedded !== b.embedded) return a.embedded ? 1 : -1;
+        return a.name.localeCompare(b.name);
+      });
+
+    const unembeddedCount = fonts.filter((f) => !f.embedded).length;
+
+    // Page dimensions & boxes summary
+    const p0 = d0.origPages && d0.origPages[0];
+    const wMm = p0 ? p0.wMm.toFixed(1) : "0";
+    const hMm = p0 ? p0.hMm.toFixed(1) : "0";
+    const wPt = p0 ? Math.round(p0.wPt) : 0;
+    const hPt = p0 ? Math.round(p0.hPt) : 0;
+    const uniform = validEntries.every((d) => d.preflight && d.preflight.uniformSize) &&
+      validEntries.every((d) => !d.origPages[0] || (Math.abs(d.origPages[0].wMm - p0.wMm) < 1 && Math.abs(d.origPages[0].hMm - p0.hMm) < 1));
+
+    const sizeStr = uniform
+      ? `${wMm} × ${hMm} mm (${wPt} × ${hPt} pt)`
+      : t("infoSizeMixed", { w: wMm, h: hMm });
+
+    const boxList = ["MediaBox", "CropBox"];
+    if (hasBleed) boxList.push("BleedBox");
+    if (hasTrim) boxList.push("TrimBox");
+    if (pf0.matchedBleed > 0) boxList.push(`${pf0.matchedBleed}mm Bleed`);
+
+    let imgStr = `${totalImages}`;
+    if (allDpis.length > 0) {
+      const minD = Math.min(...allDpis);
+      const maxD = Math.max(...allDpis);
+      imgStr += ` (${minD === maxD ? `${minD} DPI` : `${minD}–${maxD} DPI`}${rgbImages > 0 ? ` · ${rgbImages} RGB` : " · CMYK"})`;
+    }
+
+    return {
+      fileName: useAll ? t("infoAllDocsOpt", { n: validEntries.length }) : d0.name,
+      fileSizeStr: formatBytes(totalSize),
+      pdfVerStr: `PDF ${m0.pdfVersion || "1.4+"}${m0.isLinearized ? t("infoLinearizedYes") : ""}`,
+      title: useAll ? "" : m0.title || "",
+      author: useAll ? "" : m0.author || "",
+      subject: useAll ? "" : m0.subject || "",
+      keywords: useAll ? "" : m0.keywords || "",
+      creator: m0.creator || "",
+      producer: m0.producer || "",
+      created: m0.creationDate || "",
+      modified: m0.modDate || "",
+      pagesStr: t("infoPagesFmt", { p: useAll ? pages.length : totalOrigPages, s: totalSingleEquiv }),
+      sizeStr,
+      boxesStr: boxList.join(" · "),
+      fonts,
+      unembeddedCount,
+      imgStr,
+      isEncrypted: anyEncrypted
+    };
+  }
+
+  function formatPlainTextReport(data, t) {
+    const lines = [
+      `=== ${t("infoModalTitle")} ===`,
+      `${t("infoFileName")}: ${data.fileName}`,
+      `${t("infoFileSize")}: ${data.fileSizeStr}`,
+      `${t("infoPdfVer")}: ${data.pdfVerStr}`,
+      `${t("infoPages")}: ${data.pagesStr}`,
+      `${t("infoPageSize")}: ${data.sizeStr}`,
+      `${t("infoBoxes")}: ${data.boxesStr}`,
+      `${t("infoCreator")}: ${data.creator || t("infoNone")}`,
+      `${t("infoProducer")}: ${data.producer || t("infoNone")}`,
+      `${t("infoCreated")}: ${data.created || t("infoNone")}`,
+      `${t("infoModified")}: ${data.modified || t("infoNone")}`,
+      `${t("infoImagesSummary")}: ${data.imgStr}`,
+      `${t("infoSecurity")}: ${data.isEncrypted ? t("infoSecLocked") : t("infoSecOpen")}`,
+      "",
+      `--- ${t("infoTabFonts")} (${data.fonts.length}) ---`
+    ];
+    if (!data.fonts.length) {
+      lines.push(t("fontZeroBanner"));
+    } else {
+      data.fonts.forEach((f, idx) => {
+        const st = f.embedded ? (f.isSubset ? t("fontEmbSub") : t("fontEmbFull")) : t("fontNotEmb");
+        const pgs = f.pages.length ? ` [P${f.pages.join(", P")}]` : "";
+        lines.push(`${idx + 1}. ${f.name} | ${st} | ${f.fontType} | ${f.encoding}${pgs}`);
+      });
+    }
+    return lines.join("\n");
+  }
+
+  return {
+    buildInspectData,
+    formatPlainTextReport
   };
 })();
 
@@ -7107,11 +7891,15 @@ window.ShibaUX = (function () {
     onlyLandscape: true,
     readingDir: "ltr",
 
-    // Preflight State
+    // Preflight & PDF Document Info Modal State
     activePfHighlights: [],
     selectedPfCardIdx: -1,
     flatPfSteps: [],
     pfStepCursor: -1,
+    infoModalTab: "meta", // 'meta' | 'fonts'
+    infoTargetDocId: "__all__",
+    fontFilterMode: "all", // 'all' | 'unemb' | 'emb'
+    fontSearchQuery: "",
 
     // Convert & Compress State
     compPreset: "balanced",
@@ -7150,6 +7938,7 @@ window.ShibaUX = (function () {
     // Rail Footer & Files
     fileInput: document.getElementById("fileInput"),
     railFilesBox: document.getElementById("railFilesBox"),
+    railDocInfoBtn: document.getElementById("railDocInfoBtn"),
     addMoreBtn: document.getElementById("addMoreBtn"),
     clearAllBtn: document.getElementById("clearAllBtn"),
     fileList: document.getElementById("fileList"),
@@ -7302,6 +8091,7 @@ window.ShibaUX = (function () {
 
     stripRightGroup: document.getElementById("stripRightGroup"),
     dimSummaryText: document.getElementById("dimSummaryText"),
+    docInfoBtn: document.getElementById("docInfoBtn"),
     exportBtn: document.getElementById("exportBtn"),
     exportBtnText: document.getElementById("exportBtnText"),
 
@@ -7346,6 +8136,24 @@ window.ShibaUX = (function () {
     loadProgressFile: document.getElementById("loadProgressFile"),
     loadProgressFill: document.getElementById("loadProgressFill"),
     loadProgressStep: document.getElementById("loadProgressStep"),
+
+    // PDF Document Properties & Font Inspector Modal
+    pdfInfoModal: document.getElementById("pdfInfoModal"),
+    pdfInfoDocSelect: document.getElementById("pdfInfoDocSelect"),
+    closePdfInfoBtn: document.getElementById("closePdfInfoBtn"),
+    infoTabMetaBtn: document.getElementById("infoTabMetaBtn"),
+    infoTabFontsBtn: document.getElementById("infoTabFontsBtn"),
+    infoFontsBadge: document.getElementById("infoFontsBadge"),
+    fontFilterGroup: document.getElementById("fontFilterGroup"),
+    fontFltBtns: Array.from(document.querySelectorAll(".font-flt-btn")),
+    fontSearchInput: document.getElementById("fontSearchInput"),
+    infoPaneMeta: document.getElementById("infoPaneMeta"),
+    infoPaneFonts: document.getElementById("infoPaneFonts"),
+    infoFontBanner: document.getElementById("infoFontBanner"),
+    infoFontList: document.getElementById("infoFontList"),
+    copyPdfInfoBtn: document.getElementById("copyPdfInfoBtn"),
+    copyPdfInfoText: document.getElementById("copyPdfInfoText"),
+    closePdfInfoFootBtn: document.getElementById("closePdfInfoFootBtn"),
 
     // Convert & Compress Cards
     convertViewPanel: document.getElementById("convertViewPanel"),
@@ -7786,6 +8594,10 @@ window.ShibaUX = (function () {
     // Universal Escape Hatch — Cancel active task, discard uncommitted edit, or clear selection anywhere!
     if (e.key === "Escape") {
       e.preventDefault();
+      if (el.pdfInfoModal && !el.pdfInfoModal.classList.contains("hidden")) {
+        closePdfInfoModal();
+        return;
+      }
       if (state.abortAnnDrawFn) {
         state.abortAnnDrawFn();
         return;
@@ -7882,6 +8694,14 @@ window.ShibaUX = (function () {
       state.selectedAnnId = null;
       redrawAnnotateLayer();
       updateTopStripControls();
+      return;
+    }
+
+    if ((e.ctrlKey || e.metaKey) && (e.key === "d" || e.key === "D")) {
+      if (hasPages()) {
+        e.preventDefault();
+        openPdfInfoModal();
+      }
       return;
     }
 
@@ -8046,6 +8866,9 @@ window.ShibaUX = (function () {
 
       const left = document.createElement("div");
       left.className = "file-row-left";
+      left.style.cursor = "pointer";
+      left.title = t("infoModalTitle");
+      left.addEventListener("click", () => openPdfInfoModal(docId, "meta"));
       const iconSpan = document.createElement("span");
       iconSpan.style.display = "inline-flex";
       iconSpan.innerHTML = ICONS["file-text"] || "";
@@ -12748,6 +13571,311 @@ window.ShibaUX = (function () {
 
   el.pfPrevIssueBtn.addEventListener("click", () => stepPreflightIssue(-1));
   el.pfNextIssueBtn.addEventListener("click", () => stepPreflightIssue(1));
+
+  // PDF Document Properties & Font Embedding Inspector Modal Logic
+  function closePdfInfoModal() {
+    if (el.pdfInfoModal) el.pdfInfoModal.classList.add("hidden");
+  }
+
+  function openPdfInfoModal(preferredDocId, preferredTab) {
+    if (!hasPages() || !window.ShibaPdfInfo) return;
+    if (preferredTab) state.infoModalTab = preferredTab;
+    if (preferredDocId && state.sourceDocs.has(preferredDocId)) {
+      state.infoTargetDocId = preferredDocId;
+    } else if (state.docOrder.length > 1) {
+      state.infoTargetDocId = "__all__";
+    } else {
+      state.infoTargetDocId = state.docOrder[0];
+    }
+
+    el.fontSearchInput.placeholder = t("fontSearchPh");
+    el.copyPdfInfoText.textContent = t("infoCopyBtn");
+
+    // Populate multi-PDF selector if >= 2 PDFs are loaded
+    el.pdfInfoDocSelect.innerHTML = "";
+    if (state.docOrder.length > 1) {
+      el.pdfInfoDocSelect.classList.remove("hidden");
+      const allOpt = document.createElement("option");
+      allOpt.value = "__all__";
+      allOpt.textContent = t("infoAllDocsOpt", { n: state.docOrder.length });
+      el.pdfInfoDocSelect.appendChild(allOpt);
+      state.docOrder.forEach((id) => {
+        const d = state.sourceDocs.get(id);
+        if (!d) return;
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = d.name;
+        el.pdfInfoDocSelect.appendChild(opt);
+      });
+      el.pdfInfoDocSelect.value = state.infoTargetDocId;
+    } else {
+      el.pdfInfoDocSelect.classList.add("hidden");
+    }
+
+    renderPdfInfoModalContents();
+    el.pdfInfoModal.classList.remove("hidden");
+  }
+
+  function renderPdfInfoModalContents() {
+    if (!window.ShibaPdfInfo || !hasPages()) return;
+    const data = window.ShibaPdfInfo.buildInspectData(
+      state.infoTargetDocId,
+      state.sourceDocs,
+      state.docOrder,
+      state.pages,
+      t
+    );
+    if (!data) return;
+
+    const isMeta = state.infoModalTab === "meta";
+    el.infoTabMetaBtn.classList.toggle("active", isMeta);
+    el.infoTabFontsBtn.classList.toggle("active", !isMeta);
+    el.infoPaneMeta.classList.toggle("hidden", !isMeta);
+    el.infoPaneFonts.classList.toggle("hidden", isMeta);
+    el.fontFilterGroup.classList.toggle("hidden", isMeta || data.fonts.length === 0);
+    el.infoFontsBadge.textContent = String(data.fonts.length);
+
+    // 1. Render Tab 1: Document Metadata & Prepress Specs
+    const makeRow = (kLabel, vStr, onClickFn) => {
+      const row = document.createElement("div");
+      row.className = "info-kv-row";
+      const k = document.createElement("span");
+      k.className = "info-kv-key";
+      k.textContent = kLabel;
+      const v = document.createElement("span");
+      v.className = "info-kv-val";
+      v.textContent = vStr || t("infoNone");
+      if (onClickFn) {
+        v.style.cursor = "pointer";
+        v.style.color = data.unembeddedCount > 0 ? "var(--err)" : "var(--ok)";
+        v.style.textDecoration = "underline";
+        v.addEventListener("click", onClickFn);
+      }
+      row.appendChild(k);
+      row.appendChild(v);
+      return row;
+    };
+
+    el.infoPaneMeta.innerHTML = "";
+    const basicCard = document.createElement("div");
+    basicCard.className = "info-sec-card";
+    const bTitle = document.createElement("div");
+    bTitle.className = "info-sec-title";
+    bTitle.textContent = t("infoSecBasic");
+    basicCard.appendChild(bTitle);
+    basicCard.appendChild(makeRow(t("infoFileName"), data.fileName));
+    basicCard.appendChild(makeRow(t("infoFileSize"), data.fileSizeStr));
+    basicCard.appendChild(makeRow(t("infoPdfVer"), data.pdfVerStr));
+    basicCard.appendChild(makeRow(t("infoTitle"), data.title));
+    basicCard.appendChild(makeRow(t("infoAuthor"), data.author));
+    if (data.subject) basicCard.appendChild(makeRow(t("infoSubject"), data.subject));
+    if (data.keywords) basicCard.appendChild(makeRow(t("infoKeywords"), data.keywords));
+    basicCard.appendChild(makeRow(t("infoCreator"), data.creator));
+    basicCard.appendChild(makeRow(t("infoProducer"), data.producer));
+    basicCard.appendChild(makeRow(t("infoCreated"), data.created));
+    basicCard.appendChild(makeRow(t("infoModified"), data.modified));
+
+    const techCard = document.createElement("div");
+    techCard.className = "info-sec-card";
+    const tTitle = document.createElement("div");
+    tTitle.className = "info-sec-title";
+    tTitle.textContent = t("infoSecTech");
+    techCard.appendChild(tTitle);
+    techCard.appendChild(makeRow(t("infoPages"), data.pagesStr));
+    techCard.appendChild(makeRow(t("infoPageSize"), data.sizeStr));
+    techCard.appendChild(makeRow(t("infoBoxes"), data.boxesStr));
+
+    const fontSumTxt =
+      data.fonts.length === 0
+        ? "0 (Outlined)"
+        : data.unembeddedCount > 0
+        ? `${data.fonts.length} (${data.unembeddedCount} ${t("fontNotEmb")} ▸)`
+        : `${data.fonts.length} (${t("fontEmbFull")} ✓ ▸)`;
+    techCard.appendChild(
+      makeRow(t("infoFontsSummary"), fontSumTxt, () => {
+        state.infoModalTab = "fonts";
+        renderPdfInfoModalContents();
+      })
+    );
+    techCard.appendChild(makeRow(t("infoImagesSummary"), data.imgStr));
+    techCard.appendChild(makeRow(t("infoSecurity"), data.isEncrypted ? t("infoSecLocked") : t("infoSecOpen")));
+
+    el.infoPaneMeta.appendChild(basicCard);
+    el.infoPaneMeta.appendChild(techCard);
+
+    // 2. Render Tab 2: Detailed Font List & Embedding Status
+    el.infoFontBanner.innerHTML = "";
+    const bannerSpan = document.createElement("span");
+    if (data.fonts.length === 0) {
+      el.infoFontBanner.className = "info-font-banner ok";
+      bannerSpan.textContent = t("fontZeroBanner");
+      el.infoFontBanner.appendChild(bannerSpan);
+    } else if (data.unembeddedCount === 0) {
+      el.infoFontBanner.className = "info-font-banner ok";
+      bannerSpan.textContent = t("fontAllEmbBanner", { n: data.fonts.length });
+      el.infoFontBanner.appendChild(bannerSpan);
+    } else {
+      el.infoFontBanner.className = "info-font-banner err";
+      bannerSpan.textContent = t("fontUnembBanner", { t: data.fonts.length, u: data.unembeddedCount });
+      const lockBtn = document.createElement("button");
+      lockBtn.className = "primary-btn";
+      lockBtn.style.height = "28px";
+      lockBtn.style.padding = "0 10px";
+      lockBtn.style.fontSize = "11.5px";
+      lockBtn.type = "button";
+      lockBtn.textContent = t("fontFixLockBtn");
+      lockBtn.addEventListener("click", () => {
+        closePdfInfoModal();
+        state.pillar = "convert";
+        state.openGroups.convert = true;
+        state.convertSub = "imgpdf";
+        refreshWorkspace(false);
+      });
+      el.infoFontBanner.appendChild(bannerSpan);
+      el.infoFontBanner.appendChild(lockBtn);
+    }
+
+    el.fontFltBtns.forEach((b) => b.classList.toggle("active", b.dataset.flt === state.fontFilterMode));
+    const q = (state.fontSearchQuery || "").trim().toLowerCase();
+    const filteredFonts = data.fonts.filter((f) => {
+      if (state.fontFilterMode === "unemb" && f.embedded) return false;
+      if (state.fontFilterMode === "emb" && !f.embedded) return false;
+      if (q && !f.name.toLowerCase().includes(q) && !f.fontType.toLowerCase().includes(q)) return false;
+      return true;
+    });
+
+    el.infoFontList.innerHTML = "";
+    filteredFonts.forEach((f) => {
+      const card = document.createElement("div");
+      card.className = "info-font-card" + (f.embedded ? "" : " unembedded");
+
+      const head = document.createElement("div");
+      head.className = "info-font-head";
+
+      const nmWrap = document.createElement("div");
+      nmWrap.className = "info-font-name";
+      const nmTxt = document.createElement("span");
+      nmTxt.textContent = f.name;
+      nmWrap.appendChild(nmTxt);
+      if (f.isSubset) {
+        const subTag = document.createElement("span");
+        subTag.className = "version-pill";
+        subTag.textContent = t("fontSubsetTag");
+        nmWrap.appendChild(subTag);
+      }
+
+      const stBadge = document.createElement("span");
+      stBadge.className = "status-pill " + (f.embedded ? "ok" : "err");
+      stBadge.textContent = f.embedded ? (f.isSubset ? `✓ ${t("fontEmbSub")}` : `✓ ${t("fontEmbFull")}`) : `✕ ${t("fontNotEmb")}`;
+
+      head.appendChild(nmWrap);
+      head.appendChild(stBadge);
+      card.appendChild(head);
+
+      const meta = document.createElement("div");
+      meta.className = "info-font-meta";
+      const fmtSuffix = f.streamFormat && !f.fontType.includes(f.streamFormat) ? ` · ${f.streamFormat}` : "";
+      const tpSpan = document.createElement("span");
+      tpSpan.textContent = `${t("fontTypeLabel")}: ${f.fontType}${fmtSuffix}`;
+      const encSpan = document.createElement("span");
+      encSpan.textContent = `${t("fontEncLabel")}: ${f.encoding}`;
+      meta.appendChild(tpSpan);
+      meta.appendChild(encSpan);
+      card.appendChild(meta);
+
+      if (f.pages && f.pages.length > 0) {
+        const pgRow = document.createElement("div");
+        pgRow.className = "info-font-pages";
+        const lbl = document.createElement("span");
+        lbl.textContent = t("fontPagesLabel");
+        pgRow.appendChild(lbl);
+
+        f.pages.slice(0, 18).forEach((pNum) => {
+          const ch = document.createElement("button");
+          ch.className = "info-page-chip";
+          ch.type = "button";
+          ch.textContent = `P${pNum}`;
+          ch.addEventListener("click", () => {
+            closePdfInfoModal();
+            const targetSlot = Math.max(0, Math.min(state.pages.length - 1, pNum - 1));
+            state.activeSlotIdx = targetSlot;
+            if (state.pillar === "convert" || (state.pillar === "pages" && state.pagesSub === "organize")) {
+              state.pillar = "pages";
+              state.openGroups.pages = true;
+              state.pagesSub = "text";
+            }
+            refreshWorkspace(true);
+          });
+          pgRow.appendChild(ch);
+        });
+        if (f.pages.length > 18) {
+          const more = document.createElement("span");
+          more.textContent = `+${f.pages.length - 18}`;
+          pgRow.appendChild(more);
+        }
+        card.appendChild(pgRow);
+      }
+
+      el.infoFontList.appendChild(card);
+    });
+  }
+
+  [el.docInfoBtn, el.railDocInfoBtn, el.dimSummaryText].forEach((trigger) => {
+    if (trigger) trigger.addEventListener("click", () => openPdfInfoModal());
+  });
+
+  el.closePdfInfoBtn.addEventListener("click", closePdfInfoModal);
+  el.closePdfInfoFootBtn.addEventListener("click", closePdfInfoModal);
+  el.pdfInfoModal.addEventListener("click", (ev) => {
+    if (ev.target === el.pdfInfoModal) closePdfInfoModal();
+  });
+
+  el.pdfInfoDocSelect.addEventListener("change", () => {
+    state.infoTargetDocId = el.pdfInfoDocSelect.value;
+    renderPdfInfoModalContents();
+  });
+
+  el.infoTabMetaBtn.addEventListener("click", () => {
+    state.infoModalTab = "meta";
+    renderPdfInfoModalContents();
+  });
+
+  el.infoTabFontsBtn.addEventListener("click", () => {
+    state.infoModalTab = "fonts";
+    renderPdfInfoModalContents();
+  });
+
+  el.fontFltBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.fontFilterMode = btn.dataset.flt || "all";
+      renderPdfInfoModalContents();
+    });
+  });
+
+  el.fontSearchInput.addEventListener("input", () => {
+    state.fontSearchQuery = el.fontSearchInput.value || "";
+    renderPdfInfoModalContents();
+  });
+
+  el.copyPdfInfoBtn.addEventListener("click", async () => {
+    if (!window.ShibaPdfInfo || !hasPages()) return;
+    const data = window.ShibaPdfInfo.buildInspectData(
+      state.infoTargetDocId,
+      state.sourceDocs,
+      state.docOrder,
+      state.pages,
+      t
+    );
+    if (!data) return;
+    const reportStr = window.ShibaPdfInfo.formatPlainTextReport(data, t);
+    try {
+      await navigator.clipboard.writeText(reportStr);
+      el.copyPdfInfoText.textContent = t("infoCopiedBtn");
+      setTimeout(() => {
+        el.copyPdfInfoText.textContent = t("infoCopyBtn");
+      }, 1800);
+    } catch (_) {}
+  });
 
   el.zoomOutBtn.addEventListener("click", () => {
     if (isOrganizeMode()) setOrgGridZoom(state.orgGridScale / 1.18);

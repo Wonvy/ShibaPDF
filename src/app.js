@@ -104,11 +104,15 @@
     onlyLandscape: true,
     readingDir: "ltr",
 
-    // Preflight State
+    // Preflight & PDF Document Info Modal State
     activePfHighlights: [],
     selectedPfCardIdx: -1,
     flatPfSteps: [],
     pfStepCursor: -1,
+    infoModalTab: "meta", // 'meta' | 'fonts'
+    infoTargetDocId: "__all__",
+    fontFilterMode: "all", // 'all' | 'unemb' | 'emb'
+    fontSearchQuery: "",
 
     // Convert & Compress State
     compPreset: "balanced",
@@ -147,6 +151,7 @@
     // Rail Footer & Files
     fileInput: document.getElementById("fileInput"),
     railFilesBox: document.getElementById("railFilesBox"),
+    railDocInfoBtn: document.getElementById("railDocInfoBtn"),
     addMoreBtn: document.getElementById("addMoreBtn"),
     clearAllBtn: document.getElementById("clearAllBtn"),
     fileList: document.getElementById("fileList"),
@@ -299,6 +304,7 @@
 
     stripRightGroup: document.getElementById("stripRightGroup"),
     dimSummaryText: document.getElementById("dimSummaryText"),
+    docInfoBtn: document.getElementById("docInfoBtn"),
     exportBtn: document.getElementById("exportBtn"),
     exportBtnText: document.getElementById("exportBtnText"),
 
@@ -343,6 +349,24 @@
     loadProgressFile: document.getElementById("loadProgressFile"),
     loadProgressFill: document.getElementById("loadProgressFill"),
     loadProgressStep: document.getElementById("loadProgressStep"),
+
+    // PDF Document Properties & Font Inspector Modal
+    pdfInfoModal: document.getElementById("pdfInfoModal"),
+    pdfInfoDocSelect: document.getElementById("pdfInfoDocSelect"),
+    closePdfInfoBtn: document.getElementById("closePdfInfoBtn"),
+    infoTabMetaBtn: document.getElementById("infoTabMetaBtn"),
+    infoTabFontsBtn: document.getElementById("infoTabFontsBtn"),
+    infoFontsBadge: document.getElementById("infoFontsBadge"),
+    fontFilterGroup: document.getElementById("fontFilterGroup"),
+    fontFltBtns: Array.from(document.querySelectorAll(".font-flt-btn")),
+    fontSearchInput: document.getElementById("fontSearchInput"),
+    infoPaneMeta: document.getElementById("infoPaneMeta"),
+    infoPaneFonts: document.getElementById("infoPaneFonts"),
+    infoFontBanner: document.getElementById("infoFontBanner"),
+    infoFontList: document.getElementById("infoFontList"),
+    copyPdfInfoBtn: document.getElementById("copyPdfInfoBtn"),
+    copyPdfInfoText: document.getElementById("copyPdfInfoText"),
+    closePdfInfoFootBtn: document.getElementById("closePdfInfoFootBtn"),
 
     // Convert & Compress Cards
     convertViewPanel: document.getElementById("convertViewPanel"),
@@ -783,6 +807,10 @@
     // Universal Escape Hatch — Cancel active task, discard uncommitted edit, or clear selection anywhere!
     if (e.key === "Escape") {
       e.preventDefault();
+      if (el.pdfInfoModal && !el.pdfInfoModal.classList.contains("hidden")) {
+        closePdfInfoModal();
+        return;
+      }
       if (state.abortAnnDrawFn) {
         state.abortAnnDrawFn();
         return;
@@ -879,6 +907,14 @@
       state.selectedAnnId = null;
       redrawAnnotateLayer();
       updateTopStripControls();
+      return;
+    }
+
+    if ((e.ctrlKey || e.metaKey) && (e.key === "d" || e.key === "D")) {
+      if (hasPages()) {
+        e.preventDefault();
+        openPdfInfoModal();
+      }
       return;
     }
 
@@ -1043,6 +1079,9 @@
 
       const left = document.createElement("div");
       left.className = "file-row-left";
+      left.style.cursor = "pointer";
+      left.title = t("infoModalTitle");
+      left.addEventListener("click", () => openPdfInfoModal(docId, "meta"));
       const iconSpan = document.createElement("span");
       iconSpan.style.display = "inline-flex";
       iconSpan.innerHTML = ICONS["file-text"] || "";
@@ -5745,6 +5784,311 @@
 
   el.pfPrevIssueBtn.addEventListener("click", () => stepPreflightIssue(-1));
   el.pfNextIssueBtn.addEventListener("click", () => stepPreflightIssue(1));
+
+  // PDF Document Properties & Font Embedding Inspector Modal Logic
+  function closePdfInfoModal() {
+    if (el.pdfInfoModal) el.pdfInfoModal.classList.add("hidden");
+  }
+
+  function openPdfInfoModal(preferredDocId, preferredTab) {
+    if (!hasPages() || !window.ShibaPdfInfo) return;
+    if (preferredTab) state.infoModalTab = preferredTab;
+    if (preferredDocId && state.sourceDocs.has(preferredDocId)) {
+      state.infoTargetDocId = preferredDocId;
+    } else if (state.docOrder.length > 1) {
+      state.infoTargetDocId = "__all__";
+    } else {
+      state.infoTargetDocId = state.docOrder[0];
+    }
+
+    el.fontSearchInput.placeholder = t("fontSearchPh");
+    el.copyPdfInfoText.textContent = t("infoCopyBtn");
+
+    // Populate multi-PDF selector if >= 2 PDFs are loaded
+    el.pdfInfoDocSelect.innerHTML = "";
+    if (state.docOrder.length > 1) {
+      el.pdfInfoDocSelect.classList.remove("hidden");
+      const allOpt = document.createElement("option");
+      allOpt.value = "__all__";
+      allOpt.textContent = t("infoAllDocsOpt", { n: state.docOrder.length });
+      el.pdfInfoDocSelect.appendChild(allOpt);
+      state.docOrder.forEach((id) => {
+        const d = state.sourceDocs.get(id);
+        if (!d) return;
+        const opt = document.createElement("option");
+        opt.value = id;
+        opt.textContent = d.name;
+        el.pdfInfoDocSelect.appendChild(opt);
+      });
+      el.pdfInfoDocSelect.value = state.infoTargetDocId;
+    } else {
+      el.pdfInfoDocSelect.classList.add("hidden");
+    }
+
+    renderPdfInfoModalContents();
+    el.pdfInfoModal.classList.remove("hidden");
+  }
+
+  function renderPdfInfoModalContents() {
+    if (!window.ShibaPdfInfo || !hasPages()) return;
+    const data = window.ShibaPdfInfo.buildInspectData(
+      state.infoTargetDocId,
+      state.sourceDocs,
+      state.docOrder,
+      state.pages,
+      t
+    );
+    if (!data) return;
+
+    const isMeta = state.infoModalTab === "meta";
+    el.infoTabMetaBtn.classList.toggle("active", isMeta);
+    el.infoTabFontsBtn.classList.toggle("active", !isMeta);
+    el.infoPaneMeta.classList.toggle("hidden", !isMeta);
+    el.infoPaneFonts.classList.toggle("hidden", isMeta);
+    el.fontFilterGroup.classList.toggle("hidden", isMeta || data.fonts.length === 0);
+    el.infoFontsBadge.textContent = String(data.fonts.length);
+
+    // 1. Render Tab 1: Document Metadata & Prepress Specs
+    const makeRow = (kLabel, vStr, onClickFn) => {
+      const row = document.createElement("div");
+      row.className = "info-kv-row";
+      const k = document.createElement("span");
+      k.className = "info-kv-key";
+      k.textContent = kLabel;
+      const v = document.createElement("span");
+      v.className = "info-kv-val";
+      v.textContent = vStr || t("infoNone");
+      if (onClickFn) {
+        v.style.cursor = "pointer";
+        v.style.color = data.unembeddedCount > 0 ? "var(--err)" : "var(--ok)";
+        v.style.textDecoration = "underline";
+        v.addEventListener("click", onClickFn);
+      }
+      row.appendChild(k);
+      row.appendChild(v);
+      return row;
+    };
+
+    el.infoPaneMeta.innerHTML = "";
+    const basicCard = document.createElement("div");
+    basicCard.className = "info-sec-card";
+    const bTitle = document.createElement("div");
+    bTitle.className = "info-sec-title";
+    bTitle.textContent = t("infoSecBasic");
+    basicCard.appendChild(bTitle);
+    basicCard.appendChild(makeRow(t("infoFileName"), data.fileName));
+    basicCard.appendChild(makeRow(t("infoFileSize"), data.fileSizeStr));
+    basicCard.appendChild(makeRow(t("infoPdfVer"), data.pdfVerStr));
+    basicCard.appendChild(makeRow(t("infoTitle"), data.title));
+    basicCard.appendChild(makeRow(t("infoAuthor"), data.author));
+    if (data.subject) basicCard.appendChild(makeRow(t("infoSubject"), data.subject));
+    if (data.keywords) basicCard.appendChild(makeRow(t("infoKeywords"), data.keywords));
+    basicCard.appendChild(makeRow(t("infoCreator"), data.creator));
+    basicCard.appendChild(makeRow(t("infoProducer"), data.producer));
+    basicCard.appendChild(makeRow(t("infoCreated"), data.created));
+    basicCard.appendChild(makeRow(t("infoModified"), data.modified));
+
+    const techCard = document.createElement("div");
+    techCard.className = "info-sec-card";
+    const tTitle = document.createElement("div");
+    tTitle.className = "info-sec-title";
+    tTitle.textContent = t("infoSecTech");
+    techCard.appendChild(tTitle);
+    techCard.appendChild(makeRow(t("infoPages"), data.pagesStr));
+    techCard.appendChild(makeRow(t("infoPageSize"), data.sizeStr));
+    techCard.appendChild(makeRow(t("infoBoxes"), data.boxesStr));
+
+    const fontSumTxt =
+      data.fonts.length === 0
+        ? "0 (Outlined)"
+        : data.unembeddedCount > 0
+        ? `${data.fonts.length} (${data.unembeddedCount} ${t("fontNotEmb")} ▸)`
+        : `${data.fonts.length} (${t("fontEmbFull")} ✓ ▸)`;
+    techCard.appendChild(
+      makeRow(t("infoFontsSummary"), fontSumTxt, () => {
+        state.infoModalTab = "fonts";
+        renderPdfInfoModalContents();
+      })
+    );
+    techCard.appendChild(makeRow(t("infoImagesSummary"), data.imgStr));
+    techCard.appendChild(makeRow(t("infoSecurity"), data.isEncrypted ? t("infoSecLocked") : t("infoSecOpen")));
+
+    el.infoPaneMeta.appendChild(basicCard);
+    el.infoPaneMeta.appendChild(techCard);
+
+    // 2. Render Tab 2: Detailed Font List & Embedding Status
+    el.infoFontBanner.innerHTML = "";
+    const bannerSpan = document.createElement("span");
+    if (data.fonts.length === 0) {
+      el.infoFontBanner.className = "info-font-banner ok";
+      bannerSpan.textContent = t("fontZeroBanner");
+      el.infoFontBanner.appendChild(bannerSpan);
+    } else if (data.unembeddedCount === 0) {
+      el.infoFontBanner.className = "info-font-banner ok";
+      bannerSpan.textContent = t("fontAllEmbBanner", { n: data.fonts.length });
+      el.infoFontBanner.appendChild(bannerSpan);
+    } else {
+      el.infoFontBanner.className = "info-font-banner err";
+      bannerSpan.textContent = t("fontUnembBanner", { t: data.fonts.length, u: data.unembeddedCount });
+      const lockBtn = document.createElement("button");
+      lockBtn.className = "primary-btn";
+      lockBtn.style.height = "28px";
+      lockBtn.style.padding = "0 10px";
+      lockBtn.style.fontSize = "11.5px";
+      lockBtn.type = "button";
+      lockBtn.textContent = t("fontFixLockBtn");
+      lockBtn.addEventListener("click", () => {
+        closePdfInfoModal();
+        state.pillar = "convert";
+        state.openGroups.convert = true;
+        state.convertSub = "imgpdf";
+        refreshWorkspace(false);
+      });
+      el.infoFontBanner.appendChild(bannerSpan);
+      el.infoFontBanner.appendChild(lockBtn);
+    }
+
+    el.fontFltBtns.forEach((b) => b.classList.toggle("active", b.dataset.flt === state.fontFilterMode));
+    const q = (state.fontSearchQuery || "").trim().toLowerCase();
+    const filteredFonts = data.fonts.filter((f) => {
+      if (state.fontFilterMode === "unemb" && f.embedded) return false;
+      if (state.fontFilterMode === "emb" && !f.embedded) return false;
+      if (q && !f.name.toLowerCase().includes(q) && !f.fontType.toLowerCase().includes(q)) return false;
+      return true;
+    });
+
+    el.infoFontList.innerHTML = "";
+    filteredFonts.forEach((f) => {
+      const card = document.createElement("div");
+      card.className = "info-font-card" + (f.embedded ? "" : " unembedded");
+
+      const head = document.createElement("div");
+      head.className = "info-font-head";
+
+      const nmWrap = document.createElement("div");
+      nmWrap.className = "info-font-name";
+      const nmTxt = document.createElement("span");
+      nmTxt.textContent = f.name;
+      nmWrap.appendChild(nmTxt);
+      if (f.isSubset) {
+        const subTag = document.createElement("span");
+        subTag.className = "version-pill";
+        subTag.textContent = t("fontSubsetTag");
+        nmWrap.appendChild(subTag);
+      }
+
+      const stBadge = document.createElement("span");
+      stBadge.className = "status-pill " + (f.embedded ? "ok" : "err");
+      stBadge.textContent = f.embedded ? (f.isSubset ? `✓ ${t("fontEmbSub")}` : `✓ ${t("fontEmbFull")}`) : `✕ ${t("fontNotEmb")}`;
+
+      head.appendChild(nmWrap);
+      head.appendChild(stBadge);
+      card.appendChild(head);
+
+      const meta = document.createElement("div");
+      meta.className = "info-font-meta";
+      const fmtSuffix = f.streamFormat && !f.fontType.includes(f.streamFormat) ? ` · ${f.streamFormat}` : "";
+      const tpSpan = document.createElement("span");
+      tpSpan.textContent = `${t("fontTypeLabel")}: ${f.fontType}${fmtSuffix}`;
+      const encSpan = document.createElement("span");
+      encSpan.textContent = `${t("fontEncLabel")}: ${f.encoding}`;
+      meta.appendChild(tpSpan);
+      meta.appendChild(encSpan);
+      card.appendChild(meta);
+
+      if (f.pages && f.pages.length > 0) {
+        const pgRow = document.createElement("div");
+        pgRow.className = "info-font-pages";
+        const lbl = document.createElement("span");
+        lbl.textContent = t("fontPagesLabel");
+        pgRow.appendChild(lbl);
+
+        f.pages.slice(0, 18).forEach((pNum) => {
+          const ch = document.createElement("button");
+          ch.className = "info-page-chip";
+          ch.type = "button";
+          ch.textContent = `P${pNum}`;
+          ch.addEventListener("click", () => {
+            closePdfInfoModal();
+            const targetSlot = Math.max(0, Math.min(state.pages.length - 1, pNum - 1));
+            state.activeSlotIdx = targetSlot;
+            if (state.pillar === "convert" || (state.pillar === "pages" && state.pagesSub === "organize")) {
+              state.pillar = "pages";
+              state.openGroups.pages = true;
+              state.pagesSub = "text";
+            }
+            refreshWorkspace(true);
+          });
+          pgRow.appendChild(ch);
+        });
+        if (f.pages.length > 18) {
+          const more = document.createElement("span");
+          more.textContent = `+${f.pages.length - 18}`;
+          pgRow.appendChild(more);
+        }
+        card.appendChild(pgRow);
+      }
+
+      el.infoFontList.appendChild(card);
+    });
+  }
+
+  [el.docInfoBtn, el.railDocInfoBtn, el.dimSummaryText].forEach((trigger) => {
+    if (trigger) trigger.addEventListener("click", () => openPdfInfoModal());
+  });
+
+  el.closePdfInfoBtn.addEventListener("click", closePdfInfoModal);
+  el.closePdfInfoFootBtn.addEventListener("click", closePdfInfoModal);
+  el.pdfInfoModal.addEventListener("click", (ev) => {
+    if (ev.target === el.pdfInfoModal) closePdfInfoModal();
+  });
+
+  el.pdfInfoDocSelect.addEventListener("change", () => {
+    state.infoTargetDocId = el.pdfInfoDocSelect.value;
+    renderPdfInfoModalContents();
+  });
+
+  el.infoTabMetaBtn.addEventListener("click", () => {
+    state.infoModalTab = "meta";
+    renderPdfInfoModalContents();
+  });
+
+  el.infoTabFontsBtn.addEventListener("click", () => {
+    state.infoModalTab = "fonts";
+    renderPdfInfoModalContents();
+  });
+
+  el.fontFltBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.fontFilterMode = btn.dataset.flt || "all";
+      renderPdfInfoModalContents();
+    });
+  });
+
+  el.fontSearchInput.addEventListener("input", () => {
+    state.fontSearchQuery = el.fontSearchInput.value || "";
+    renderPdfInfoModalContents();
+  });
+
+  el.copyPdfInfoBtn.addEventListener("click", async () => {
+    if (!window.ShibaPdfInfo || !hasPages()) return;
+    const data = window.ShibaPdfInfo.buildInspectData(
+      state.infoTargetDocId,
+      state.sourceDocs,
+      state.docOrder,
+      state.pages,
+      t
+    );
+    if (!data) return;
+    const reportStr = window.ShibaPdfInfo.formatPlainTextReport(data, t);
+    try {
+      await navigator.clipboard.writeText(reportStr);
+      el.copyPdfInfoText.textContent = t("infoCopiedBtn");
+      setTimeout(() => {
+        el.copyPdfInfoText.textContent = t("infoCopyBtn");
+      }, 1800);
+    } catch (_) {}
+  });
 
   el.zoomOutBtn.addEventListener("click", () => {
     if (isOrganizeMode()) setOrgGridZoom(state.orgGridScale / 1.18);

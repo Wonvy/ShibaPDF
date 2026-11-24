@@ -8,6 +8,7 @@ const jsModules = [
   "src/storage.js",
   "src/zip.js",
   "src/prepress-k100.js",
+  "src/pdf-info.js",
   "src/imposition.js",
   "src/convert-compress.js",
   "src/image-edit.js",

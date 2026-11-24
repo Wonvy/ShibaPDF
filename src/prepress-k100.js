@@ -208,9 +208,101 @@ window.ShibaPrepress = (function () {
     return spans;
   }
 
+  async function extractPdfMetadataSummary(rawBytes, doc, pdfJsDoc) {
+    let pdfVersion = "1.4+";
+    let isLinearized = false;
+    try {
+      const headLen = Math.min(rawBytes.length, 1024);
+      let headStr = "";
+      for (let i = 0; i < headLen; i++) headStr += String.fromCharCode(rawBytes[i]);
+      const mVer = headStr.match(/%PDF-(\d+\.\d+)/);
+      if (mVer) pdfVersion = mVer[1];
+      if (/\/Linearized\b/.test(headStr)) isLinearized = true;
+    } catch (_) {}
+
+    function formatPdfDate(val) {
+      if (!val) return "";
+      if (val instanceof Date && !isNaN(val.getTime())) {
+        const pad = (n) => String(n).padStart(2, "0");
+        return `${val.getFullYear()}-${pad(val.getMonth() + 1)}-${pad(val.getDate())} ${pad(val.getHours())}:${pad(val.getMinutes())}`;
+      }
+      const s = String(val).trim();
+      const m = s.match(/^(?:D:)?(\d{4})(\d{2})?(\d{2})?(\d{2})?(\d{2})?/);
+      if (m && m[1]) {
+        const yr = m[1];
+        const mo = m[2] || "01";
+        const dy = m[3] || "01";
+        const hr = m[4] || "00";
+        const mn = m[5] || "00";
+        return `${yr}-${mo}-${dy} ${hr}:${mn}`;
+      }
+      return s;
+    }
+
+    let info = {};
+    try {
+      if (pdfJsDoc && typeof pdfJsDoc.getMetadata === "function") {
+        const md = await pdfJsDoc.getMetadata();
+        if (md && md.info) info = md.info;
+      }
+    } catch (_) {}
+
+    const pickStr = (jsVal, libGetter) => {
+      if (jsVal && String(jsVal).trim()) return String(jsVal).trim();
+      try {
+        const v = libGetter();
+        if (v && String(v).trim()) return String(v).trim();
+      } catch (_) {}
+      return "";
+    };
+
+    return {
+      pdfVersion,
+      isLinearized,
+      title: pickStr(info.Title, () => doc.getTitle()),
+      author: pickStr(info.Author, () => doc.getAuthor()),
+      subject: pickStr(info.Subject, () => doc.getSubject()),
+      keywords: pickStr(info.Keywords, () => doc.getKeywords()),
+      creator: pickStr(info.Creator, () => doc.getCreator()),
+      producer: pickStr(info.Producer, () => doc.getProducer()),
+      creationDate: formatPdfDate(info.CreationDate || (() => { try { return doc.getCreationDate(); } catch (_) { return ""; } })()),
+      modDate: formatPdfDate(info.ModDate || (() => { try { return doc.getModificationDate(); } catch (_) { return ""; } })())
+    };
+  }
+
+  function decodePdfFontBaseName(rawStr) {
+    let s = String(rawStr || "").replace(/^\//, "").trim();
+    let isSubset = false;
+    if (/^[A-Z]{6}\+/.test(s)) {
+      isSubset = true;
+      s = s.slice(7);
+    }
+    if (/#[0-9A-Fa-f]{2}/.test(s) && typeof TextDecoder !== "undefined") {
+      try {
+        const bytes = [];
+        for (let i = 0; i < s.length; i++) {
+          if (s[i] === "#" && /^[0-9A-Fa-f]{2}$/.test(s.slice(i + 1, i + 3))) {
+            bytes.push(parseInt(s.slice(i + 1, i + 3), 16));
+            i += 2;
+          } else {
+            bytes.push(s.charCodeAt(i) & 0xff);
+          }
+        }
+        const u8 = new Uint8Array(bytes);
+        try {
+          s = new TextDecoder("utf-8", { fatal: true }).decode(u8);
+        } catch (_) {
+          s = new TextDecoder("gbk").decode(u8);
+        }
+      } catch (_) {}
+    }
+    return { cleanName: s || "UnnamedFont", isSubset };
+  }
+
   async function runPrepressPreflight(rawBytes, pdfJsDoc, origPages) {
     const doc = await PDFLib.PDFDocument.load(rawBytes, { ignoreEncryption: true });
     const pages = doc.getPages();
+    const metaInfo = await extractPdfMetadataSummary(rawBytes, doc, pdfJsDoc);
 
     const nonK100PageIndices = new Set();
     const nonK100Locs = [];
@@ -221,13 +313,114 @@ window.ShibaPrepress = (function () {
     let rgbVectorPages = 0;
     let smaskCount = 0;
     let gradientCount = 0;
+    let hasTrimBox = false;
+    let hasBleedBox = false;
 
     const allFonts = new Map();
+    const fontDetailsMap = new Map();
     const placedDpis = [];
     const seenImgRefs = new Set();
 
+    function scanResFonts(resDict, pageNumOneBased, visitedFormRefs) {
+      if (!resDict || !(resDict instanceof PDFLib.PDFDict)) return;
+      const fontDict = resDict.lookup(PDFLib.PDFName.of("Font"));
+      if (fontDict && fontDict instanceof PDFLib.PDFDict) {
+        for (const [, fRef] of fontDict.entries()) {
+          const fObj = doc.context.lookup(fRef);
+          if (!fObj || !(fObj instanceof PDFLib.PDFDict)) continue;
+
+          const rawBase = (fObj.get(PDFLib.PDFName.of("BaseFont")) || "").toString();
+          const { cleanName, isSubset } = decodePdfFontBaseName(rawBase);
+          const subTypeRaw = (fObj.get(PDFLib.PDFName.of("Subtype")) || "").toString().replace(/^\//, "") || "Font";
+          let cidSubType = "";
+
+          const encObj = fObj.get(PDFLib.PDFName.of("Encoding"));
+          let encoding = "Built-in";
+          if (encObj) {
+            const es = encObj.toString();
+            if (es.startsWith("/")) encoding = es.slice(1);
+            else {
+              const encDict = fObj.lookup(PDFLib.PDFName.of("Encoding"));
+              if (encDict && encDict instanceof PDFLib.PDFDict) {
+                const baseEnc = encDict.get(PDFLib.PDFName.of("BaseEncoding"));
+                encoding = baseEnc ? baseEnc.toString().replace(/^\//, "") : "Custom";
+              } else {
+                encoding = "Custom";
+              }
+            }
+          }
+
+          let embedded = subTypeRaw === "Type3";
+          let streamFormat = subTypeRaw === "Type3" ? "Type3" : "";
+
+          let desc = fObj.lookup(PDFLib.PDFName.of("FontDescriptor"));
+          if (!desc) {
+            const descArr = fObj.lookup(PDFLib.PDFName.of("DescendantFonts"));
+            if (descArr && descArr instanceof PDFLib.PDFArray && descArr.size() > 0) {
+              const cidFont = doc.context.lookup(descArr.get(0));
+              if (cidFont && cidFont instanceof PDFLib.PDFDict) {
+                cidSubType = (cidFont.get(PDFLib.PDFName.of("Subtype")) || "").toString().replace(/^\//, "");
+                desc = cidFont.lookup(PDFLib.PDFName.of("FontDescriptor"));
+              }
+            }
+          }
+          if (desc && desc instanceof PDFLib.PDFDict) {
+            if (desc.get(PDFLib.PDFName.of("FontFile"))) {
+              embedded = true;
+              streamFormat = "Type1";
+            } else if (desc.get(PDFLib.PDFName.of("FontFile2"))) {
+              embedded = true;
+              streamFormat = "TrueType";
+            } else if (desc.get(PDFLib.PDFName.of("FontFile3"))) {
+              embedded = true;
+              streamFormat = "OpenType / CFF";
+            }
+          }
+
+          const dispType = cidSubType ? `${subTypeRaw} (${cidSubType})` : subTypeRaw;
+          if (!allFonts.has(cleanName) || !embedded) allFonts.set(cleanName, embedded);
+
+          const detailKey = `${cleanName}__${dispType}__${embedded ? "1" : "0"}`;
+          if (!fontDetailsMap.has(detailKey)) {
+            fontDetailsMap.set(detailKey, {
+              name: cleanName,
+              embedded,
+              isSubset,
+              fontType: dispType,
+              encoding,
+              streamFormat,
+              pages: new Set([pageNumOneBased])
+            });
+          } else {
+            const existing = fontDetailsMap.get(detailKey);
+            if (isSubset) existing.isSubset = true;
+            existing.pages.add(pageNumOneBased);
+          }
+        }
+      }
+
+      const xObjD = resDict.lookup(PDFLib.PDFName.of("XObject"));
+      if (xObjD && xObjD instanceof PDFLib.PDFDict) {
+        for (const [, xRef] of xObjD.entries()) {
+          if (!(xRef instanceof PDFLib.PDFRef)) continue;
+          const rk = xRef.toString();
+          if (visitedFormRefs.has(rk)) continue;
+          visitedFormRefs.add(rk);
+          const xo = doc.context.lookup(xRef);
+          if (xo && xo instanceof PDFLib.PDFRawStream) {
+            const sub = (xo.dict.get(PDFLib.PDFName.of("Subtype")) || "").toString();
+            if (sub === "/Form") {
+              scanResFonts(xo.dict.lookup(PDFLib.PDFName.of("Resources")), pageNumOneBased, visitedFormRefs);
+            }
+          }
+        }
+      }
+    }
+
     for (let pIdx = 0; pIdx < pages.length; pIdx++) {
       const page = pages[pIdx];
+      if (page.node.get(PDFLib.PDFName.of("TrimBox"))) hasTrimBox = true;
+      if (page.node.get(PDFLib.PDFName.of("BleedBox"))) hasBleedBox = true;
       const rawCrop = page.getCropBox();
       const res = page.node.lookup(PDFLib.PDFName.of("Resources"));
       let hasRgbGroup = false;
@@ -237,29 +430,7 @@ window.ShibaPrepress = (function () {
         if (cs && cs.toString() === "/DeviceRGB") hasRgbGroup = true;
       }
 
-      const fontDict = res && res instanceof PDFLib.PDFDict ? res.lookup(PDFLib.PDFName.of("Font")) : null;
-      if (fontDict && fontDict instanceof PDFLib.PDFDict) {
-        for (const [, fRef] of fontDict.entries()) {
-          const fObj = doc.context.lookup(fRef);
-          if (!fObj || !(fObj instanceof PDFLib.PDFDict)) continue;
-          const rawName = (fObj.get(PDFLib.PDFName.of("BaseFont")) || "").toString().replace(/^\//, "").replace(/^[A-Z]{6}\+/, "") || "Font";
-          const subType = (fObj.get(PDFLib.PDFName.of("Subtype")) || "").toString();
-          let embedded = subType === "/Type3";
-
-          let desc = fObj.lookup(PDFLib.PDFName.of("FontDescriptor"));
-          if (!desc) {
-            const descArr = fObj.lookup(PDFLib.PDFName.of("DescendantFonts"));
-            if (descArr && descArr instanceof PDFLib.PDFArray && descArr.size() > 0) {
-              const cidFont = doc.context.lookup(descArr.get(0));
-              if (cidFont && cidFont instanceof PDFLib.PDFDict) desc = cidFont.lookup(PDFLib.PDFName.of("FontDescriptor"));
-            }
-          }
-          if (desc && desc instanceof PDFLib.PDFDict) {
-            if (desc.get(PDFLib.PDFName.of("FontFile")) || desc.get(PDFLib.PDFName.of("FontFile2")) || desc.get(PDFLib.PDFName.of("FontFile3"))) embedded = true;
-          }
-          if (!allFonts.has(rawName) || !embedded) allFonts.set(rawName, embedded);
-        }
-      }
+      scanResFonts(res, pIdx + 1, new Set());
 
       const extDict = res && res instanceof PDFLib.PDFDict ? res.lookup(PDFLib.PDFName.of("ExtGState")) : null;
       if (extDict && extDict instanceof PDFLib.PDFDict) {
@@ -505,8 +676,28 @@ window.ShibaPrepress = (function () {
     let singleEquivPages = 0;
     origPages.forEach((p) => { singleEquivPages += p.wMm > p.hMm ? 2 : 1; });
 
+    const fontDetails = Array.from(fontDetailsMap.values())
+      .map((f) => ({
+        name: f.name,
+        embedded: f.embedded,
+        isSubset: f.isSubset,
+        fontType: f.fontType,
+        encoding: f.encoding,
+        streamFormat: f.streamFormat,
+        pages: Array.from(f.pages).sort((a, b) => a - b)
+      }))
+      .sort((a, b) => {
+        if (a.embedded !== b.embedded) return a.embedded ? 1 : -1;
+        return a.name.localeCompare(b.name);
+      });
+
     return {
       isEncrypted: doc.isEncrypted,
+      metaInfo,
+      fontDetails,
+      totalImages: seenImgRefs.size,
+      hasTrimBox,
+      hasBleedBox,
       nonK100Pages: nonK100PageIndices.size,
       nonK100Locs,
       lowDpiLocs,

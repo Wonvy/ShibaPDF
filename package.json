@@ -1,6 +1,6 @@
 {
   "name": "shibapdf",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "ShibaPDF — 纯本地无损 PDF 对页/跨页拆单页与印前单色黑 (K100) 工具",
   "private": false,
   "scripts": {
